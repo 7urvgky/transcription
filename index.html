@@ -219,22 +219,22 @@
     <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 p-6 overflow-y-auto no-print shrink-0 lg:sticky lg:top-0 lg:h-[calc(100vh-72px)] flex flex-col justify-between space-y-6">
       
       <div class="space-y-6">
-        <!-- 인쇄 및 PDF 원클릭 직접 다운로드 버튼 그룹 최상단 배치 -->
-        <div class="pb-4 border-b border-slate-200 space-y-2">
-          <!-- 1. 고해상도 벡터 인쇄/시스템 저장 버튼 -->
-          <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2.5 transition-all active:scale-95">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- 인쇄 및 PDF 다운로드 버튼 그룹 최상단 배치 (한 줄 좌우 배치 완료) -->
+        <div class="pb-4 border-b border-slate-200 grid grid-cols-2 gap-2">
+          <!-- 1. 고해상도 벡터 인쇄/시스템 저장 버튼 (왼쪽 배치) -->
+          <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-2 rounded-xl shadow-md flex items-center justify-center space-x-1.5 transition-all active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
             </svg>
-            <span class="text-sm tracking-wide">인쇄 / 시스템 PDF 저장</span>
+            <span class="text-sm tracking-wide">인쇄</span>
           </button>
           
-          <!-- 2. 신규: 1클릭 무설정 바로 다운로드 버튼 -->
-          <button id="download-pdf-btn" onclick="downloadPDF()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2.5 transition-all active:scale-95">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <!-- 2. PDF 다운로드 버튼 (오른쪽 배치) -->
+          <button id="download-pdf-btn" onclick="downloadPDF()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-2 rounded-xl shadow-md flex items-center justify-center space-x-1.5 transition-all active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
             </svg>
-            <span class="text-sm tracking-wide">PDF 원클릭 다운로드</span>
+            <span class="text-sm tracking-wide">PDF 다운로드</span>
           </button>
         </div>
 
@@ -901,7 +901,7 @@
 
             if (item.type === 'sentence') {
               const isContinuedOnNewPage = !item.isParaStart;
-              currentPageSegments.push({ text: item.text, isContinued: isContinuedOnNewPage, pIdx: item.pIdx });
+              currentPageSegments.push({ text: text, isContinued: isContinuedOnNewPage, pIdx: item.pIdx });
             } else {
               currentPageSegments.push({ isBlankLine: true, pIdx: item.pIdx });
             }
@@ -1316,7 +1316,7 @@
                     containerSpan.className = "absolute inset-0 flex items-center justify-center gap-x-[1px] translate-y-[8%] px-[3%] w-full h-full";
                     
                     const isCharPunct = /[.,!?'"ными“”‘’()（）[\]{}<>~?;:：；]/.test(cellData.char);
-                    const isPunctPunct = /[.,!?'"ными“”‘’()（）[\]{}<>~?;:：；]/.test(cellData.squeezedPunct);
+                    const isPunctPunct = /[.,!?'"ными“”‘’()（\\][\]{}<>~?;:：；]/.test(cellData.squeezedPunct);
 
                     const charSpan = document.createElement('span');
                     charSpan.textContent = cellData.char; 
@@ -1434,7 +1434,7 @@
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <span>PDF 파일 빌드 중...</span>
+        <span>빌드 중...</span>
       `;
       btn.disabled = true;
 
