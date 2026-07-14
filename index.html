@@ -313,6 +313,7 @@
   </div>
 
   <script>
+    // 전역 변수 초기화
     let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴속에 하나 둘 새겨지는 별을\n이제 다 못 헤는 것은\n쉬이 아침이 오는 까닭이요,\n내일 밤이 남은 까닭이요,\n아직 나의 청춘이 다하지 않은 까닭입니다.\n\n별 하나에 추억과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 동경과\n별 하나에 시와\n별 하나에 어머니, 어머니";
     let articleTitle = "별 헤는 밤";
     let gridCols = "20"; 
@@ -330,10 +331,14 @@
     let footerGuideText = "따라 쓰기";
     let footerEmptyText = "원고지";
 
+    // 초기 값 대입
     document.getElementById('source-text').value = sourceText;
     document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
     document.title = articleTitle ? articleTitle : "필사 용지 만들기";
 
+    // -------------------------------------------------------------
+    // 이벤트 리스너 바인딩
+    // -------------------------------------------------------------
     document.getElementById('source-text').addEventListener('input', (e) => {
       sourceText = e.target.value;
       document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
@@ -351,13 +356,15 @@
       renderPages();
     });
 
-    const inputs = ['input-school', 'input-grade', 'input-name', 'input-date'];
-    inputs.forEach(id => {
+    // 폼 입력 요소 동기화 루프 단일 결합
+    const inputIds = ['input-school', 'input-grade', 'input-name', 'input-date'];
+    inputIds.forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
-        if (id === 'input-school') schoolName = e.target.value;
-        if (id === 'input-grade') gradeInfo = e.target.value;
-        if (id === 'input-name') studentName = e.target.value;
-        if (id === 'input-date') currentDate = e.target.value;
+        const val = e.target.value;
+        if (id === 'input-school') schoolName = val;
+        if (id === 'input-grade') gradeInfo = val;
+        if (id === 'input-name') studentName = val;
+        if (id === 'input-date') currentDate = val;
         updateHeaderAndTitle();
       });
     });
@@ -379,7 +386,7 @@
       renderPages();
     }
 
-    // 3분할 그리드(Grid)에 예쁘게 들어갈 수 있는 크기로 컴팩트하게 조정된 기본 수기용 텍스트
+    // 빈칸일 때 설정될 기본 플레이스홀더 제공 (더 넓고 넉넉한 수기 작성용)
     function getBlankPlaceholders() {
       return {
         school: schoolName.trim() ? schoolName : "",
@@ -389,6 +396,9 @@
       };
     }
 
+    // -------------------------------------------------------------
+    // DOM 갱신 및 데이터 일치화 로직
+    // -------------------------------------------------------------
     function updateHeaderAndTitle() {
       const placeholders = getBlankPlaceholders();
       
@@ -409,6 +419,7 @@
       });
     }
 
+    // 다른 contenteditable 영역 동기화 전용 함수
     function syncMetadata(className, value, activeElement) {
       document.querySelectorAll('.' + className).forEach(el => {
         if (el !== activeElement) {
@@ -417,6 +428,7 @@
       });
     }
 
+    // 통합 이벤트 위임 (contenteditable 실시간 감지)
     document.addEventListener('input', (e) => {
       const target = e.target;
       if (!target.hasAttribute('contenteditable')) return;
@@ -425,28 +437,30 @@
         target.innerHTML = '';
       }
 
+      const txt = target.textContent;
+
       if (target.classList.contains('school-placeholder')) {
-        schoolName = target.textContent;
+        schoolName = txt;
         document.getElementById('input-school').value = schoolName;
         syncMetadata('school-placeholder', schoolName, target);
       }
       else if (target.classList.contains('grade-placeholder')) {
-        gradeInfo = target.textContent;
+        gradeInfo = txt;
         document.getElementById('input-grade').value = gradeInfo;
         syncMetadata('grade-placeholder', gradeInfo, target);
       }
       else if (target.classList.contains('date-placeholder')) {
-        currentDate = target.textContent;
+        currentDate = txt;
         document.getElementById('input-date').value = currentDate;
         syncMetadata('date-placeholder', currentDate, target);
       }
       else if (target.classList.contains('name-placeholder')) {
-        studentName = target.textContent;
+        studentName = txt;
         document.getElementById('input-name').value = studentName;
         syncMetadata('name-placeholder', studentName, target);
       }
       else if (target.classList.contains('title-placeholder')) {
-        articleTitle = target.textContent;
+        articleTitle = txt;
         document.getElementById('input-title').value = articleTitle;
         syncMetadata('title-placeholder', articleTitle, target);
         document.title = articleTitle ? articleTitle : "필사 용지 만들기";
@@ -466,22 +480,22 @@
         document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
       }
       else if (target.classList.contains('mini-header-left')) {
-        headerLeftText = target.textContent;
+        headerLeftText = txt;
         syncMetadata('mini-header-left', headerLeftText, target);
       }
       else if (target.classList.contains('mini-header-center')) {
-        articleTitle = target.textContent;
+        articleTitle = txt;
         document.getElementById('input-title').value = articleTitle;
         syncMetadata('mini-header-center', articleTitle, target);
         syncMetadata('title-placeholder', articleTitle, null);
         document.title = articleTitle ? articleTitle : "필사 용지 만들기";
       }
       else if (target.classList.contains('footer-label-source')) {
-        footerSourceText = target.textContent;
+        footerSourceText = txt;
         syncMetadata('footer-label-source', footerSourceText, target);
       }
       else if (target.classList.contains('footer-label-guide')) {
-        let rawText = target.textContent;
+        let rawText = txt;
         if (rawText.endsWith(" - 줄 노트")) {
           footerGuideText = rawText.replace(" - 줄 노트", "");
         } else {
@@ -490,7 +504,7 @@
         syncMetadata('footer-label-guide', rawText, target);
       }
       else if (target.classList.contains('footer-label-empty')) {
-        let rawText = target.textContent;
+        let rawText = txt;
         if (rawText.endsWith(" - 줄 노트")) {
           footerEmptyText = rawText.replace(" - 줄 노트", "");
         } else {
@@ -500,34 +514,36 @@
       }
     });
 
+    // 사파리 이중 개행 버그 및 레이아웃 밀림 해결을 위한 통합 붙여넣기 가로채기 프로세서
     document.addEventListener('paste', (e) => {
       const target = e.target;
-      if (target.classList.contains('p-inner-content') || target.hasAttribute('contenteditable') || target.id === 'source-text') {
-        e.preventDefault();
-        let text = (e.clipboardData || window.clipboardData).getData('text/plain');
-        
-        text = text.replace(/\r\n/g, '\n');
-        
-        if (target.id === 'source-text') {
-          text = text.replace(/\n{3,}/g, '\n\n');
-          const start = target.selectionStart;
-          const end = target.selectionEnd;
-          const currentVal = target.value;
-          target.value = currentVal.substring(0, start) + text + currentVal.substring(end);
-          target.selectionStart = target.selectionEnd = start + text.length;
-          target.dispatchEvent(new Event('input', { bubbles: true }));
+      const isTargetEditable = target.classList.contains('p-inner-content') || target.hasAttribute('contenteditable') || target.id === 'source-text';
+      if (!isTargetEditable) return;
+
+      e.preventDefault();
+      let text = (e.clipboardData || window.clipboardData).getData('text/plain');
+      text = text.replace(/\r\n/g, '\n');
+      
+      if (target.id === 'source-text') {
+        text = text.replace(/\n{3,}/g, '\n\n');
+        const start = target.selectionStart;
+        const end = target.selectionEnd;
+        const currentVal = target.value;
+        target.value = currentVal.substring(0, start) + text + currentVal.substring(end);
+        target.selectionStart = target.selectionEnd = start + text.length;
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+      } else {
+        if (!target.classList.contains('p-inner-content')) {
+          text = text.replace(/\n/g, ' ');
         } else {
-          if(!target.classList.contains('p-inner-content')) {
-            text = text.replace(/\n/g, ' ');
-          } else {
-            text = text.replace(/\n{3,}/g, '\n\n');
-          }
-          document.execCommand('insertText', false, text);
-          target.dispatchEvent(new Event('input', { bubbles: true }));
+          text = text.replace(/\n{3,}/g, '\n\n');
         }
+        document.execCommand('insertText', false, text);
+        target.dispatchEvent(new Event('input', { bubbles: true }));
       }
     });
 
+    // 포커스 해제 처리
     document.addEventListener('blur', (e) => {
       const target = e.target;
       if (!target.hasAttribute('contenteditable')) return;
@@ -546,11 +562,13 @@
       }
     }, true);
 
+    // -------------------------------------------------------------
+    // 원고지 레이아웃 계산 및 쪼개기 루틴
+    // -------------------------------------------------------------
     function parseTextToManuscriptCells(text, cols) {
       const cells = [];
       const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
       const isPunctuation = (c) => /[.,!?'"ным“”‘’()（）[\]{}<>~?;:：；]/.test(c);
-
       const paragraphs = text.split('\n');
 
       paragraphs.forEach((pText, pIdx) => {
@@ -937,6 +955,9 @@
       return lines;
     }
 
+    // -------------------------------------------------------------
+    // 화면 및 인쇄용 컴포넌트 동적 렌더링 루틴
+    // -------------------------------------------------------------
     function renderPages() {
       const container = document.getElementById('pages-container');
       container.innerHTML = ""; 
@@ -961,7 +982,7 @@
           if (sIdx === 0) {
             const pageOneHeader = document.createElement('div');
             pageOneHeader.className = `pb-1 text-sm font-semibold ${gridTextColorClass} w-full shrink-0 mb-2`;
-            // 3분할 Grid 레이아웃 적용 및 수직바(|) 완전 삭제
+            // 3분할 Grid 레이아웃 및 수직바 제거 정갈한 구성
             pageOneHeader.innerHTML = `
               <div class="grid grid-cols-3 items-end w-full min-h-[24px] text-slate-800 text-sm font-bold header-meta-container">
                 <span class="school-placeholder text-left whitespace-normal break-keep" contenteditable="true">${placeholders.school}</span>
@@ -1074,7 +1095,7 @@
           pageOneBody.appendChild(frameDiv);
           pageOneDiv.appendChild(pageOneBody);
 
-          // Absolute footer 기법 적용
+          // 사파리 푸터 밀림 방지 전용 절대 배치 푸터
           const pageOneFooter = document.createElement('div');
           pageOneFooter.className = `absolute bottom-[15mm] left-[20mm] right-[20mm] pt-2.5 border-t border-dashed ${gridBorderColorClass} flex justify-between items-center text-xs text-slate-400 font-bold shrink-0`;
           
@@ -1124,7 +1145,6 @@
           if (!hideManuscriptHeader) {
             const gridPageHeader = document.createElement('div');
             gridPageHeader.className = `pb-1 text-sm font-semibold ${gridTextColorClass} w-full shrink-0 mb-2`;
-            // 3분할 Grid 레이아웃 적용 및 세로막대 삭제
             gridPageHeader.innerHTML = `
               <div class="grid grid-cols-3 items-end w-full min-h-[24px] text-slate-800 text-sm font-bold header-meta-container">
                 <span class="school-placeholder text-left whitespace-normal break-keep" contenteditable="true">${placeholders.school}</span>
@@ -1145,7 +1165,7 @@
 
             const gridPageTitle = document.createElement('div');
             gridPageTitle.className = "mt-5 mb-1 w-full text-left shrink-0";
-            gridPageTitle.style.marginBottom = "2mm";
+            gridPageTitle.style.marginBottom = "2mm"; // 정밀 마진 2mm 간격 확보
             
             const titleBorderClass = isLineNote ? "" : "border-b border-dashed border-slate-300 pb-1 leading-tight";
             gridPageTitle.innerHTML = `
@@ -1303,9 +1323,8 @@
 
           gridPageDiv.appendChild(gridWrapper);
 
-          // Absolute footer 기법 적용
+          // Absolute footer 기반 푸터 렌더링
           const footerDiv = document.createElement('div');
-          
           const footerBorderClass = isLineNote ? "" : `border-t border-dashed ${gridBorderColorClass}`;
           footerDiv.className = `absolute bottom-[15mm] left-[20mm] right-[20mm] pt-2 ${footerBorderClass} flex justify-between items-center text-xs text-slate-400 font-bold shrink-0`;
           
@@ -1342,6 +1361,7 @@
       updateHeaderAndTitle();
     }
 
+    // 초기화 및 첫 렌더링
     renderPages();
   </script>
 </body>
