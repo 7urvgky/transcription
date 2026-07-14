@@ -70,6 +70,18 @@
       font-style: italic;
     }
 
+    /* 상·하·좌·우 여백을 일반적인 프린트 규격인 20mm 대칭 격리로 완벽 고정 */
+    .print-page-inner {
+      width: 100%;
+      height: 100%;
+      padding: 20mm 20mm 20mm 20mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      position: relative;
+    }
+
     /* 사파리 크로스브라우징 인쇄 붕괴 방지용 절대 위치 기반 레이아웃 */
     @media print {
       .no-print {
@@ -77,11 +89,13 @@
       }
       
       html, body {
+        display: block !important;
         background-color: #ffffff !important;
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
         height: auto !important;
+        min-height: 0 !important;
         overflow: visible !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -104,7 +118,7 @@
         background: transparent !important;
       }
 
-      /* 사파리 flex 높이 연산 버그를 피하기 위해 block + position relative 적용 */
+      /* 사파리 가용 높이 계산 붕괴 방지를 위해 295mm 지정하고, 패딩을 0으로 강제 초기화 */
       .print-page {
         box-shadow: none !important;
         margin: 0 !important;
@@ -114,10 +128,10 @@
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         width: 210mm !important;
-        height: 296mm !important; 
-        max-height: 296mm !important;
+        height: 295mm !important; 
+        max-height: 295mm !important;
         max-width: 210mm !important;
-        padding: 15mm 20mm 15mm 20mm !important;
+        padding: 0 !important; /* 웹킷 패딩 연산 버그 원천 배제 */
         box-sizing: border-box !important;
         display: block !important; 
         position: relative !important;
@@ -126,8 +140,8 @@
       }
 
       .print-page:last-child {
-        break-after: auto !important;
-        page-break-after: auto !important;
+        break-after: avoid !important;
+        page-break-after: avoid !important;
       }
 
       /* 인쇄 시 "입력" 가이드 텍스트 제거 */
@@ -142,7 +156,7 @@
       height: 297mm;
       background: white;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04);
-      padding: 15mm 20mm 15mm 20mm; 
+      padding: 0; /* 웹킷 패딩 연산 버그 원천 배제 */
       box-sizing: border-box;
       display: block;
       position: relative;
@@ -387,11 +401,12 @@
     }
 
     // 빈칸일 때 설정될 기본 플레이스홀더 제공 (더 넓고 넉넉한 수기 작성용)
+    // 사용자가 백스페이스로 직접 내용을 지운 경우(" ")와 완전 빈 상태 구별 처리 반영
     function getBlankPlaceholders() {
       return {
-        school: schoolName.trim() ? schoolName : "",
-        grade: gradeInfo.trim() ? gradeInfo : "__________학년 __________반",
-        date: currentDate.trim() ? currentDate : "___________년 _________월 _________일",
+        school: (schoolName === " " || schoolName.trim()) ? schoolName : "",
+        grade: (gradeInfo === " " || gradeInfo.trim()) ? gradeInfo : "__________학년 __________반",
+        date: (currentDate === " " || currentDate.trim()) ? currentDate : "___________년 _________월 _________일",
         name: "" 
       };
     }
@@ -440,18 +455,19 @@
       const txt = target.textContent;
 
       if (target.classList.contains('school-placeholder')) {
-        schoolName = txt;
-        document.getElementById('input-school').value = schoolName;
+        // 완전 공백으로 비워졌을 경우 수기 가이드가 다시 활성화되지 않고 완전히 공백으로 남도록 단일 공백 플래그 저장
+        schoolName = txt === "" ? " " : txt;
+        document.getElementById('input-school').value = schoolName === " " ? "" : schoolName;
         syncMetadata('school-placeholder', schoolName, target);
       }
       else if (target.classList.contains('grade-placeholder')) {
-        gradeInfo = txt;
-        document.getElementById('input-grade').value = gradeInfo;
+        gradeInfo = txt === "" ? " " : txt;
+        document.getElementById('input-grade').value = gradeInfo === " " ? "" : gradeInfo;
         syncMetadata('grade-placeholder', gradeInfo, target);
       }
       else if (target.classList.contains('date-placeholder')) {
-        currentDate = txt;
-        document.getElementById('input-date').value = currentDate;
+        currentDate = txt === "" ? " " : txt;
+        document.getElementById('input-date').value = currentDate === " " ? "" : currentDate;
         syncMetadata('date-placeholder', currentDate, target);
       }
       else if (target.classList.contains('name-placeholder')) {
@@ -956,7 +972,7 @@
     }
 
     // -------------------------------------------------------------
-    // 화면 및 인쇄용 컴포넌트 동적 렌더링 루틴
+    // 화면 및 인쇄용 컴포넌트 동적 렌더링 루틴 (사파리 안심 구조 분할 적용)
     // -------------------------------------------------------------
     function renderPages() {
       const container = document.getElementById('pages-container');
@@ -979,6 +995,10 @@
           const pageOneDiv = document.createElement('div');
           pageOneDiv.className = "a4-page print-page";
 
+          // 사파리 오차 방지를 위한 내부 격리 패딩 래퍼 적용
+          const innerDiv = document.createElement('div');
+          innerDiv.className = "print-page-inner";
+
           if (sIdx === 0) {
             const pageOneHeader = document.createElement('div');
             pageOneHeader.className = `pb-1 text-sm font-semibold ${gridTextColorClass} w-full shrink-0 mb-2`;
@@ -999,14 +1019,15 @@
                 </div>
               </div>
             `;
-            pageOneDiv.appendChild(pageOneHeader);
+            innerDiv.appendChild(pageOneHeader);
 
             const pageOneTitle = document.createElement('div');
             pageOneTitle.className = "mt-6 mb-1 w-full text-left shrink-0";
+            // 글제목 하단 점선 테두리(border-b) 제거
             pageOneTitle.innerHTML = `
-              <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 border-b border-dashed border-slate-300 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
+              <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
             `;
-            pageOneDiv.appendChild(pageOneTitle);
+            innerDiv.appendChild(pageOneTitle);
           } else {
             const pageOneHeader = document.createElement('div');
             pageOneHeader.className = `mt-4 mb-6 pb-2 border-b border-dashed ${gridBorderColorClass} flex justify-between items-center text-xs text-slate-400 font-bold shrink-0 w-full`;
@@ -1093,17 +1114,19 @@
 
           frameDiv.appendChild(pInnerContent);
           pageOneBody.appendChild(frameDiv);
-          pageOneDiv.appendChild(pageOneBody);
+          innerDiv.appendChild(pageOneBody);
 
-          // 사파리 푸터 밀림 방지 전용 절대 배치 푸터
+          // 20mm 하단 안심 여백에 맞추어 absolute bottom-[20mm] 배치 (겹치던 점선 완전 제거됨)
           const pageOneFooter = document.createElement('div');
-          pageOneFooter.className = `absolute bottom-[15mm] left-[20mm] right-[20mm] pt-2.5 border-t border-dashed ${gridBorderColorClass} flex justify-between items-center text-xs text-slate-400 font-bold shrink-0`;
+          pageOneFooter.className = `absolute bottom-[20mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0`;
           
           pageOneFooter.innerHTML = `
             <span class="tracking-wide text-slate-400">[ <span class="footer-label-source" contenteditable="true">${footerSourceText}</span> ]</span>
             <span class="bg-emerald-50 text-emerald-800 px-3.5 py-1 rounded-full border border-emerald-100">${sIdx + 1} / ${totalSourcePages}</span>
           `;
-          pageOneDiv.appendChild(pageOneFooter);
+          innerDiv.appendChild(pageOneFooter);
+
+          pageOneDiv.appendChild(innerDiv);
           container.appendChild(pageOneDiv);
         });
       }
@@ -1142,6 +1165,10 @@
           const gridPageDiv = document.createElement('div');
           gridPageDiv.className = "a4-page print-page";
 
+          // 사파리 오차 방지를 위한 내부 격리 패딩 래퍼 적용
+          const innerDiv = document.createElement('div');
+          innerDiv.className = "print-page-inner";
+
           if (!hideManuscriptHeader) {
             const gridPageHeader = document.createElement('div');
             gridPageHeader.className = `pb-1 text-sm font-semibold ${gridTextColorClass} w-full shrink-0 mb-2`;
@@ -1161,17 +1188,19 @@
                 </div>
               </div>
             `;
-            gridPageDiv.appendChild(gridPageHeader);
+            innerDiv.appendChild(gridPageHeader);
 
             const gridPageTitle = document.createElement('div');
-            gridPageTitle.className = "mt-5 mb-1 w-full text-left shrink-0";
+            // 제목 위 마진을 mt-5에서 mt-3으로 컴팩트화하여 수직 가용 마진 확보
+            gridPageTitle.className = "mt-3 mb-1 w-full text-left shrink-0";
             gridPageTitle.style.marginBottom = "2mm"; // 정밀 마진 2mm 간격 확보
             
-            const titleBorderClass = isLineNote ? "" : "border-b border-dashed border-slate-300 pb-1 leading-tight";
+            // 글제목 하단 점선 테두리(border-b) 제거
+            const titleBorderClass = "pb-1 leading-tight";
             gridPageTitle.innerHTML = `
               <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 ${titleBorderClass} max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
             `;
-            gridPageDiv.appendChild(gridPageTitle);
+            innerDiv.appendChild(gridPageTitle);
           } else {
             const miniHeader = document.createElement('div');
             miniHeader.className = `mt-1 mb-2 pb-1.5 border-b border-dashed ${gridBorderColorClass} grid grid-cols-3 items-center text-xs ${gridTextColorClass} opacity-80 font-serif-fixed shrink-0 w-full`;
@@ -1182,7 +1211,7 @@
               <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${articleTitle || '별 헤는 밤'}</span>
               <span class="mini-header-right text-right tracking-wider opacity-70 text-[10px] font-medium">${typeText}</span>
             `;
-            gridPageDiv.appendChild(miniHeader);
+            innerDiv.appendChild(miniHeader);
           }
 
           const gridWrapper = document.createElement('div');
@@ -1321,12 +1350,11 @@
             gridWrapper.appendChild(relativeContainer);
           }
 
-          gridPageDiv.appendChild(gridWrapper);
+          innerDiv.appendChild(gridWrapper);
 
-          // Absolute footer 기반 푸터 렌더링
+          // Absolute footer 기반 푸터 렌더링 (하단 대칭 여백 20mm 매칭 bottom-[20mm], 겹치던 점선 border-t 완전 제거)
           const footerDiv = document.createElement('div');
-          const footerBorderClass = isLineNote ? "" : `border-t border-dashed ${gridBorderColorClass}`;
-          footerDiv.className = `absolute bottom-[15mm] left-[20mm] right-[20mm] pt-2 ${footerBorderClass} flex justify-between items-center text-xs text-slate-400 font-bold shrink-0`;
+          footerDiv.className = `absolute bottom-[20mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0`;
           
           let currentFooterLabel = "";
           let currentFooterClass = "";
@@ -1352,8 +1380,9 @@
             <span class="tracking-wide text-slate-400">[ <span class="${currentFooterClass}" contenteditable="true">${currentFooterLabel}</span> ]</span>
             <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">- ${pageIdx + 1} / ${totalGridPages} -</span>
           `;
-          gridPageDiv.appendChild(footerDiv);
+          innerDiv.appendChild(footerDiv);
 
+          gridPageDiv.appendChild(innerDiv);
           container.appendChild(gridPageDiv);
         }
       });
