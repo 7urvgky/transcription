@@ -9,6 +9,9 @@
   <!-- Google Fonts: Noto Sans KR (고딕-설정창용), Noto Serif KR (명조-원문 및 따라쓰기 가이드 글씨용) -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=300;400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
   
+  <!-- html2pdf.js 라이브러리 CDN 추가 (원클릭 PDF 다운로드용) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
   <style>
     /* 어떤 환경에서도 동일한 표준 명조체를 보장하는 CSS 선언 */
     .font-serif-fixed {
@@ -70,6 +73,12 @@
       font-style: italic;
     }
 
+    /* PDF 내보내기 진행 중일 때 가이드 텍스트 강제 숨김 */
+    .pdf-export [contenteditable="true"]:empty::before {
+      content: "" !important;
+      display: none !important;
+    }
+
     /* 상·하·좌·우 여백을 일반적인 프린트 규격인 20mm 대칭 격리로 완벽 고정 */
     .print-page-inner {
       width: 100%;
@@ -80,6 +89,16 @@
       flex-direction: column;
       justify-content: flex-start;
       position: relative;
+    }
+
+    /* 화면 프리뷰 및 PDF 캡처 시 공통 페이지 브레이크 제어 (유령 빈 페이지 방지 핵심) */
+    .print-page {
+      page-break-after: always !important;
+      break-after: page !important;
+    }
+    .print-page:last-child {
+      page-break-after: avoid !important;
+      break-after: avoid !important;
     }
 
     /* 사파리 크로스브라우징 인쇄 붕괴 방지용 절대 위치 기반 레이아웃 */
@@ -147,13 +166,14 @@
       /* 인쇄 시 "입력" 가이드 텍스트 제거 */
       [contenteditable="true"]:empty::before {
         content: "" !important;
+        display: none !important;
       }
     }
 
-    /* 화면 프리뷰용 (인쇄와 동일하게 block & absolute footer 기법 적용) */
+    /* 화면 프리뷰용 (인쇄와 동일하게 block 및 absolute footer 기법 적용, 높이를 295mm로 설정해 여백 초과 방지) */
     .a4-page {
       width: 210mm;
-      height: 297mm;
+      height: 295mm; /* PDF 캡처 시 소수점 연산 올림에 대응하기 위해 297mm에서 295mm로 안전 조정 */
       background: white;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04);
       padding: 0; /* 웹킷 패딩 연산 버그 원천 배제 */
@@ -199,13 +219,22 @@
     <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 p-6 overflow-y-auto no-print shrink-0 lg:sticky lg:top-0 lg:h-[calc(100vh-72px)] flex flex-col justify-between space-y-6">
       
       <div class="space-y-6">
-        <!-- 인쇄 버튼 최상단 배치 -->
-        <div class="pb-2 border-b border-slate-150">
-          <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2.5 transition-all active:scale-95">
+        <!-- 인쇄 및 PDF 원클릭 직접 다운로드 버튼 그룹 최상단 배치 -->
+        <div class="pb-4 border-b border-slate-200 space-y-2">
+          <!-- 1. 고해상도 벡터 인쇄/시스템 저장 버튼 -->
+          <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2.5 transition-all active:scale-95">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
             </svg>
-            <span class="text-base tracking-wide">인쇄 / PDF 저장</span>
+            <span class="text-sm tracking-wide">인쇄 / 시스템 PDF 저장</span>
+          </button>
+          
+          <!-- 2. 신규: 1클릭 무설정 바로 다운로드 버튼 -->
+          <button id="download-pdf-btn" onclick="downloadPDF()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2.5 transition-all active:scale-95">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            <span class="text-sm tracking-wide">PDF 원클릭 다운로드</span>
           </button>
         </div>
 
@@ -696,7 +725,7 @@
       function getCharWidthMm(char) {
         if (/[0-9a-zA-Z]/.test(char)) return charWidthMm * 0.58; 
         if (char === ' ') return charWidthMm * 0.35; 
-        if (/[.,!?'"ным“”‘’()（）[\]{}<>~?;:：；]/.test(char)) return charWidthMm * 0.5; 
+        if (/[.,!?'"ным“”('_~);:]/.test(char)) return charWidthMm * 0.5; 
         return charWidthMm; 
       }
 
@@ -1023,7 +1052,6 @@
 
             const pageOneTitle = document.createElement('div');
             pageOneTitle.className = "mt-6 mb-1 w-full text-left shrink-0";
-            // 글제목 하단 점선 테두리(border-b) 제거
             pageOneTitle.innerHTML = `
               <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
             `;
@@ -1388,6 +1416,72 @@
       });
 
       updateHeaderAndTitle();
+    }
+
+    // -------------------------------------------------------------
+    // PDF 원클릭 직접 다운로드 스크립트 엔진 (html2pdf.js)
+    // -------------------------------------------------------------
+    function downloadPDF() {
+      const container = document.getElementById('pages-container');
+      const pages = container.querySelectorAll('.print-page');
+      
+      // 진행 상태 UI 피드백 표시
+      const btn = document.getElementById('download-pdf-btn');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>PDF 파일 빌드 중...</span>
+      `;
+      btn.disabled = true;
+
+      // 캡처 전에 가이드 텍스트 숨김 클래스 적용
+      container.classList.add('pdf-export');
+
+      // 캡처 최적화를 위해 화면 스크롤 그림자 및 갭 일시 초기화
+      pages.forEach(p => {
+        p.style.boxShadow = 'none';
+        p.style.marginBottom = '0';
+      });
+
+      const opt = {
+        margin:       0,
+        filename:     `${articleTitle || '필사_용지_만들기'}.pdf`,
+        image:        { type: 'jpeg', quality: 1.0 },
+        html2canvas:  { 
+          scale: 2, // 해상도 계수 설정 (2로 설정하여 깨짐 없는 선명한 글자 유지)
+          useCORS: true, 
+          logging: false,
+          letterRendering: true,
+          scrollX: 0,
+          scrollY: 0
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['css', 'legacy'] }
+      };
+
+      // html2pdf 처리 시작
+      html2pdf().set(opt).from(container).save().then(() => {
+        // 프리뷰 스타일 복원 및 가이드 텍스트 숨김 해제
+        container.classList.remove('pdf-export');
+        pages.forEach(p => {
+          p.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04)';
+          p.style.marginBottom = '2.5rem';
+        });
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+      }).catch(err => {
+        console.error("PDF 다운로드 중 오류 발생:", err);
+        container.classList.remove('pdf-export');
+        pages.forEach(p => {
+          p.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04)';
+          p.style.marginBottom = '2.5rem';
+        });
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+      });
     }
 
     // 초기화 및 첫 렌더링
