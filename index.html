@@ -1058,12 +1058,13 @@
             innerDiv.appendChild(pageOneTitle);
           } else {
             const pageOneHeader = document.createElement('div');
-            pageOneHeader.className = `mt-4 mb-6 pb-2 border-b border-dashed ${gridBorderColorClass} flex justify-between items-center text-xs text-slate-400 font-bold shrink-0 w-full`;
+            pageOneHeader.className = `pb-2 border-b border-dashed ${gridBorderColorClass} grid grid-cols-3 items-center text-xs ${gridTextColorClass} opacity-80 font-serif-fixed shrink-0 w-full mb-4`;
             pageOneHeader.innerHTML = `
-              <span class="tracking-wide text-slate-400 font-bold">${articleTitle || '별 헤는 밤'}</span>
-              <span></span>
+              <span class="mini-header-left text-left tracking-wider opacity-90 text-[11px] font-medium" contenteditable="true">${headerLeftText}</span>
+              <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${articleTitle || '별 헤는 밤'}</span>
+              <span class="mini-header-right text-right tracking-wider opacity-70 text-[10px] font-medium">${sIdx + 1}쪽 (원문)</span>
             `;
-            pageOneDiv.appendChild(pageOneHeader);
+            innerDiv.appendChild(pageOneHeader);
           }
 
           const pageOneBody = document.createElement('div');
