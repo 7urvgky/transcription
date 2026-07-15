@@ -1571,8 +1571,8 @@
                     if (puncts.length === 1) {
                       const p = puncts[0];
                       if (p === '.' || p === ',') {
-                        // 온점/반점: 실제 원고지 규격에 입각하여 정확히 우측 하단 구석에 배치하되 수직 높이 상향 조정 (y="63" -> y="57")
-                        svgHtml += `<text x="78" y="57" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-bold">${p}</text>`;
+                        // 온점/반점: 실제 원고지 규격에 입각하여 정확히 우측 하단 구석에 배치하되 수직 높이 상향 조정 (y="57" -> y="53")
+                        svgHtml += `<text x="78" y="53" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-bold">${p}</text>`;
                       } else if (p === '!' || p === '?') {
                         // 느낌표/물음표: 우측 세로 중앙에 고정
                         svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
@@ -1590,8 +1590,8 @@
                       let y1 = 50, y2 = 50;
                       let fontSize = 46;
                       
-                      if (p1 === '.' || p1 === ',') y1 = 57; // y=63 -> y=57로 상향 조정
-                      if (p2 === '.' || p2 === ',') y2 = 57; // y=63 -> y=57로 상향 조정
+                      if (p1 === '.' || p1 === ',') y1 = 53; // y=57 -> y=53으로 상향 조정
+                      if (p2 === '.' || p2 === ',') y2 = 53; // y=57 -> y=53으로 상향 조정
                       if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 40; // y=34 -> y=40으로 하향 조정
                       if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 40; // y=34 -> y=40으로 하향 조정
 
@@ -1602,24 +1602,24 @@
                       puncts.forEach((p, idx) => {
                         const x = 64 + idx * 12;
                         let y = 50;
-                        if (p === '.' || p === ',') y = 57; // y=63 -> y=57로 상향 조정
+                        if (p === '.' || p === ',') y = 53; // y=57 -> y=53으로 상향 조정
                         if (p === '"' || p === "'" || p === '”' || p === '’') y = 40; // y=34 -> y=40으로 하향 조정
                         svgHtml += `<text x="${x}" y="${y}" dominant-baseline="central" text-anchor="middle" font-size="38" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       });
                     }
                   } else if (cellData.isPeriodQuoteCombo) {
                     // 마침표와 닫는 따옴표가 연속할 때 한 칸에 패키지 배치
-                    // 마침표는 왼쪽 아래 (x="28", y="60"), 닫는 따옴표는 오른쪽 위에 (x="72", y="40")로 단독 위치와 정밀 일치
+                    // 마침표는 왼쪽 아래 (x="28", y="60" -> y="54"), 닫는 따옴표는 오른쪽 위에 (x="72", y="40")로 단독 위치와 정밀 일치
                     const p1 = cellData.char;
                     const p2 = cellData.squeezedPunct;
-                    svgHtml += `<text x="28" y="60" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
+                    svgHtml += `<text x="28" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
                     svgHtml += `<text x="72" y="40" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
                   } else {
                     // Normal Cell: 기기 무관하게 수학적 상하좌우 정중앙 완벽 정렬
                     const char = cellData.char;
                     if (char === '.' || char === ',') {
-                      // 단독 온점/반점은 실제 원고지 규격인 좌측 하단 코너 영역에 찍히되 수직 높이 소폭 상향 조정 (y=66 -> y=60)
-                      svgHtml += `<text x="28" y="60" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${char}</text>`;
+                      // 단독 온점/반점은 실제 원고지 규격인 좌측 하단 코너 영역에 찍히되 수직 높이 소폭 상향 조정 (y=60 -> y="54")
+                      svgHtml += `<text x="28" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${char}</text>`;
                     } else if (char === '“' || char === '‘') {
                       // 여는 따옴표: 칸의 오른쪽 위 세로 좌표 하향 조정 (y=34 -> y=40)
                       svgHtml += `<text x="72" y="40" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
