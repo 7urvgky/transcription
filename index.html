@@ -1518,6 +1518,8 @@
                 const fontSizeNum = 12; 
                 const adjustedFontSizeMm = baseFontSizeMm * (fontSizeNum / 12);
                 textSpan.style.fontSize = `${adjustedFontSizeMm}mm`;
+                // 글자 상하 위치 미세 조정 값을 줄노트 가이드 텍스트 박스에도 반영
+                textSpan.style.transform = "translateY(var(--char-y-offset, 0%))";
                 rowDiv.appendChild(textSpan);
               }
 
