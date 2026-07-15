@@ -9,10 +9,14 @@
   <!-- Google Fonts: Noto Sans KR (고딕-설정창용), Noto Serif KR (명조-원문 및 따라쓰기 가이드 글씨용) -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=300;400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
   
-  <!-- html2pdf.js 라이브러리 CDN 추가 (원클릭 PDF 다운로드용) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
   <style>
+    /* 실시간 옵션 제어를 위한 통합 CSS 변수 선언 */
+    :root {
+      --guide-display: block;
+      --guide-color: rgba(239, 68, 68, 0.35); /* 기본값 빨간색 투명도 0.35 적용 */
+      --grid-color: #059669; /* 기본값 전통 청록 */
+    }
+
     /* 어떤 환경에서도 동일한 표준 명조체를 보장하는 CSS 선언 */
     .font-serif-fixed {
       font-family: 'Noto Serif KR', 'Batang', 'AppleMyungjo', 'serif' !important;
@@ -25,28 +29,38 @@
       background-color: #f1f5f9;
     }
 
-    /* 십자 가이드선 스타일 (연한 투명도 0.35 적용) */
+    /* CSS 변수를 이용한 정밀 격자색/텍스트색 연동 클래스 */
+    .custom-grid-border {
+      border-color: var(--grid-color) !important;
+    }
+    .custom-grid-text {
+      color: var(--grid-color) !important;
+    }
+
+    /* 십자 가이드선 스타일 (연한 투명도 0.35 적용 및 동적 바인딩) */
     .grid-cell-guide {
       position: relative;
       box-sizing: border-box;
     }
     .grid-cell-guide::before {
       content: "";
+      display: var(--guide-display) !important;
       position: absolute;
       top: 0;
       bottom: 0;
       left: 50%;
-      border-left: 1px dashed rgba(209, 213, 219, 0.35);
+      border-left: 1px dashed var(--guide-color) !important;
       transform: translateX(-50%);
       pointer-events: none;
     }
     .grid-cell-guide::after {
       content: "";
+      display: var(--guide-display) !important;
       position: absolute;
       left: 0;
       right: 0;
       top: 50%;
-      border-top: 1px dashed rgba(209, 213, 219, 0.35);
+      border-top: 1px dashed var(--guide-color) !important;
       transform: translateY(-50%);
       pointer-events: none;
     }
@@ -78,17 +92,12 @@
       content: "" !important;
     }
 
-    /* PDF 내보내기 진행 중일 때 가이드 텍스트 강제 숨김 */
-    .pdf-export [contenteditable="true"]:empty::before {
-      content: "" !important;
-      display: none !important;
-    }
-
     /* 상하 18mm, 좌우 20mm 대칭 격리로 완벽 고정하여 균형 확보 */
+    /* 하단 패딩을 23.5mm로 고정하여 푸터 상단부와 1.5mm 정밀 간격 상시 확보 */
     .print-page-inner {
       width: 100%;
       height: 100%;
-      padding: 18mm 20mm 18mm 20mm;
+      padding: 18mm 20mm 23.5mm 20mm;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -96,7 +105,14 @@
       position: relative;
     }
 
-    /* 화면 프리뷰 및 PDF 캡처 시 공통 페이지 브레이크 제어 */
+    /* 원문 읽기용 양면 다단 구분선 실시간 바인딩 */
+    .p-inner-content {
+      column-rule-color: var(--grid-color) !important;
+      column-rule-style: dashed !important;
+      column-rule-width: 1px !important;
+    }
+
+    /* 프리뷰 및 인쇄 시 공통 페이지 브레이크 제어 */
     .print-page {
       page-break-after: always !important;
       break-after: page !important;
@@ -266,7 +282,6 @@
       <div class="space-y-6">
         <!-- 인쇄 버튼 단독 배치 및 디자인 강화 -->
         <div class="pb-4 border-b border-slate-200">
-          <!-- 고해상도 벡터 인쇄 버튼 -->
           <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2 transition-all active:scale-[0.98]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -339,6 +354,7 @@
           </div>
         </div>
 
+        <!-- 5. 출력 방식 및 통합 옵션 설정 섹션 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm">5. 출력 방식</label>
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2.5">
@@ -351,6 +367,7 @@
               <span class="ml-2.5 text-xs text-slate-700 font-bold">빈 원고지</span>
             </label>
           </div>
+          
           <div class="mt-4 pt-3 border-t border-slate-200 space-y-2.5">
             <label class="flex items-center cursor-pointer">
               <input type="checkbox" id="exclude-first-page" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
@@ -358,45 +375,89 @@
             </label>
             <label class="flex items-center cursor-pointer">
               <input type="checkbox" id="hide-manuscript-header" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
-              <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 페이지에 제목 등 표시 안 함</span>
+              <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 페이지에 이름 등 표시 안 함</span>
             </label>
             <label class="flex items-center cursor-pointer">
               <input type="checkbox" id="hide-char-count" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
               <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 오른쪽 글자 수 표시 안 함</span>
             </label>
+            <!-- [위치 이동] 원고지 가운데 점선 표시 안 함 옵션 -->
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="hide-grid-guides" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+              <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 가운데 점선 표시 안 함</span>
+            </label>
           </div>
         </div>
 
-        <div>
-          <label class="block text-slate-700 font-bold mb-2 text-sm">6. 원고지 색</label>
-          <div class="grid grid-cols-4 gap-3">
-            <button onclick="changeGridColor('border-slate-950', 'text-slate-950')" class="flex items-center justify-center p-1.5 rounded-lg border hover:bg-slate-50 active:scale-95 transition-all" title="칠흑 검정">
-              <span class="w-4 h-4 rounded-full bg-slate-950"></span>
-            </button>
-            <button onclick="changeGridColor('border-emerald-600', 'text-emerald-600')" class="flex items-center justify-center p-1.5 rounded-lg border hover:bg-slate-50 active:scale-95 transition-all" title="전통 청록">
-              <span class="w-4 h-4 rounded-full bg-emerald-600"></span>
-            </button>
-            <button onclick="changeGridColor('border-red-500', 'text-red-500')" class="flex items-center justify-center p-1.5 rounded-lg border hover:bg-slate-50 active:scale-95 transition-all" title="벽돌 적색">
-              <span class="w-4 h-4 rounded-full bg-red-500"></span>
-            </button>
-            <button onclick="changeGridColor('border-blue-600', 'text-blue-600')" class="flex items-center justify-center p-1.5 rounded-lg border hover:bg-slate-50 active:scale-95 transition-all" title="남청색">
-              <span class="w-4 h-4 rounded-full bg-blue-600"></span>
-            </button>
-            <button onclick="changeGridColor('border-slate-700', 'text-slate-700')" class="flex items-center justify-center p-1.5 rounded-lg border hover:bg-slate-50 active:scale-95 transition-all" title="정갈한 먹색">
-              <span class="w-4 h-4 rounded-full bg-slate-700"></span>
-            </button>
-            <button onclick="changeGridColor('border-amber-800', 'text-amber-800')" class="flex items-center justify-center p-1.5 rounded-lg border hover:bg-slate-50 active:scale-95 transition-all" title="앤티크 갈색">
-              <span class="w-4 h-4 rounded-full bg-amber-800"></span>
-            </button>
-            <button onclick="changeGridColor('border-purple-700', 'text-purple-700')" class="flex items-center justify-center p-1.5 rounded-lg border hover:bg-slate-50 active:scale-95 transition-all" title="로열 보라">
-              <span class="w-4 h-4 rounded-full bg-purple-700"></span>
-            </button>
-            <button onclick="changeGridColor('border-indigo-600', 'text-indigo-600')" class="flex items-center justify-center p-1.5 rounded-lg border hover:bg-slate-50 active:scale-95 transition-all" title="인디고">
-              <span class="w-4 h-4 rounded-full bg-indigo-600"></span>
-            </button>
-            <button onclick="changeGridColor('border-orange-700', 'text-orange-700')" class="flex items-center justify-center p-1.5 rounded-lg border hover:bg-slate-50 active:scale-95 transition-all" title="테라코타 주황">
-              <span class="w-4 h-4 rounded-full bg-orange-700"></span>
-            </button>
+        <!-- 6. 원고지 색 및 가운데 점선 색 설정 -->
+        <div class="space-y-5">
+          <div>
+            <label class="block text-slate-700 font-bold mb-2 text-sm">6. 원고지 색</label>
+            <div class="flex flex-wrap gap-2 items-center">
+              <!-- 검은색 -->
+              <button onclick="setGridColor('#000000')" class="w-8 h-8 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="검은색" style="background-color: #000000;">
+                <span class="grid-color-check hidden text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+              </button>
+              <!-- 녹색 -->
+              <button onclick="setGridColor('#059669')" class="w-8 h-8 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="녹색" style="background-color: #059669;">
+                <span class="grid-color-check hidden text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+              </button>
+              <!-- 빨간색 -->
+              <button onclick="setGridColor('#ef4444')" class="w-8 h-8 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="빨간색" style="background-color: #ef4444;">
+                <span class="grid-color-check hidden text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+              </button>
+              <!-- 파란색 -->
+              <button onclick="setGridColor('#2563eb')" class="w-8 h-8 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="파란색" style="background-color: #2563eb;">
+                <span class="grid-color-check hidden text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+              </button>
+              <!-- 진한 빨간색 -->
+              <button onclick="setGridColor('#991b1b')" class="w-8 h-8 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="진한 빨간색" style="background-color: #991b1b;">
+                <span class="grid-color-check hidden text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+              </button>
+              <!-- 다른 색 (커스텀 피커) -->
+              <div class="relative flex items-center">
+                <button onclick="document.getElementById('grid-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center space-x-1.5 shadow-sm active:scale-95 transition-all" title="다른 색 선택">
+                  <span class="w-3.5 h-3.5 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
+                  <span>다른 색</span>
+                </button>
+                <input type="color" id="grid-color-picker" value="#059669" class="sr-only" oninput="setGridColor(this.value, true)">
+              </div>
+            </div>
+          </div>
+
+          <!-- [위치 이동] 원고지 가운데 점선 색 설정 영역 (6번 하단으로 귀속) -->
+          <div id="guide-color-section" class="pt-2 space-y-2">
+            <span class="block text-slate-500 font-semibold text-xs">원고지 가운데 점선 색</span>
+            <div class="flex flex-wrap gap-2 items-center">
+              <!-- 검은색 -->
+              <button onclick="setGuideColor('#000000')" class="w-8 h-8 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="검은색" style="background-color: #000000;">
+                <span class="guide-color-check hidden text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+              </button>
+              <!-- 녹색 -->
+              <button onclick="setGuideColor('#059669')" class="w-8 h-8 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="녹색" style="background-color: #059669;">
+                <span class="guide-color-check hidden text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+              </button>
+              <!-- 빨간색 -->
+              <button onclick="setGuideColor('#ef4444')" class="w-8 h-8 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="빨간색" style="background-color: #ef4444;">
+                <span class="guide-color-check hidden text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+              </button>
+              <!-- 파란색 -->
+              <button onclick="setGuideColor('#2563eb')" class="w-8 h-8 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="파란색" style="background-color: #2563eb;">
+                <span class="guide-color-check hidden text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+              </button>
+              <!-- 진한 빨간색 -->
+              <button onclick="setGuideColor('#991b1b')" class="w-8 h-8 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="진한 빨간색" style="background-color: #991b1b;">
+                <span class="guide-color-check hidden text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+              </button>
+              <!-- 다른 색 (커스텀 피커) -->
+              <div class="relative flex items-center">
+                <button onclick="document.getElementById('guide-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center space-x-1.5 shadow-sm active:scale-95 transition-all" title="다른 색 선택">
+                  <span class="w-3.5 h-3.5 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
+                  <span>다른 색</span>
+                </button>
+                <input type="color" id="guide-color-picker" value="#d1d5db" class="sr-only" oninput="setGuideColor(this.value, true)">
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -412,7 +473,7 @@
   </div>
 
   <script>
-    let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴속에 하나 둘 새겨지는 별을\n이제 다 못 헤는 것은\n쉬이 아침이 오는 까닭요,\n내일 밤이 남은 까닭이요,\n아직 나의 청춘이 다하지 않은 까닭입니다.\n\n별 하나에 추억과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 동경과\n별 하나에 시와\n별 하나에 어머니, 어머니";
+    let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴속에 하나 둘 새겨지는 별을\n이제 다 못 헤는 것은\n쉬이 아침이 오는 까닭이요,\n내일 밤이 남은 까닭이요,\n아직 나의 청춘이 다하지 않은 까닭입니다.\n\n별 하나에 추억과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 동경과\n별 하나에 시와\n별 하나에 어머니, 어머니";
     let articleTitle = "별 헤는 밤";
     let gridCols = "20"; 
     let schoolName = "건국초등학교";
@@ -421,14 +482,16 @@
     let excludeFirstPage = false; 
     let hideManuscriptHeader = false; 
     let hideCharCount = false;
-    let gridBorderColorClass = "border-emerald-600";
-    let gridTextColorClass = "text-emerald-600";
-    let orientation = "portrait"; // "portrait" 또는 "landscape"
+    let orientation = "portrait";
 
     let headerLeftText = "고운 글 필사";
     let footerSourceText = "원문 읽기";
     let footerGuideText = "따라 쓰기";
     let footerEmptyText = "원고지";
+
+    // 실시간 색상 제어기 전역 상태 기본값 조정
+    let currentGridColor = '#059669';
+    let currentGuideColor = '#ef4444';
 
     // 초기값 할당
     document.getElementById('source-text').value = sourceText;
@@ -478,6 +541,55 @@
       renderPages();
     });
 
+    // 십자 가이드 점선 여부 갱신 이벤트 리스너 탑재
+    document.getElementById('hide-grid-guides').addEventListener('change', updateGridGuides);
+
+    // 16진수 컬러코드를 투명도가 포함된 RGBA로 치환하는 무결성 헬퍼 함수
+    function hexToRgba(hex, alpha = 0.35) {
+      hex = hex.replace('#', '');
+      let r = parseInt(hex.substring(0, 2), 16);
+      let g = parseInt(hex.substring(2, 4), 16);
+      let b = parseInt(hex.substring(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    // 원고지 색 실시간 변경 튜닝 엔진 (0ms 지연)
+    function setGridColor(val, isCustom = false) {
+      currentGridColor = val;
+      document.documentElement.style.setProperty('--grid-color', val);
+      
+      const buttons = document.querySelectorAll('.grid-color-check');
+      buttons.forEach(el => el.classList.add('hidden'));
+      
+      if (!isCustom) {
+        const matchedBtn = document.querySelector(`button[onclick="setGridColor('${val}')"] .grid-color-check`);
+        if (matchedBtn) matchedBtn.classList.remove('hidden');
+        document.getElementById('grid-color-picker').value = val;
+      }
+    }
+
+    // 가운데 점선 색 실시간 변경 튜닝 엔진
+    function setGuideColor(val, isCustom = false) {
+      currentGuideColor = val;
+      updateGridGuides();
+
+      const checks = document.querySelectorAll('.guide-color-check');
+      checks.forEach(el => el.classList.add('hidden'));
+
+      if (!isCustom) {
+        const matchedBtn = document.querySelector(`button[onclick="setGuideColor('${val}')"] .guide-color-check`);
+        if (matchedBtn) matchedBtn.classList.remove('hidden');
+        document.getElementById('guide-color-picker').value = val;
+      }
+    }
+
+    // 화면 깜빡임 없이 가이드 점선을 실시간으로 갱신하는 튜닝 제어기
+    function updateGridGuides() {
+      const hideGuides = document.getElementById('hide-grid-guides').checked;
+      document.documentElement.style.setProperty('--guide-display', hideGuides ? 'none' : 'block');
+      document.documentElement.style.setProperty('--guide-color', hexToRgba(currentGuideColor, 0.35));
+    }
+
     function setOrientation(mode) {
       orientation = mode;
       
@@ -511,15 +623,15 @@
             height: 296mm !important; 
             max-width: 210mm !important; 
             max-height: 296mm !important; 
-            margin: 0 auto 2.5rem auto !important; /* 화면 가독성 마진 */
+            margin: 0 auto 2.5rem auto !important;
           }
           @media print {
             .print-page {
               width: 210mm !important;
-              height: 295.5mm !important; /* 소수점 올림 및 레이아웃 넘침 방지 */
+              height: 295.5mm !important;
               max-width: 210mm !important;
               max-height: 295.5mm !important;
-              margin: 0 auto !important; /* 수평 정중앙 정렬 강제 */
+              margin: 0 auto !important;
             }
           }
         `;
@@ -531,25 +643,19 @@
             height: 209mm !important; 
             max-width: 297mm !important; 
             max-height: 209mm !important; 
-            margin: 0 auto 2.5rem auto !important; /* 화면 가독성 마진 */
+            margin: 0 auto 2.5rem auto !important;
           }
           @media print {
             .print-page {
               width: 297mm !important;
-              height: 208.5mm !important; /* 소수점 올림 및 레이아웃 넘침 방지 */
+              height: 208.5mm !important;
               max-width: 297mm !important;
               max-height: 208.5mm !important;
-              margin: 0 auto !important; /* 수평 정중앙 정렬 강제 */
+              margin: 0 auto !important;
             }
           }
         `;
       }
-    }
-
-    function changeGridColor(borderClass, textClass) {
-      gridBorderColorClass = borderClass;
-      gridTextColorClass = textClass;
-      renderPages();
     }
 
     function getBlankPlaceholders() {
@@ -1094,7 +1200,7 @@
             <span class="school-placeholder whitespace-nowrap" contenteditable="true">${placeholders.school}</span>
             <span class="grade-placeholder whitespace-nowrap" contenteditable="true">${placeholders.grade}</span>
           </div>
-          <div class="flex items-center border-2 ${gridBorderColorClass} rounded-lg px-4 py-1.5 bg-slate-50/50 w-[240px]">
+          <div class="flex items-center border-2 custom-grid-border rounded-lg px-4 py-1.5 bg-slate-50/50 w-[240px]">
             <span class="text-sm font-extrabold text-slate-700 shrink-0 mr-3">이름 :</span>
             <div class="name-placeholder-container flex-1 flex justify-center items-center min-w-[100px]">
               ${studentName.trim() 
@@ -1122,7 +1228,7 @@
 
           if (sIdx === 0) {
             const pageOneHeader = document.createElement('div');
-            pageOneHeader.className = `pb-1 text-sm font-semibold ${gridTextColorClass} w-full shrink-0 mb-2`;
+            pageOneHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
             pageOneHeader.innerHTML = headerHTML;
             innerDiv.appendChild(pageOneHeader);
 
@@ -1134,7 +1240,7 @@
             innerDiv.appendChild(pageOneTitle);
           } else {
             const pageOneHeader = document.createElement('div');
-            pageOneHeader.className = `pb-2 border-b border-dashed ${gridBorderColorClass} grid grid-cols-3 items-center text-xs ${gridTextColorClass} opacity-80 font-serif-fixed shrink-0 w-full mb-4`;
+            pageOneHeader.className = "pb-2 border-b border-dashed custom-grid-border grid grid-cols-3 items-center text-xs custom-grid-text opacity-80 font-serif-fixed shrink-0 w-full mb-4";
             pageOneHeader.innerHTML = `
               <span class="mini-header-left text-left tracking-wider opacity-90 text-[11px] font-medium" contenteditable="true">${headerLeftText}</span>
               <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${articleTitle || '별 헤는 밤'}</span>
@@ -1157,7 +1263,7 @@
           const frameDiv = document.createElement('div');
           const totalSourcePages = sourcePages.length;
           
-          let borderClasses = `border-2 border-solid ${gridBorderColorClass} bg-white flex flex-col justify-stretch p-6 w-full h-auto`;
+          let borderClasses = "border-2 border-solid custom-grid-border bg-white flex flex-col justify-stretch p-6 w-full h-auto";
           if (totalSourcePages > 1) {
             if (sIdx === 0) {
               borderClasses += " border-b-0 rounded-t-xl rounded-b-none";
@@ -1193,17 +1299,9 @@
             pInnerContent.style.columnCount = "2";
             pInnerContent.style.columnGap = "15mm";
             pInnerContent.style.columnFill = "auto"; 
-            
-            let ruleColor = 'rgba(209, 213, 219, 0.4)';
-            if (gridBorderColorClass.includes('emerald')) ruleColor = 'rgba(16, 185, 129, 0.25)';
-            else if (gridBorderColorClass.includes('red')) ruleColor = 'rgba(239, 68, 68, 0.25)';
-            else if (gridBorderColorClass.includes('blue')) ruleColor = 'rgba(37, 99, 235, 0.25)';
-            else if (gridBorderColorClass.includes('slate')) ruleColor = 'rgba(71, 85, 105, 0.25)';
-            pInnerContent.style.columnRule = `1px dashed ${ruleColor}`;
           } else {
             pInnerContent.style.columnCount = "auto";
             pInnerContent.style.columnGap = "normal";
-            pInnerContent.style.columnRule = "none";
             pInnerContent.style.columnFill = "balance";
           }
 
@@ -1261,7 +1359,7 @@
           innerDiv.appendChild(pageOneBody);
 
           const pageOneFooter = document.createElement('div');
-          pageOneFooter.className = `absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0`;
+          pageOneFooter.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
           
           pageOneFooter.innerHTML = `
             <span class="tracking-wide text-slate-400">[ <span class="footer-label-source" contenteditable="true">${footerSourceText}</span> ]</span>
@@ -1311,7 +1409,7 @@
 
           if (!hideManuscriptHeader) {
             const gridPageHeader = document.createElement('div');
-            gridPageHeader.className = `pb-1 text-sm font-semibold ${gridTextColorClass} w-full shrink-0 mb-2`;
+            gridPageHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
             gridPageHeader.innerHTML = headerHTML;
             innerDiv.appendChild(gridPageHeader);
 
@@ -1326,7 +1424,7 @@
             innerDiv.appendChild(gridPageTitle);
           } else {
             const miniHeader = document.createElement('div');
-            miniHeader.className = `mt-1 mb-2 pb-1.5 border-b border-dashed ${gridBorderColorClass} grid grid-cols-3 items-center text-xs ${gridTextColorClass} opacity-80 font-serif-fixed shrink-0 w-full`;
+            miniHeader.className = "mt-1 mb-2 pb-1.5 border-b border-dashed custom-grid-border grid grid-cols-3 items-center text-xs custom-grid-text opacity-80 font-serif-fixed shrink-0 w-full";
             
             const typeText = isLineNote ? '줄 노트' : `${gridCols}칸 원고지`;
             miniHeader.innerHTML = `
@@ -1338,7 +1436,11 @@
           }
 
           const gridWrapper = document.createElement('div');
-          gridWrapper.className = "w-full my-0 flex items-center justify-center"; 
+          if (hideManuscriptHeader) {
+            gridWrapper.className = "w-full mt-[2mm] mb-auto flex items-center justify-center"; 
+          } else {
+            gridWrapper.className = "w-full my-0 flex items-center justify-center"; 
+          }
 
           if (isLineNote) {
             const usableWidthMm = (orientation === 'portrait') ? 162 : 249;
@@ -1348,7 +1450,7 @@
             relativeContainer.style.height = `${optRows * 10}mm`;
 
             const noteContainer = document.createElement('div');
-            noteContainer.className = `w-full h-full border-t-2 ${gridBorderColorClass} flex flex-col justify-start relative`;
+            noteContainer.className = "w-full h-full border-t-2 custom-grid-border flex flex-col justify-start relative";
             
             const startLineIdx = pageIdx * optRows;
 
@@ -1361,7 +1463,7 @@
               
               const isLastRow = (r === optRows - 1);
               const borderThicknessClass = isLastRow ? "border-b-[3px]" : "border-b";
-              rowDiv.className = `${borderThicknessClass} ${gridBorderColorClass} w-full shrink-0 relative`;
+              rowDiv.className = `${borderThicknessClass} custom-grid-border w-full shrink-0 relative`;
               rowDiv.style.height = "10mm";
 
               if (currentMode === 'guide' && lineText) {
@@ -1404,7 +1506,7 @@
             relativeContainer.style.height = `${optRows * cellWidthMm}mm`;
 
             const gridBody = document.createElement('div');
-            gridBody.className = `grid gap-0 border-2 ${gridBorderColorClass} w-full h-full`;
+            gridBody.className = "grid gap-0 border-2 custom-grid-border w-full h-full";
             gridBody.style.gridTemplateColumns = `repeat(${colsNum}, minmax(0, 1fr))`;
             gridBody.style.gridTemplateRows = `repeat(${optRows}, minmax(0, 1fr))`;
 
@@ -1416,7 +1518,7 @@
                 const cellData = cellsData[cellIdx] || { char: "" };
 
                 const cell = document.createElement('div');
-                cell.className = `grid-cell-guide border-b border-r ${gridBorderColorClass} flex items-center justify-center relative aspect-square`;
+                cell.className = "grid-cell-guide border-b border-r custom-grid-border flex items-center justify-center relative aspect-square";
                 
                 if (c === colsNum - 1) cell.classList.remove('border-r');
                 if (r === optRows - 1) cell.classList.remove('border-b');
@@ -1425,28 +1527,20 @@
                   const dynamicFontSize = cellWidthMm * 0.65;
                   
                   if (cellData.isSqueezed) {
-                    // [기어코 완벽한 행말 구두점 겹침 처리 구현]
                     const charSpan = document.createElement('span');
                     charSpan.textContent = cellData.char;
                     charSpan.className = "font-serif-fixed text-slate-300 font-medium select-none leading-none transform";
-                    // 100% 동일한 폰트 사이즈를 활용하여 중심 정렬 붕괴 방지 (image_321afb.png 관련 문제 해결)
-                    charSpan.style.fontSize = `${dynamicFontSize}mm`;
-                    charSpan.style.transform = "translateX(-15%) translateY(14.5%)"; // 동일 기준선 정렬 및 가로축 이동만 실시
+                    charSpan.style.fontSize = `${dynamicFontSize * 0.95}mm`;
+                    charSpan.style.transform = "translateX(-12%) translateY(11.5%)";
 
                     const punctSpan = document.createElement('span');
                     punctSpan.textContent = cellData.squeezedPunct || "";
                     punctSpan.className = "font-serif-fixed text-slate-300 font-medium select-none absolute leading-none";
-                    punctSpan.style.fontSize = `${dynamicFontSize * 0.8}mm`;
+                    punctSpan.style.fontSize = `${dynamicFontSize * 0.85}mm`;
 
-                    // 기호 종류에 따른 절대 좌표 배치 설계
-                    if (cellData.squeezedPunct === '.' || cellData.squeezedPunct === ',') {
-                      punctSpan.style.right = "2%";
-                      punctSpan.style.bottom = "12%";
-                    } else {
-                      punctSpan.style.right = "4%";
-                      punctSpan.style.top = "50%";
-                      punctSpan.style.transform = "translateY(-50%) translateY(14.5%)"; // 한글 폰트 수직 눈높이 동기화
-                    }
+                    punctSpan.style.right = "8%";
+                    punctSpan.style.top = "0";
+                    punctSpan.style.transform = "translateY(11.5%)";
 
                     cell.appendChild(charSpan);
                     cell.appendChild(punctSpan);
@@ -1458,9 +1552,8 @@
                       charSpan.className = "font-serif-fixed text-slate-300 font-extrabold select-none absolute left-[15%] bottom-[15%] leading-none";
                       charSpan.style.fontSize = `${dynamicFontSize * 0.8}mm`;
                     } else {
-                      // [브라우저 엔진 통합 하향 보정 오프셋 적용] translateY(14.5%)로 통일
                       charSpan.className = "font-serif-fixed text-slate-300 font-medium select-none leading-none transform";
-                      charSpan.style.transform = "translateY(14.5%)";
+                      charSpan.style.transform = "translateY(11.5%)";
                       charSpan.style.fontSize = `${dynamicFontSize}mm`;
                     }
                     cell.appendChild(charSpan);
@@ -1487,7 +1580,7 @@
                     const labelVal = rowEndCell; 
                     
                     const label = document.createElement('div');
-                    label.className = `absolute text-[10px] ${gridTextColorClass} font-mono font-bold opacity-75 flex items-center justify-start pointer-events-none`;
+                    label.className = "absolute text-[10px] custom-grid-text font-mono font-bold opacity-75 flex items-center justify-start pointer-events-none";
                     label.style.right = "-32px";
                     label.style.width = "25px";
                     label.style.height = `${100 / optRows}%`;
@@ -1506,7 +1599,7 @@
           innerDiv.appendChild(gridWrapper);
 
           const footerDiv = document.createElement('div');
-          footerDiv.className = `absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0`;
+          footerDiv.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
           
           let currentFooterLabel = "";
           let currentFooterClass = "";
@@ -1542,13 +1635,13 @@
       updateHeaderAndTitle();
     }
 
-    // 인쇄 트리거 시 브라우저 내장 인쇄 기능으로 일원화
-    function downloadPDF() {
-      window.print();
-    }
-
+    // 초기 로드 시 프리셋 동기화 및 실행
     updatePageStyleSheet();
     renderPages();
+    
+    // 기본 프리셋 활성화 체크 표시 (녹색 & 빨간색 설정)
+    setGridColor('#059669');
+    setGuideColor('#ef4444');
   </script>
 </body>
 </html>
