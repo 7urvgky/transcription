@@ -7,7 +7,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Noto Sans KR (고딕-설정창용), Noto Serif KR (명조-원문 및 따라쓰기 가이드 글씨용) -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=300;400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
   
   <style>
     /* 실시간 옵션 제어를 위한 통합 CSS 변수 선언 */
@@ -388,7 +388,7 @@
             </label>
           </div>
 
-          <!-- 신규 추가: 글자 상하 미세 위치 조절 슬라이더 막대 -->
+          <!-- 글자 상하 미세 위치 조절 슬라이더 막대 -->
           <div class="mt-4 pt-3 border-t border-slate-200">
             <label class="block text-slate-700 font-bold mb-1 text-xs flex justify-between">
               <span>글자 상하 위치 미세 조정</span>
@@ -852,7 +852,19 @@
         let charIdx = 0;
         while (charIdx < pText.length) {
           let char = pText[charIdx];
+          let nextChar = pText[charIdx + 1];
           let colIndex = cells.length % cols;
+
+          // 마침표/쉼표 + 닫는 따옴표 연속 조합 우선 패키징 처리
+          if ((char === '.' || char === ',') && (nextChar === '”' || nextChar === '’' || nextChar === '"' || nextChar === "'")) {
+            cells.push({
+              char: char,
+              squeezedPunct: nextChar,
+              isPeriodQuoteCombo: true
+            });
+            charIdx += 2;
+            continue;
+          }
 
           if (char === ' ') {
             if (colIndex === 0) {
@@ -1559,14 +1571,14 @@
                     if (puncts.length === 1) {
                       const p = puncts[0];
                       if (p === '.' || p === ',') {
-                        // 온점/반점: 실제 원고지 규격에 입각하여 정확히 우측 하단 구석에 배치하되 수직 높이 상향 조정 (y="70" -> y="63")
-                        svgHtml += `<text x="78" y="63" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-bold">${p}</text>`;
+                        // 온점/반점: 실제 원고지 규격에 입각하여 정확히 우측 하단 구석에 배치하되 수직 높이 상향 조정 (y="63" -> y="57")
+                        svgHtml += `<text x="78" y="57" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-bold">${p}</text>`;
                       } else if (p === '!' || p === '?') {
                         // 느낌표/물음표: 우측 세로 중앙에 고정
                         svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       } else if (p === '"' || p === "'" || p === '”' || p === '’') {
-                        // 따옴표: 우측 상단 슬롯에 고정
-                        svgHtml += `<text x="76" y="28" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
+                        // 따옴표: 우측 상단 슬롯에 고정하고 세로 높이 하향 조정 (y="34" -> y="40")
+                        svgHtml += `<text x="76" y="40" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       } else {
                         svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="54" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       }
@@ -1578,10 +1590,10 @@
                       let y1 = 50, y2 = 50;
                       let fontSize = 46;
                       
-                      if (p1 === '.' || p1 === ',') y1 = 63; // y=70 -> y=63으로 상향 조정
-                      if (p2 === '.' || p2 === ',') y2 = 63; // y=70 -> y=63으로 상향 조정
-                      if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 28;
-                      if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 28;
+                      if (p1 === '.' || p1 === ',') y1 = 57; // y=63 -> y=57로 상향 조정
+                      if (p2 === '.' || p2 === ',') y2 = 57; // y=63 -> y=57로 상향 조정
+                      if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 40; // y=34 -> y=40으로 하향 조정
+                      if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 40; // y=34 -> y=40으로 하향 조정
 
                       svgHtml += `<text x="68" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
                       svgHtml += `<text x="86" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
@@ -1590,17 +1602,30 @@
                       puncts.forEach((p, idx) => {
                         const x = 64 + idx * 12;
                         let y = 50;
-                        if (p === '.' || p === ',') y = 63; // y=70 -> y=63으로 상향 조정
-                        if (p === '"' || p === "'" || p === '”' || p === '’') y = 28;
+                        if (p === '.' || p === ',') y = 57; // y=63 -> y=57로 상향 조정
+                        if (p === '"' || p === "'" || p === '”' || p === '’') y = 40; // y=34 -> y=40으로 하향 조정
                         svgHtml += `<text x="${x}" y="${y}" dominant-baseline="central" text-anchor="middle" font-size="38" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       });
                     }
+                  } else if (cellData.isPeriodQuoteCombo) {
+                    // 마침표와 닫는 따옴표가 연속할 때 한 칸에 패키지 배치
+                    // 마침표는 왼쪽 아래 (x="28", y="60"), 닫는 따옴표는 오른쪽 위에 (x="72", y="40")로 단독 위치와 정밀 일치
+                    const p1 = cellData.char;
+                    const p2 = cellData.squeezedPunct;
+                    svgHtml += `<text x="28" y="60" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
+                    svgHtml += `<text x="72" y="40" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
                   } else {
                     // Normal Cell: 기기 무관하게 수학적 상하좌우 정중앙 완벽 정렬
                     const char = cellData.char;
                     if (char === '.' || char === ',') {
-                      // 단독 온점/반점은 실제 원고지 규격인 좌측 하단 코너 영역에 찍히되 수직 높이 소폭 상향 조정 (y=72 -> y=66)
-                      svgHtml += `<text x="28" y="66" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${char}</text>`;
+                      // 단독 온점/반점은 실제 원고지 규격인 좌측 하단 코너 영역에 찍히되 수직 높이 소폭 상향 조정 (y=66 -> y=60)
+                      svgHtml += `<text x="28" y="60" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${char}</text>`;
+                    } else if (char === '“' || char === '‘') {
+                      // 여는 따옴표: 칸의 오른쪽 위 세로 좌표 하향 조정 (y=34 -> y=40)
+                      svgHtml += `<text x="72" y="40" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
+                    } else if (char === '”' || char === '’') {
+                      // 닫는 따옴표: 칸의 왼쪽 위 세로 좌표 하향 조정 (y=34 -> y=40)
+                      svgHtml += `<text x="28" y="40" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
                     } else {
                       svgHtml += `<text x="50" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
                     }
