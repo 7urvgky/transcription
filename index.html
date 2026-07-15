@@ -15,6 +15,7 @@
       --guide-display: block;
       --guide-color: rgba(239, 68, 68, 0.35); /* 기본값 빨간색 투명도 0.35 적용 */
       --grid-color: #059669; /* 기본값 전통 청록 */
+      --char-y-offset: 0%; /* 기본 정중앙 오프셋 */
     }
 
     /* 어떤 환경에서도 동일한 표준 명조체를 보장하는 CSS 선언 */
@@ -381,11 +382,20 @@
               <input type="checkbox" id="hide-char-count" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
               <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 오른쪽 글자 수 표시 안 함</span>
             </label>
-            <!-- [위치 이동] 원고지 가운데 점선 표시 안 함 옵션 -->
             <label class="flex items-center cursor-pointer">
               <input type="checkbox" id="hide-grid-guides" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
               <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 가운데 점선 표시 안 함</span>
             </label>
+          </div>
+
+          <!-- 신규 추가: 글자 상하 미세 위치 조절 슬라이더 막대 -->
+          <div class="mt-4 pt-3 border-t border-slate-200">
+            <label class="block text-slate-700 font-bold mb-1 text-xs flex justify-between">
+              <span>글자 상하 위치 미세 조정</span>
+              <span id="charYOffsetVal" class="text-emerald-600 font-bold">0%</span>
+            </label>
+            <input type="range" id="charYOffsetSlider" min="-15" max="15" step="0.5" value="0" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" oninput="updateCharYOffset(this.value)">
+            <p class="text-[10px] text-slate-400 mt-1">시스템 환경에 따라 원고지 안의 글자 높이가 맞지 않을 때 슬라이더로 올리거나 내리세요.</p>
           </div>
         </div>
 
@@ -425,7 +435,7 @@
             </div>
           </div>
 
-          <!-- [위치 이동] 원고지 가운데 점선 색 설정 영역 (6번 하단으로 귀속) -->
+          <!-- 원고지 가운데 점선 색 설정 영역 (6번 하단으로 귀속) -->
           <div id="guide-color-section" class="pt-2 space-y-2">
             <span class="block text-slate-500 font-semibold text-xs">원고지 가운데 점선 색</span>
             <div class="flex flex-wrap gap-2 items-center">
@@ -455,7 +465,7 @@
                   <span class="w-3.5 h-3.5 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
                   <span>다른 색</span>
                 </button>
-                <input type="color" id="guide-color-picker" value="#d1d5db" class="sr-only" oninput="setGuideColor(this.value, true)">
+                <input type="color" id="guide-color-picker" value="#ef4444" class="sr-only" oninput="setGuideColor(this.value, true)">
               </div>
             </div>
           </div>
@@ -590,6 +600,13 @@
       document.documentElement.style.setProperty('--guide-color', hexToRgba(currentGuideColor, 0.35));
     }
 
+    // 실시간 글자 상하 위치 조정 함수 (CSS 변수 기계식 바인딩)
+    function updateCharYOffset(val) {
+      const displayVal = (val > 0 ? '+' : '') + val + '%';
+      document.getElementById('charYOffsetVal').innerText = displayVal;
+      document.documentElement.style.setProperty('--char-y-offset', val + '%');
+    }
+
     function setOrientation(mode) {
       orientation = mode;
       
@@ -651,7 +668,6 @@
               height: 208.5mm !important;
               max-width: 297mm !important;
               max-height: 208.5mm !important;
-              margin: 0 auto !important;
             }
           }
         `;
@@ -871,10 +887,14 @@
             if (colIndex === 0 && cells.length > 0) {
               let targetIdx = cells.length - 1;
               if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller) {
-                cells[targetIdx].squeezedPunct = char;
-                cells[targetIdx].isSqueezed = true;
-                charIdx++;
-                continue;
+                // 기호가 아직 압축 저장되어 있지 않은 경우에만 (기호 딱 하나까지만 허용)
+                if (!cells[targetIdx].squeezedPunct) {
+                  cells[targetIdx].squeezedPunct = char;
+                  cells[targetIdx].isSqueezed = true;
+                  charIdx++;
+                  continue;
+                }
+                // 이미 기호가 하나 차 있으면 압축하지 않고 자연스럽게 다음 줄(다음 셀)로 넘어갑니다.
               }
             }
           }
@@ -1524,40 +1544,70 @@
                 if (r === optRows - 1) cell.classList.remove('border-b');
 
                 if (currentMode === 'guide' && cellData.char && cellData.char !== " ") {
-                  const dynamicFontSize = cellWidthMm * 0.65;
+                  // 브라우저 렌더러 불일치를 근본 차단하기 위해 인라인 SVG 가상 좌표 엔진(Vector Render) 적용
+                  let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none">`;
                   
+                  // 실시간 글자 상하 오프셋 미세 조정을 실시간 적용하기 위해 SVG 그룹 <g> 래핑 구조 채택
+                  svgHtml += `<g style="transform: translateY(var(--char-y-offset, 0%));">`;
+
                   if (cellData.isSqueezed) {
-                    const charSpan = document.createElement('span');
-                    charSpan.textContent = cellData.char;
-                    charSpan.className = "font-serif-fixed text-slate-300 font-medium select-none leading-none transform";
-                    charSpan.style.fontSize = `${dynamicFontSize * 0.95}mm`;
-                    charSpan.style.transform = "translateX(-12%) translateY(11.5%)";
+                    // Squeezed Cell: 문자는 왼쪽으로 밀고, 행말 구두점은 우측에 비례 정렬
+                    const mainChar = cellData.char;
+                    svgHtml += `<text x="38" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${mainChar}</text>`;
 
-                    const punctSpan = document.createElement('span');
-                    punctSpan.textContent = cellData.squeezedPunct || "";
-                    punctSpan.className = "font-serif-fixed text-slate-300 font-medium select-none absolute leading-none";
-                    punctSpan.style.fontSize = `${dynamicFontSize * 0.85}mm`;
+                    const puncts = Array.from(cellData.squeezedPunct || "");
+                    if (puncts.length === 1) {
+                      const p = puncts[0];
+                      if (p === '.' || p === ',') {
+                        // 온점/반점: 실제 원고지 규격에 입각하여 정확히 우측 하단 구석에 배치하되 수직 높이 상향 조정 (y="70" -> y="63")
+                        svgHtml += `<text x="78" y="63" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-bold">${p}</text>`;
+                      } else if (p === '!' || p === '?') {
+                        // 느낌표/물음표: 우측 세로 중앙에 고정
+                        svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
+                      } else if (p === '"' || p === "'" || p === '”' || p === '’') {
+                        // 따옴표: 우측 상단 슬롯에 고정
+                        svgHtml += `<text x="76" y="28" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
+                      } else {
+                        svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="54" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
+                      }
+                    } else if (puncts.length === 2) {
+                      // 한 칸에 기호가 두 개 겹칠 때: 크기를 보존하며 가로 수평축 비례 분할 배치
+                      const p1 = puncts[0];
+                      const p2 = puncts[1];
 
-                    punctSpan.style.right = "8%";
-                    punctSpan.style.top = "0";
-                    punctSpan.style.transform = "translateY(11.5%)";
+                      let y1 = 50, y2 = 50;
+                      let fontSize = 46;
+                      
+                      if (p1 === '.' || p1 === ',') y1 = 63; // y=70 -> y=63으로 상향 조정
+                      if (p2 === '.' || p2 === ',') y2 = 63; // y=70 -> y=63으로 상향 조정
+                      if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 28;
+                      if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 28;
 
-                    cell.appendChild(charSpan);
-                    cell.appendChild(punctSpan);
-                  } else {
-                    const charSpan = document.createElement('span');
-                    charSpan.textContent = cellData.char;
-
-                    if (cellData.char === '.' || cellData.char === ',') {
-                      charSpan.className = "font-serif-fixed text-slate-300 font-extrabold select-none absolute left-[15%] bottom-[15%] leading-none";
-                      charSpan.style.fontSize = `${dynamicFontSize * 0.8}mm`;
+                      svgHtml += `<text x="68" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
+                      svgHtml += `<text x="86" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
                     } else {
-                      charSpan.className = "font-serif-fixed text-slate-300 font-medium select-none leading-none transform";
-                      charSpan.style.transform = "translateY(11.5%)";
-                      charSpan.style.fontSize = `${dynamicFontSize}mm`;
+                      // 3개 이상 기호: 우측 칸 영역 내에서 동일 등간격 보정 배치
+                      puncts.forEach((p, idx) => {
+                        const x = 64 + idx * 12;
+                        let y = 50;
+                        if (p === '.' || p === ',') y = 63; // y=70 -> y=63으로 상향 조정
+                        if (p === '"' || p === "'" || p === '”' || p === '’') y = 28;
+                        svgHtml += `<text x="${x}" y="${y}" dominant-baseline="central" text-anchor="middle" font-size="38" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
+                      });
                     }
-                    cell.appendChild(charSpan);
+                  } else {
+                    // Normal Cell: 기기 무관하게 수학적 상하좌우 정중앙 완벽 정렬
+                    const char = cellData.char;
+                    if (char === '.' || char === ',') {
+                      // 단독 온점/반점은 실제 원고지 규격인 좌측 하단 코너 영역에 찍히되 수직 높이 소폭 상향 조정 (y=72 -> y=66)
+                      svgHtml += `<text x="28" y="66" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${char}</text>`;
+                    } else {
+                      svgHtml += `<text x="50" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
+                    }
                   }
+
+                  svgHtml += `</g></svg>`; // SVG 그룹 래핑 클로즈
+                  cell.innerHTML = svgHtml;
                 }
 
                 gridBody.appendChild(cell);
@@ -1635,13 +1685,8 @@
       updateHeaderAndTitle();
     }
 
-    // 초기 로드 시 프리셋 동기화 및 실행
     updatePageStyleSheet();
     renderPages();
-    
-    // 기본 프리셋 활성화 체크 표시 (녹색 & 빨간색 설정)
-    setGridColor('#059669');
-    setGuideColor('#ef4444');
   </script>
 </body>
 </html>
