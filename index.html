@@ -6,8 +6,8 @@
   <title>별 헤는 밤</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Noto Sans KR (고딕-설정창용), Noto Serif KR (명조-원문 및 따라쓰기 가이드 글씨용) -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Noto Sans CJK 및 Noto Serif CJK 계열(한국어/일본어/한자 완벽 대응 구조) -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
@@ -17,15 +17,15 @@
       --char-y-offset: 0%; /* 기본 정중앙 오프셋을 0%로 초기화 */
     }
 
-    /* 어떤 환경에서도 동일한 표준 명조체를 보장하는 CSS 선언 */
+    /* 한국어, 일본어, 한자(CJK) 전반에서 한결같이 단정하고 통일된 표준 명조체를 보장하는 서체 폴백 데코레이션 */
     .font-serif-fixed {
-      font-family: 'Noto Serif KR', 'Batang', 'AppleMyungjo', 'serif' !important;
+      font-family: 'Noto Serif JP', 'Noto Serif KR', 'Batang', 'AppleMyungjo', 'serif' !important;
       font-weight: 500 !important;
       font-style: normal !important;
     }
 
     body {
-      font-family: 'Noto Sans KR', sans-serif;
+      font-family: 'Noto Sans JP', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
       background-color: #f1f5f9;
     }
 
