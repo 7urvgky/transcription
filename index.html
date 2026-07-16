@@ -6,7 +6,7 @@
   <title>별 헤는 밤</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Noto Sans CJK 및 Noto Serif CJK 계열(한국어/일본어/한자 완벽 대응 구조) -->
+  <!-- Google Fonts: Noto Sans JP/KR (CJK 고딕), Noto Serif JP/KR (CJK 명조) -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
   
   <style>
@@ -17,13 +17,14 @@
       --char-y-offset: 0%; /* 기본 정중앙 오프셋을 0%로 초기화 */
     }
 
-    /* 한국어, 일본어, 한자(CJK) 전반에서 한결같이 단정하고 통일된 표준 명조체를 보장하는 서체 폴백 데코레이션 */
+    /* 어떤 환경에서도 동일한 표준 명조체를 보장하는 CSS 선언 */
     .font-serif-fixed {
       font-family: 'Noto Serif JP', 'Noto Serif KR', 'Batang', 'AppleMyungjo', 'serif' !important;
       font-weight: 500 !important;
       font-style: normal !important;
     }
 
+    /* Noto Sans CJK 일본어/한자용 폰트가 가장 우선으로 적용되도록 순서 변경 */
     body {
       font-family: 'Noto Sans JP', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
       background-color: #f1f5f9;
@@ -348,7 +349,7 @@
               </select>
             </div>
 
-            <!-- 세부 옵션 체크박스 3종 -->
+            <!-- 세부 옵션 체크박스 4종 -->
             <div class="space-y-2 pt-1 border-t border-slate-200/60">
               <label class="flex items-center cursor-pointer">
                 <input type="checkbox" id="hide-manuscript-header" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
@@ -361,6 +362,10 @@
               <label class="flex items-center cursor-pointer">
                 <input type="checkbox" id="hide-grid-guides" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
                 <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 가운데 점선 표시 안 함</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" id="hide-page-numbers" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                <span class="ml-2.5 text-xs text-slate-700 font-bold">꼬리말, 페이지 번호 표시 안 함</span>
               </label>
             </div>
 
@@ -462,10 +467,10 @@
           <label class="block text-slate-700 font-bold mb-2 text-sm">6. 출력 설정</label>
           <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
             <label class="flex items-center cursor-pointer">
-              <input type="checkbox" id="exclude-first-page" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+              <input type="checkbox" id="exclude-first-page" checked class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
               <span class="ml-2.5 text-xs text-slate-700 font-bold">원문 보기 표시</span>
             </label>
-            <label class="flex items-center cursor-pointer pt-1 border-t border-slate-200/50">
+            <label class="flex items-center cursor-pointer">
               <input type="checkbox" id="pattern-guide" checked class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
               <span class="ml-2.5 text-xs text-slate-700 font-bold">따라쓰기 글씨 포함</span>
             </label>
@@ -498,9 +503,12 @@
     let excludeFirstPage = false; 
     let hideManuscriptHeader = false; 
     let hideCharCount = false;
+    let hidePageNumbers = false;
     let orientation = "portrait";
 
     let headerLeftText = "고운 글 필사";
+    
+    // 꼬리말 텍스트 상태 값 (괄호가 포함된 전체를 수정 가능)
     let footerSourceText = "원문 읽기";
     let footerGuideText = "따라 쓰기";
     let footerEmptyText = "원고지";
@@ -554,6 +562,10 @@
     });
     document.getElementById('hide-char-count').addEventListener('change', (e) => {
       hideCharCount = e.target.checked;
+      renderPages();
+    });
+    document.getElementById('hide-page-numbers').addEventListener('change', (e) => {
+      hidePageNumbers = e.target.checked;
       renderPages();
     });
 
@@ -757,22 +769,12 @@
         syncMetadata('footer-label-source', footerSourceText, target);
       }
       else if (target.classList.contains('footer-label-guide')) {
-        let rawText = txt;
-        if (rawText.endsWith(" - 줄 노트")) {
-          footerGuideText = rawText.replace(" - 줄 노트", "");
-        } else {
-          footerGuideText = rawText;
-        }
-        syncMetadata('footer-label-guide', rawText, target);
+        footerGuideText = txt;
+        syncMetadata('footer-label-guide', footerGuideText, target);
       }
       else if (target.classList.contains('footer-label-empty')) {
-        let rawText = txt;
-        if (rawText.endsWith(" - 줄 노트")) {
-          footerEmptyText = rawText.replace(" - 줄 노트", "");
-        } else {
-          footerEmptyText = rawText;
-        }
-        syncMetadata('footer-label-empty', rawText, target);
+        footerEmptyText = txt;
+        syncMetadata('footer-label-empty', footerEmptyText, target);
       }
     });
 
@@ -816,6 +818,8 @@
       }
     }, true);
 
+
+    // 구두점/기호 연속 2개까지 한 칸 배치 보존 + 단 문자가 섞일 때는 한 개 제한 연산 엔진
     function parseTextToManuscriptCells(text, cols) {
       const cells = [];
       const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
@@ -860,19 +864,21 @@
           let nextChar = pText[charIdx + 1];
           let colIndex = cells.length % cols;
 
+          // 행말(마지막 칸) 구두점 압착 시 예외 적용 (문자 1개 + 구두점/기호 단 1개만 매핑)
+          const isAtRowEnd = (colIndex === 0 && cells.length > 0);
+
+          if (isPunctuation(char) && isAtRowEnd) {
+            let targetIdx = cells.length - 1;
+            if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
+              cells[targetIdx].squeezedPunct = char; // 문자가 섞일 때는 단 한 개만 압착 허용
+              cells[targetIdx].isSqueezed = true;
+              charIdx += 1;
+              continue;
+            }
+          }
+
           // 1. 마침표/쉼표 + 여는 따옴표 연속 조합 우선 패키징 처리
           if (isPeriodOrComma(char) && nextChar && (nextChar === '“' || nextChar === '‘')) {
-            if (colIndex === 0 && cells.length > 0) {
-              let targetIdx = cells.length - 1;
-              if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
-                // 마지막 칸에는 문자 + 하나의 구두점/기호만 들어가도록 단일 문자만 압착
-                cells[targetIdx].squeezedPunct = char;
-                cells[targetIdx].isSqueezed = true;
-                charIdx += 1;
-                continue;
-              }
-            }
-            
             cells.push({
               char: char,
               squeezedPunct: nextChar,
@@ -884,17 +890,6 @@
 
           // 2. 마침표/쉼표 + 닫는 따옴표 연속 조합 우선 패키징 처리
           if (isPeriodOrComma(char) && nextChar && (nextChar === '”' || nextChar === '’' || nextChar === '"' || nextChar === "'")) {
-            if (colIndex === 0 && cells.length > 0) {
-              let targetIdx = cells.length - 1;
-              if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
-                // 마지막 칸에는 문자 + 하나의 구두점/기호만 들어가도록 단일 문자만 압착
-                cells[targetIdx].squeezedPunct = char;
-                cells[targetIdx].isSqueezed = true;
-                charIdx += 1;
-                continue;
-              }
-            }
-            
             cells.push({
               char: char,
               squeezedPunct: nextChar,
@@ -906,17 +901,6 @@
 
           // 3. 기호(물음표, 느낌표) + 따옴표 이어질 때 한 칸 표시
           if (isSymbol(char) && nextChar && isQuote(nextChar)) {
-            if (colIndex === 0 && cells.length > 0) {
-              let targetIdx = cells.length - 1;
-              if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
-                // 마지막 칸에는 문자 + 하나의 구두점/기호만 들어가도록 단일 문자만 압착
-                cells[targetIdx].squeezedPunct = char;
-                cells[targetIdx].isSqueezed = true;
-                charIdx += 1;
-                continue;
-              }
-            }
-
             cells.push({
               char: char,
               squeezedPunct: nextChar,
@@ -928,17 +912,6 @@
 
           // 4. 따옴표 + 기호 이어질 때 한 칸 표시
           if (isQuote(char) && nextChar && isSymbol(nextChar)) {
-            if (colIndex === 0 && cells.length > 0) {
-              let targetIdx = cells.length - 1;
-              if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
-                // 마지막 칸에는 문자 + 하나의 구두점/기호만 들어가도록 단일 문자만 압착
-                cells[targetIdx].squeezedPunct = char;
-                cells[targetIdx].isSqueezed = true;
-                charIdx += 1;
-                continue;
-              }
-            }
-
             cells.push({
               char: char,
               squeezedPunct: nextChar,
@@ -948,19 +921,8 @@
             continue;
           }
 
-          // 4-2. 기호/구두점이 연속할 때 한 칸에 두 개까지 표시하는 처리
+          // 5. 일반 연속 기호/구두점 처리 (구두점, 기호가 연속 될 때 한 칸에 두 개까지 허용)
           if (isPunctuation(char) && nextChar && isPunctuation(nextChar)) {
-            if (colIndex === 0 && cells.length > 0) {
-              let targetIdx = cells.length - 1;
-              if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
-                // 마지막 칸에는 문자 + 하나의 구두점/기호만 들어가도록 단일 문자만 압착
-                cells[targetIdx].squeezedPunct = char;
-                cells[targetIdx].isSqueezed = true;
-                charIdx += 1;
-                continue;
-              }
-            }
-
             cells.push({
               char: char,
               squeezedPunct: nextChar,
@@ -1005,20 +967,6 @@
             continue;
           }
 
-          if (isPunctuation(char)) {
-            if (colIndex === 0 && cells.length > 0) {
-              let targetIdx = cells.length - 1;
-              if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller) {
-                if (!cells[targetIdx].squeezedPunct) {
-                  cells[targetIdx].squeezedPunct = char;
-                  cells[targetIdx].isSqueezed = true;
-                  charIdx++;
-                  continue;
-                }
-              }
-            }
-          }
-
           cells.push({ char: char });
           charIdx++;
         }
@@ -1035,8 +983,6 @@
       return cells;
     }
 
-    // 기본 체크박스 상태값 동기화 설정 (원문 보기 표시 기본 체크)
-    document.getElementById('exclude-first-page').checked = true;
 
     function calculateOptimalRows(cols) {
       if (cols === "line") {
@@ -1186,6 +1132,7 @@
       const maxLines = getMaxLines(fontSizePt, 0); 
       return lines <= maxLines;
     }
+
 
     function paginateSourceText(paragraphs) {
       let globalFontSize = '12pt';
@@ -1386,8 +1333,8 @@
             pageOneHeader.className = "pb-2 border-b border-dashed custom-grid-border grid grid-cols-3 items-center text-xs custom-grid-text opacity-80 font-serif-fixed shrink-0 w-full mb-4";
             pageOneHeader.innerHTML = `
               <span class="mini-header-left text-left tracking-wider opacity-90 text-[11px] font-medium" contenteditable="true">${headerLeftText}</span>
-              <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${articleTitle || '별 헤는 밤'}</span>
-              <span class="mini-header-right text-right tracking-wider opacity-70 text-[10px] font-medium">${sIdx + 1}쪽 (원문)</span>
+              <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</span>
+              <span class="text-right"></span>
             `;
             innerDiv.appendChild(pageOneHeader);
           }
@@ -1501,14 +1448,16 @@
           pageOneBody.appendChild(frameDiv);
           innerDiv.appendChild(pageOneBody);
 
-          const pageOneFooter = document.createElement('div');
-          pageOneFooter.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
-          
-          pageOneFooter.innerHTML = `
-            <span class="tracking-wide text-slate-400">[ <span class="footer-label-source" contenteditable="true">${footerSourceText}</span> ]</span>
-            <span class="bg-emerald-50 text-emerald-800 px-3.5 py-1 rounded-full border border-emerald-100">${sIdx + 1} / ${totalSourcePages}</span>
-          `;
-          innerDiv.appendChild(pageOneFooter);
+          // 꼬리말, 페이지 번호 표시 안 함 분기 처리
+          if (!hidePageNumbers) {
+            const pageOneFooter = document.createElement('div');
+            pageOneFooter.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
+            pageOneFooter.innerHTML = `
+              <span class="tracking-wide text-slate-400"><span class="footer-label-source" contenteditable="true">${footerSourceText}</span></span>
+              <span class="bg-emerald-50 text-emerald-800 px-3.5 py-1 rounded-full border border-emerald-100">${sIdx + 1} / ${totalSourcePages}</span>
+            `;
+            innerDiv.appendChild(pageOneFooter);
+          }
 
           pageOneDiv.appendChild(innerDiv);
           container.appendChild(pageOneDiv);
@@ -1542,6 +1491,7 @@
         renderingModes.push('empty');
       }
 
+
       renderingModes.forEach(currentMode => {
         for (let pageIdx = 0; pageIdx < totalGridPages; pageIdx++) {
           const gridPageDiv = document.createElement('div');
@@ -1560,27 +1510,23 @@
             gridPageTitle.className = "mt-3 mb-1 w-full text-left shrink-0";
             gridPageTitle.style.marginBottom = "2mm"; 
             
-            const titleBorderClass = "pb-1 leading-tight";
             gridPageTitle.innerHTML = `
-              <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 ${titleBorderClass} max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
+              <div class="border-b custom-grid-border pb-1">
+                <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
+              </div>
             `;
             innerDiv.appendChild(gridPageTitle);
           } else {
-            const miniHeader = document.createElement('div');
-            miniHeader.className = "mt-1 mb-2 pb-1.5 border-b border-dashed custom-grid-border grid grid-cols-3 items-center text-xs custom-grid-text opacity-80 font-serif-fixed shrink-0 w-full";
-            
-            const typeText = isLineNote ? '줄 노트' : `${gridCols}칸 원고지`;
-            miniHeader.innerHTML = `
-              <span class="mini-header-left text-left tracking-wider opacity-90 text-[11px] font-medium" contenteditable="true">${headerLeftText}</span>
-              <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${articleTitle || '별 헤는 밤'}</span>
-              <span class="mini-header-right text-right tracking-wider opacity-70 text-[10px] font-medium">${typeText}</span>
-            `;
-            innerDiv.appendChild(miniHeader);
+            // '이름 등 표시 안 함'을 선택했을 때 얇은 테두리와 정돈된 마진 적용 (3mm 간격)
+            const singleLine = document.createElement('div');
+            singleLine.className = "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
+            innerDiv.appendChild(singleLine);
           }
 
           const gridWrapper = document.createElement('div');
           if (hideManuscriptHeader) {
-            gridWrapper.className = "w-full mt-[2mm] mb-auto flex items-center justify-center"; 
+            // 아래쪽 가로선 밀착을 위해 불필요한 mb-auto 제거 및 flex 정렬 적용
+            gridWrapper.className = "w-full flex items-center justify-center"; 
           } else {
             gridWrapper.className = "w-full my-0 flex items-center justify-center"; 
           }
@@ -1629,7 +1575,7 @@
                 const fontSizeNum = 12; 
                 const adjustedFontSizeMm = baseFontSizeMm * (fontSizeNum / 12);
                 textSpan.style.fontSize = `${adjustedFontSizeMm}mm`;
-                textSpan.style.transform = "translateY(var(--char-y-offset, 0%))"; // 줄노트 가이드 문자 높이 조절 바인딩 탑재
+                textSpan.style.transform = "translateY(var(--char-y-offset, 0%))"; 
                 rowDiv.appendChild(textSpan);
               }
 
@@ -1668,14 +1614,10 @@
                 if (r === optRows - 1) cell.classList.remove('border-b');
 
                 if (currentMode === 'guide' && cellData.char && cellData.char !== " ") {
-                  // 브라우저 렌더러 불일치를 근본 차단하기 위해 인라인 SVG 가상 좌표 엔진(Vector Render) 적용
                   let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none">`;
-                  
-                  // 실시간 글자 상하 오프셋 미세 조정을 실시간 적용하기 위해 SVG 그룹 <g> 래핑 구조 채택
                   svgHtml += `<g style="transform: translateY(var(--char-y-offset, 0%));">`;
 
                   if (cellData.isSqueezed) {
-                    // Squeezed Cell: 문자는 왼쪽으로 밀고, 행말 구두점은 우측에 비례 정렬
                     const mainChar = cellData.char;
                     svgHtml += `<text x="38" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${mainChar}</text>`;
 
@@ -1683,19 +1625,15 @@
                     if (puncts.length === 1) {
                       const p = puncts[0];
                       if (p === '.' || p === ',') {
-                        // 온점/반점: 실제 원고지 규격에 입각하여 정확히 우측 하단 구석에 배치하되 수직 높이 추가 상향 조정 (y="49")
                         svgHtml += `<text x="78" y="49" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-bold">${p}</text>`;
                       } else if (p === '!' || p === '?') {
-                        // 느낌표/물음표: 우측 세로 중심선보다 상향 고정
                         svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       } else if (p === '"' || p === "'" || p === '”' || p === '’') {
-                        // 따옴표: 우측 상단 슬롯에 고정하고 세로 높이 추가 상향 조정 (y="41")
                         svgHtml += `<text x="76" y="41" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       } else {
                         svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="54" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       }
                     } else if (puncts.length === 2) {
-                      // 한 칸에 기호가 두 개 겹칠 때: 크기를 보존하며 가로 수평축 비례 분할 배치
                       const p1 = puncts[0];
                       const p2 = puncts[1];
 
@@ -1710,7 +1648,6 @@
                       svgHtml += `<text x="68" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
                       svgHtml += `<text x="86" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
                     } else {
-                      // 3개 이상 기호: 우측 칸 영역 내에서 동일 등간격 보정 배치
                       puncts.forEach((p, idx) => {
                         const x = 64 + idx * 12;
                         let y = 50;
@@ -1720,59 +1657,54 @@
                       });
                     }
                   } else if (cellData.isPeriodQuoteCombo) {
-                    // 마침표/쉼표는 현재 위치 (x=25, y=54), 닫는 따옴표는 오른쪽 위 (x=78, y=45)로 더 상향 세트
                     const p1 = cellData.char;
                     const p2 = cellData.squeezedPunct;
                     svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
                     svgHtml += `<text x="78" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
                   } else if (cellData.isPeriodOpeningQuoteCombo) {
-                    // 마침표/쉼표는 단독 위치 (x=25, y=54), 여는 따옴표도 단독 위치 (x=64, y=45)로 통합 상향 맵핑
                     const p1 = cellData.char;
                     const p2 = cellData.squeezedPunct;
                     svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
                     svgHtml += `<text x="64" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
                   } else if (cellData.isSymbolFirstCombo) {
-                    // 기호가 먼저 올 때 따옴표 위치: x=74, y=41 (우상단 정밀배치), 기호는 수평 겹침을 피해 왼쪽 중심 (x=30, y=50)
                     const p1 = cellData.char;
                     const p2 = cellData.squeezedPunct;
                     svgHtml += `<text x="30" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
                     svgHtml += `<text x="74" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
                   } else if (cellData.isQuoteFirstCombo) {
-                    // 따옴표가 먼저 올 때 위치: x=28, y=41 (더 왼쪽 위), 기호는 수평 겹침을 피해 오른쪽 중심에 조화롭게 (x=68, y=50)
                     const p1 = cellData.char;
                     const p2 = cellData.squeezedPunct;
                     svgHtml += `<text x="28" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
                     svgHtml += `<text x="68" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
                   } else if (cellData.isDoublePunct) {
-                    // 기호/구두점이 연속할 때 가로로 나란히 이쁘게 정렬 배치
                     const p1 = cellData.char;
                     const p2 = cellData.squeezedPunct;
                     let y1 = 50, y2 = 50;
-                    if (p1 === '.' || p1 === ',') y1 = 54;
-                    if (p2 === '.' || p2 === ',') y2 = 54;
-                    if (p1 === '“' || p1 === '‘' || p1 === '”' || p1 === '’' || p1 === '"' || p1 === "'") y1 = 45;
-                    if (p2 === '“' || p2 === '‘' || p2 === '”' || p2 === '’' || p2 === '"' || p2 === "'") y2 = 45;
+                    let fontSize = 46;
                     
-                    svgHtml += `<text x="33" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="52" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
-                    svgHtml += `<text x="67" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="52" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
+                    if (p1 === '.' || p1 === ',') y1 = 54; 
+                    if (p2 === '.' || p2 === ',') y2 = 54; 
+                    if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 45; 
+                    if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 45; 
+                    if (p1 === '“' || p1 === '‘') y1 = 45;
+                    if (p2 === '“' || p2 === '‘') y2 = 45;
+
+                    svgHtml += `<text x="32" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
+                    svgHtml += `<text x="68" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
                   } else {
-                    // Normal Cell: 단독 문자 또는 문장 기호 출력
                     const char = cellData.char;
                     if (char === '.' || char === ',') {
-                      // 단독 온점/반점은 실제 원고지 규격인 좌측 하단 코너 영역에 찍히되 수직 높이 추가 상향 조정 (y="54")
                       svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${char}</text>`;
                     } else if (char === '“' || char === '‘') {
-                      // 단독 여는 따옴표: x=75 수치 적용
                       svgHtml += `<text x="75" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
                     } else if (char === '”' || char === '’') {
-                      // 단독 닫는 따옴표: x=25 수치 적용
                       svgHtml += `<text x="25" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
                     } else {
                       svgHtml += `<text x="50" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
                     }
                   }
 
-                  svgHtml += `</g></svg>`; // SVG 그룹 래핑 클로즈
+                  svgHtml += `</g></svg>`; 
                   cell.innerHTML = svgHtml;
                 }
 
@@ -1780,6 +1712,7 @@
               }
             }
             relativeContainer.appendChild(gridBody);
+
 
             if (!hideCharCount) {
               const pageOffset = pageIdx * cellsPerPage;
@@ -1814,34 +1747,49 @@
 
           innerDiv.appendChild(gridWrapper);
 
-          const footerDiv = document.createElement('div');
-          footerDiv.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
-          
-          let currentFooterLabel = "";
-          let currentFooterClass = "";
-          if (isLineNote) {
-            if (currentMode === 'guide') {
-              currentFooterLabel = footerGuideText + " - 줄 노트";
-              currentFooterClass = "footer-label-guide";
-            } else {
-              currentFooterLabel = footerEmptyText + " - 줄 노트";
-              currentFooterClass = "footer-label-empty";
-            }
+          if (hideManuscriptHeader) {
+            // 상단 가로선(mb-[3mm])과 정밀 대칭을 이루도록 mt-[3mm] 설정으로 원고지에 깔끔하게 밀착
+            const singleBottomLine = document.createElement('div');
+            singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[3mm] shrink-0";
+            innerDiv.appendChild(singleBottomLine);
           } else {
-            if (currentMode === 'guide') {
-              currentFooterLabel = footerGuideText;
-              currentFooterClass = "footer-label-guide";
-            } else {
-              currentFooterLabel = footerEmptyText;
-              currentFooterClass = "footer-label-empty";
-            }
+            // 제목 밑의 가로선(marginBottom = "2mm")과 완벽하게 정밀 대칭을 이루도록 mt-[2mm] 설정으로 가로선 추가
+            const singleBottomLine = document.createElement('div');
+            singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[2mm] shrink-0";
+            innerDiv.appendChild(singleBottomLine);
           }
 
-          footerDiv.innerHTML = `
-            <span class="tracking-wide text-slate-400">[ <span class="${currentFooterClass}" contenteditable="true">${currentFooterLabel}</span> ]</span>
-            <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">- ${pageIdx + 1} / ${totalGridPages} -</span>
-          `;
-          innerDiv.appendChild(footerDiv);
+          // 꼬리말, 페이지 번호 표시 안 함 분기 처리
+          if (!hidePageNumbers) {
+            const footerDiv = document.createElement('div');
+            footerDiv.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
+            
+            let currentFooterLabel = "";
+            let currentFooterClass = "";
+            if (isLineNote) {
+              if (currentMode === 'guide') {
+                currentFooterLabel = footerGuideText + " - 줄 노트";
+                currentFooterClass = "footer-label-guide";
+              } else {
+                currentFooterLabel = footerEmptyText + " - 줄 노트";
+                currentFooterClass = "footer-label-empty";
+              }
+            } else {
+              if (currentMode === 'guide') {
+                currentFooterLabel = footerGuideText;
+                currentFooterClass = "footer-label-guide";
+              } else {
+                currentFooterLabel = footerEmptyText;
+                currentFooterClass = "footer-label-empty";
+              }
+            }
+
+            footerDiv.innerHTML = `
+              <span class="tracking-wide text-slate-400"><span class="${currentFooterClass}" contenteditable="true">${currentFooterLabel}</span></span>
+              <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">- ${pageIdx + 1} / ${totalGridPages} -</span>
+            `;
+            innerDiv.appendChild(footerDiv);
+          }
 
           gridPageDiv.appendChild(innerDiv);
           container.appendChild(gridPageDiv);
