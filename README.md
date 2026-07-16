@@ -18,7 +18,7 @@
 * **Markup & UI**: HTML5, Tailwind CSS  
 * **Script Engine**: Vanilla JS (ES6+)  
 * **Vector Render**: Inline SVG Group Transform System  
-* **Typography**: Google Fonts \- Noto Serif KR (명조), Noto Sans KR (고딕)
+* **Typography**: Google Fonts \- Noto Serif KR / JP (명조), Noto Sans KR / JP (고딕)
 
 ## **💻 사용 방법**
 
