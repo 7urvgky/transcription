@@ -12,25 +12,22 @@
   <style>
     :root {
       --guide-display: block;
-      --guide-color: rgba(239, 68, 68, 0.35); /* 기본값 빨간색 투명도 0.35 적용 */
-      --grid-color: #059669; /* 기본값 전통 청록 */
-      --char-y-offset: 0%; /* 기본 정중앙 오프셋을 0%로 초기화 */
+      --guide-color: rgba(239, 68, 68, 0.35);
+      --grid-color: #059669;
+      --char-y-offset: 0%;
     }
 
-    /* 어떤 환경에서도 동일한 표준 명조체를 보장하는 CSS 선언 */
     .font-serif-fixed {
       font-family: 'Noto Serif JP', 'Noto Serif KR', 'Batang', 'AppleMyungjo', 'serif' !important;
       font-weight: 400 !important;
       font-style: normal !important;
     }
 
-    /* Noto Sans CJK 일본어/한자용 폰트가 가장 우선으로 적용되도록 순서 변경 */
     body {
       font-family: 'Noto Sans JP', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
       background-color: #f1f5f9;
     }
 
-    /* CSS 변수를 이용한 정밀 격자색/텍스트색 연동 클래스 */
     .custom-grid-border {
       border-color: var(--grid-color) !important;
     }
@@ -38,7 +35,6 @@
       color: var(--grid-color) !important;
     }
 
-    /* 십자 가이드선 스타일 (연한 투명도 0.35 적용 및 동적 바인딩) */
     .grid-cell-guide {
       position: relative;
       box-sizing: border-box;
@@ -66,7 +62,6 @@
       pointer-events: none;
     }
 
-    /* 인라인 편집 모드 시 시각적 반응형 힌트 및 포커스 스타일링 */
     [contenteditable="true"] {
       transition: all 0.2s ease;
       border-radius: 4px;
@@ -88,13 +83,10 @@
       font-style: italic;
     }
 
-    /* 이름 입력칸의 '입력' 가이드 문자 강제 제거 */
     .name-placeholder[contenteditable="true"]:empty::before {
       content: "" !important;
     }
 
-    /* 상하 18mm, 좌우 20mm 대칭 격리로 완벽 고정하여 균형 확보 */
-    /* 하단 패딩을 23.5mm로 고정하여 푸터 상단부와 1.5mm 정밀 간격 상시 확보 */
     .print-page-inner {
       width: 100%;
       height: 100%;
@@ -106,14 +98,12 @@
       position: relative;
     }
 
-    /* 원문 읽기용 양면 다단 구분선 실시간 바인딩 */
     .p-inner-content {
       column-rule-color: var(--grid-color) !important;
       column-rule-style: dashed !important;
       column-rule-width: 1px !important;
     }
 
-    /* 프리뷰 및 인쇄 시 공통 페이지 브레이크 제어 */
     .print-page {
       page-break-after: always !important;
       page-break-inside: avoid !important;
@@ -123,7 +113,6 @@
       page-break-inside: avoid !important;
     }
 
-    /* 표준 크로미움 브라우저 인쇄 레이아웃 지원 */
     @media print {
       .no-print {
         display: none !important;
@@ -174,7 +163,6 @@
         border-right-style: solid !important;
       }
 
-      /* 인쇄 시에도 긴 원문 보기 박스의 뚫린 테두리 스타일 유지 */
       .border-t-0 {
         border-top-width: 0px !important;
       }
@@ -217,7 +205,6 @@
       }
     }
 
-    /* 화면 프리뷰용 */
     .a4-page {
       background: white;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04);
@@ -270,10 +257,8 @@
 
   <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
     
-    <!-- 왼쪽 사이드바: 설정 영역 제어 보드 -->
     <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:sticky lg:top-0 lg:h-[calc(100vh-72px)] flex flex-col">
       
-      <!-- [고정] 인쇄 및 PDF 저장 버튼 패널 -->
       <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
         <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2 transition-all">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,10 +268,8 @@
         </button>
       </div>
 
-      <!-- [스크롤 영역] 셋팅 및 구성 필드 패널 -->
       <div class="flex-1 overflow-y-auto p-6 pt-4 space-y-6">
         
-        <!-- 1. 용지 방향 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm">1. 용지 방향</label>
           <div class="grid grid-cols-2 gap-2">
@@ -305,13 +288,11 @@
           </div>
         </div>
 
-        <!-- 2. 글 제목 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm">2. 글 제목</label>
           <input type="text" id="input-title" value="별 헤는 밤" class="w-full p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium" placeholder="글의 제목을 입력하세요">
         </div>
 
-        <!-- 3. 필사할 원문 붙여넣기 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm flex justify-between items-center">
             <span>3. 필사할 원문 붙여넣기</span>
@@ -320,12 +301,10 @@
           <textarea id="source-text" class="w-full h-36 p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm leading-relaxed" placeholder="여기에 필사할 원문을 붙여넣으세요"></textarea>
         </div>
 
-        <!-- 4. 원고지 설정 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm">4. 원고지 설정</label>
           <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-4">
             
-            <!-- 원고지 가로 칸 수 -->
             <div>
               <span class="block text-slate-600 font-semibold text-xs mb-1.5">원고지 가로 칸 수</span>
               <select id="grid-cols-select" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white">
@@ -341,7 +320,6 @@
               </select>
             </div>
 
-            <!-- 세부 옵션 체크박스 4종 -->
             <div class="space-y-2 pt-1 border-t border-slate-200/60">
               <label class="flex items-center cursor-pointer">
                 <input type="checkbox" id="hide-manuscript-header" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
@@ -361,7 +339,6 @@
               </label>
             </div>
 
-            <!-- 글자 상하 위치 미세 조정 -->
             <div class="pt-3 border-t border-slate-200/60">
               <label class="block text-slate-700 font-bold mb-1 text-xs flex justify-between">
                 <span>글자 상하 위치 미세 조정</span>
@@ -371,61 +348,28 @@
               <p class="text-[10px] text-slate-400 mt-1">시스템 환경에 따라 원고지 안의 글자 높이가 맞지 않을 때 슬라이더로 올리거나 내리세요.</p>
             </div>
 
-            <!-- 원고지 및 점선 색상 팔레트 -->
             <div class="pt-3 border-t border-slate-200/60 space-y-3">
               <div>
                 <span class="block text-slate-600 font-semibold text-xs mb-1.5">원고지 색</span>
                 <div class="flex flex-wrap gap-2 items-center">
-                  <button onclick="setGridColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #000000;">
-                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                  </button>
-                  <button onclick="setGridColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #059669;">
-                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                  </button>
-                  <button onclick="setGridColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #ef4444;">
-                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                  </button>
-                  <button onclick="setGridColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #2563eb;">
-                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                  </button>
-                  <button onclick="setGridColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #991b1b;">
-                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                  </button>
-                  <div class="relative flex items-center">
-                    <button onclick="document.getElementById('grid-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-600 flex items-center gap-1.5">
-                      <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
-                      <span>다른 색</span>
-                    </button>
-                    <input type="color" id="grid-color-picker" value="#059669" class="sr-only" oninput="setGridColor(this.value, true)">
-                  </div>
+                  <button onclick="setGridColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #000000;"><span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span></button>
+                  <button onclick="setGridColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #059669;"><span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span></button>
+                  <button onclick="setGridColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #ef4444;"><span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span></button>
+                  <button onclick="setGridColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #2563eb;"><span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span></button>
+                  <button onclick="setGridColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #991b1b;"><span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span></button>
+                  <div class="relative flex items-center"><button onclick="document.getElementById('grid-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span><span>다른 색</span></button><input type="color" id="grid-color-picker" value="#059669" class="sr-only" oninput="setGridColor(this.value, true)"></div>
                 </div>
               </div>
 
               <div>
                 <span class="block text-slate-500 font-semibold text-[11px] mb-1.5">원고지 가운데 점선 색</span>
                 <div class="flex flex-wrap gap-2 items-center">
-                  <button onclick="setGuideColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #000000;">
-                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                  </button>
-                  <button onclick="setGuideColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #059669;">
-                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                  </button>
-                  <button onclick="setGuideColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #ef4444;">
-                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                  </button>
-                  <button onclick="setGuideColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #2563eb;">
-                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                  </button>
-                  <button onclick="setGuideColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #991b1b;">
-                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                  </button>
-                  <div class="relative flex items-center">
-                    <button onclick="document.getElementById('guide-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-600 flex items-center gap-1.5">
-                      <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
-                      <span>다른 색</span>
-                    </button>
-                    <input type="color" id="guide-color-picker" value="#ef4444" class="sr-only" oninput="setGuideColor(this.value, true)">
-                  </div>
+                  <button onclick="setGuideColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #000000;"><span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span></button>
+                  <button onclick="setGuideColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #059669;"><span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span></button>
+                  <button onclick="setGuideColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #ef4444;"><span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span></button>
+                  <button onclick="setGuideColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #2563eb;"><span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span></button>
+                  <button onclick="setGuideColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #991b1b;"><span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span></button>
+                  <div class="relative flex items-center"><button onclick="document.getElementById('guide-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span><span>다른 색</span></button><input type="color" id="guide-color-picker" value="#ef4444" class="sr-only" oninput="setGuideColor(this.value, true)"></div>
                 </div>
               </div>
             </div>
@@ -433,7 +377,6 @@
           </div>
         </div>
 
-        <!-- 5. 학생 정보 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm">5. 학생 정보</label>
           <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
@@ -454,7 +397,6 @@
           </div>
         </div>
 
-        <!-- 6. 출력 설정 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm">6. 출력 설정</label>
           <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
@@ -478,7 +420,6 @@
 
     <main class="flex-1 bg-slate-100 overflow-y-auto p-4 md:p-8 flex flex-col items-center">
       <div id="print-area-wrapper" class="w-full flex flex-col items-center">
-        <!-- 동적으로 페이지들이 얹어질 프리뷰 컨테이너 -->
         <div id="pages-container" class="flex flex-col items-center"></div>
       </div>
     </main>
@@ -486,7 +427,7 @@
   </div>
 
   <script>
-    let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴속에 하나둘셀 수 있는\n별들을 다 헤다가도\n\n저 별 하나 빠뜨릴 듯하여\n다시 센다";
+    let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴속에 하나둘이 셀 수 있는\n별들을 다 헤다가도\n\n저 별 하나 빠뜨릴 듯 하여\n다시 셀 듯합니다.\n\n밤을 새워 우는 벌레는\n부절런 늘어난 그 별까지\n다 헤는 셈 같고\n\n당신이 함께 계신 곳까지는\n백 길도 못 가\n마침내 외로워 파\n\n언제나 그 별 위에다\n내 상象 긔를 놓고픈 마음 아닙니다.";
     let articleTitle = "별 헤는 밤";
     let gridCols = "20"; 
     let schoolName = "건국초등학교";
@@ -497,18 +438,12 @@
     let hideCharCount = false;
     let hidePageNumbers = false;
     let orientation = "portrait";
-
-    let headerLeftText = "";
-    let footerSourceText = "원문 읽기";
-    let footerGuideText = "따라 쓰기";
-    let footerEmptyText = "원고지";
-
     let currentGridColor = '#059669';
     let currentGuideColor = '#ef4444';
 
     document.getElementById('source-text').value = sourceText;
     document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
-    document.title = articleTitle ? articleTitle : "필사 용지 만들기";
+    document.title = articleTitle;
 
     document.getElementById('source-text').addEventListener('input', (e) => {
       sourceText = e.target.value;
@@ -518,7 +453,7 @@
 
     document.getElementById('input-title').addEventListener('input', (e) => {
       articleTitle = e.target.value;
-      document.title = articleTitle ? articleTitle : "필사 용지 만들기";
+      document.title = articleTitle || "필사 용지 만들기";
       renderPages();
     });
 
@@ -527,14 +462,12 @@
       renderPages();
     });
 
-    const inputIds = ['input-school', 'input-grade', 'input-name'];
-    inputIds.forEach(id => {
+    ['input-school', 'input-grade', 'input-name'].forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
-        const val = e.target.value;
-        if (id === 'input-school') schoolName = val;
-        if (id === 'input-grade') gradeInfo = val;
-        if (id === 'input-name') studentName = val;
-        updateHeaderAndTitle();
+        if (id === 'input-school') schoolName = e.target.value;
+        if (id === 'input-grade') gradeInfo = e.target.value;
+        if (id === 'input-name') studentName = e.target.value;
+        renderPages();
       });
     });
 
@@ -556,7 +489,6 @@
       hidePageNumbers = e.target.checked;
       renderPages();
     });
-
     document.getElementById('hide-grid-guides').addEventListener('change', updateGridGuides);
 
     function hexToRgba(hex, alpha = 0.35) {
@@ -575,7 +507,6 @@
       if (!isCustom) {
         const matchedBtn = document.querySelector(`button[onclick="setGridColor('${val}')"] .grid-color-check`);
         if (matchedBtn) matchedBtn.classList.remove('hidden');
-        document.getElementById('grid-color-picker').value = val;
       }
     }
 
@@ -587,7 +518,6 @@
       if (!isCustom) {
         const matchedBtn = document.querySelector(`button[onclick="setGuideColor('${val}')"] .guide-color-check`);
         if (matchedBtn) matchedBtn.classList.remove('hidden');
-        document.getElementById('guide-color-picker').value = val;
       }
     }
 
@@ -598,22 +528,18 @@
     }
 
     function updateCharYOffset(val) {
-      const displayVal = (val > 0 ? '+' : '') + val + '%';
-      document.getElementById('charYOffsetVal').innerText = displayVal;
+      document.getElementById('charYOffsetVal').innerText = (val > 0 ? '+' : '') + val + '%';
       document.documentElement.style.setProperty('--char-y-offset', val + '%');
     }
 
     function setOrientation(mode) {
       orientation = mode;
-      const btnPortrait = document.getElementById('btn-portrait');
-      const btnLandscape = document.getElementById('btn-landscape');
-      if (orientation === 'portrait') {
-        btnPortrait.className = "py-2.5 px-4 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-800 font-bold text-sm transition-all flex items-center justify-center space-x-2";
-        btnLandscape.className = "py-2.5 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm transition-all flex items-center justify-center space-x-2";
-      } else {
-        btnPortrait.className = "py-2.5 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm transition-all flex items-center justify-center space-x-2";
-        btnLandscape.className = "py-2.5 px-4 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-800 font-bold text-sm transition-all flex items-center justify-center space-x-2";
-      }
+      document.getElementById('btn-portrait').className = mode === 'portrait' 
+        ? "py-2.5 px-4 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-800 font-bold text-sm transition-all flex items-center justify-center space-x-2"
+        : "py-2.5 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm transition-all flex items-center justify-center space-x-2";
+      document.getElementById('btn-landscape').className = mode === 'landscape'
+        ? "py-2.5 px-4 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-800 font-bold text-sm transition-all flex items-center justify-center space-x-2"
+        : "py-2.5 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm transition-all flex items-center justify-center space-x-2";
       updatePageStyleSheet();
       renderPages();
     }
@@ -626,64 +552,58 @@
         document.head.appendChild(styleEl);
       }
       if (orientation === 'portrait') {
-        styleEl.innerHTML = `
-          @page { size: A4 portrait !important; margin: 0 !important; }
-          .print-page { 
-            width: 210mm !important; 
-            height: 296mm !important; 
-            max-width: 210mm !important; 
-            max-height: 296mm !important; 
-            margin: 0 auto 2.5rem auto !important;
-          }
-          @media print {
-            .print-page {
-              width: 210mm !important;
-              height: 295.5mm !important;
-              max-width: 210mm !important;
-              max-height: 295.5mm !important;
-              margin: 0 auto !important;
-              page-break-after: always !important;
-              page-break-inside: avoid !important;
-            }
-            .print-page:last-child {
-              page-break-after: avoid !important;
-            }
-          }
-        `;
+        styleEl.innerHTML = `@page { size: A4 portrait; margin: 0; } .print-page { width: 210mm; height: 296mm; }`;
       } else {
-        styleEl.innerHTML = `
-          @page { size: A4 landscape !important; margin: 0 !important; }
-          .print-page { 
-            width: 297mm !important; 
-            height: 209mm !important; 
-            max-width: 297mm !important; 
-            max-height: 209mm !important; 
-            margin: 0 auto 2.5rem auto !important;
-          }
-          @media print {
-            .print-page {
-              width: 297mm !important;
-              height: 208.5mm !important;
-              max-width: 297mm !important;
-              max-height: 208.5mm !important;
-              page-break-after: always !important;
-              page-break-inside: avoid !important;
-            }
-            .print-page:last-child {
-              page-break-after: avoid !important;
-            }
-          }
-        `;
+        styleEl.innerHTML = `@page { size: A4 landscape; margin: 0; } .print-page { width: 297mm; height: 209mm; }`;
       }
     }
 
     function renderPages() {
       const container = document.getElementById('pages-container');
       container.innerHTML = '';
-      updatePageStyleSheet();
+
+      // 원문 페이지
+      if (!excludeFirstPage) {
+        const sourceDiv = document.createElement('div');
+        sourceDiv.className = `a4-page ${orientation === 'portrait' ? 'portrait-page' : 'landscape-page'} print-page`;
+        sourceDiv.innerHTML = `<div class="print-page-inner"><h1 class="text-2xl font-bold text-center mb-6">${articleTitle}</h1><div class="p-inner-content text-sm leading-relaxed whitespace-pre-wrap">${sourceText}</div></div>`;
+        container.appendChild(sourceDiv);
+      }
+
+      // 따라쓰기 페이지
+      if (document.getElementById('pattern-guide').checked) {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = `a4-page ${orientation === 'portrait' ? 'portrait-page' : 'landscape-page'} print-page`;
+        const cols = parseInt(gridCols) || 20;
+        const rows = Math.ceil(sourceText.length / cols);
+        let gridHTML = `<div class="print-page-inner"><div class="grid gap-0" style="grid-template-columns: repeat(${cols}, 1fr);">`;
+        for (let i = 0; i < cols * rows; i++) {
+          const char = sourceText[i] || '';
+          gridHTML += `<div class="grid-cell-guide border border-slate-300 aspect-square flex items-center justify-center p-1" style="transform: translateY(var(--char-y-offset));"><span class="text-sm">${char}</span></div>`;
+        }
+        gridHTML += '</div></div>';
+        pageDiv.innerHTML = gridHTML;
+        container.appendChild(pageDiv);
+      }
+
+      // 빈 원고지
+      if (document.getElementById('pattern-empty').checked) {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = `a4-page ${orientation === 'portrait' ? 'portrait-page' : 'landscape-page'} print-page`;
+        const cols = parseInt(gridCols) || 20;
+        const rows = Math.ceil(sourceText.length / cols);
+        let gridHTML = `<div class="print-page-inner"><div class="grid gap-0" style="grid-template-columns: repeat(${cols}, 1fr);">`;
+        for (let i = 0; i < cols * rows; i++) {
+          gridHTML += `<div class="grid-cell-guide border border-slate-300 aspect-square flex items-center justify-center p-1"></div>`;
+        }
+        gridHTML += '</div></div>';
+        pageDiv.innerHTML = gridHTML;
+        container.appendChild(pageDiv);
+      }
     }
 
     renderPages();
+    updatePageStyleSheet();
   </script>
 </body>
 </html>
