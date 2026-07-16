@@ -865,9 +865,10 @@
             if (colIndex === 0 && cells.length > 0) {
               let targetIdx = cells.length - 1;
               if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
-                cells[targetIdx].squeezedPunct = char + nextChar;
+                // 마지막 칸에는 문자 + 하나의 구두점/기호만 들어가도록 단일 문자만 압착
+                cells[targetIdx].squeezedPunct = char;
                 cells[targetIdx].isSqueezed = true;
-                charIdx += 2;
+                charIdx += 1;
                 continue;
               }
             }
@@ -886,9 +887,10 @@
             if (colIndex === 0 && cells.length > 0) {
               let targetIdx = cells.length - 1;
               if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
-                cells[targetIdx].squeezedPunct = char + nextChar;
+                // 마지막 칸에는 문자 + 하나의 구두점/기호만 들어가도록 단일 문자만 압착
+                cells[targetIdx].squeezedPunct = char;
                 cells[targetIdx].isSqueezed = true;
-                charIdx += 2;
+                charIdx += 1;
                 continue;
               }
             }
@@ -907,9 +909,10 @@
             if (colIndex === 0 && cells.length > 0) {
               let targetIdx = cells.length - 1;
               if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
-                cells[targetIdx].squeezedPunct = char + nextChar;
+                // 마지막 칸에는 문자 + 하나의 구두점/기호만 들어가도록 단일 문자만 압착
+                cells[targetIdx].squeezedPunct = char;
                 cells[targetIdx].isSqueezed = true;
-                charIdx += 2;
+                charIdx += 1;
                 continue;
               }
             }
@@ -928,9 +931,10 @@
             if (colIndex === 0 && cells.length > 0) {
               let targetIdx = cells.length - 1;
               if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
-                cells[targetIdx].squeezedPunct = char + nextChar;
+                // 마지막 칸에는 문자 + 하나의 구두점/기호만 들어가도록 단일 문자만 압착
+                cells[targetIdx].squeezedPunct = char;
                 cells[targetIdx].isSqueezed = true;
-                charIdx += 2;
+                charIdx += 1;
                 continue;
               }
             }
@@ -944,6 +948,28 @@
             continue;
           }
 
+          // 4-2. 기호/구두점이 연속할 때 한 칸에 두 개까지 표시하는 처리
+          if (isPunctuation(char) && nextChar && isPunctuation(nextChar)) {
+            if (colIndex === 0 && cells.length > 0) {
+              let targetIdx = cells.length - 1;
+              if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
+                // 마지막 칸에는 문자 + 하나의 구두점/기호만 들어가도록 단일 문자만 압착
+                cells[targetIdx].squeezedPunct = char;
+                cells[targetIdx].isSqueezed = true;
+                charIdx += 1;
+                continue;
+              }
+            }
+
+            cells.push({
+              char: char,
+              squeezedPunct: nextChar,
+              isDoublePunct: true
+            });
+            charIdx += 2;
+            continue;
+          }
+
           if (char === ' ') {
             if (colIndex === 0) {
               charIdx++;
@@ -952,6 +978,12 @@
             if (cells.length > 0) {
               const prevCell = cells[cells.length - 1];
               if (prevCell && (prevCell.char === '.' || prevCell.char === ',')) {
+                // 마침표 + 닫는 따옴표가 있을 때는 다음 띄어쓰기를 무시하지 않음
+                if (prevCell.isPeriodQuoteCombo) {
+                  cells.push({ char: " ", isSpace: true });
+                  charIdx++;
+                  continue;
+                }
                 charIdx++;
                 continue;
               }
@@ -1711,6 +1743,18 @@
                     const p2 = cellData.squeezedPunct;
                     svgHtml += `<text x="28" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
                     svgHtml += `<text x="68" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
+                  } else if (cellData.isDoublePunct) {
+                    // 기호/구두점이 연속할 때 가로로 나란히 이쁘게 정렬 배치
+                    const p1 = cellData.char;
+                    const p2 = cellData.squeezedPunct;
+                    let y1 = 50, y2 = 50;
+                    if (p1 === '.' || p1 === ',') y1 = 54;
+                    if (p2 === '.' || p2 === ',') y2 = 54;
+                    if (p1 === '“' || p1 === '‘' || p1 === '”' || p1 === '’' || p1 === '"' || p1 === "'") y1 = 45;
+                    if (p2 === '“' || p2 === '‘' || p2 === '”' || p2 === '’' || p2 === '"' || p2 === "'") y2 = 45;
+                    
+                    svgHtml += `<text x="33" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="52" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
+                    svgHtml += `<text x="67" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="52" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
                   } else {
                     // Normal Cell: 단독 문자 또는 문장 기호 출력
                     const char = cellData.char;
