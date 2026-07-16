@@ -15,6 +15,10 @@
       --guide-color: rgba(239, 68, 68, 0.35); /* 기본값 빨간색 투명도 0.35 적용 */
       --grid-color: #059669; /* 기본값 전통 청록 */
       --char-y-offset: 0%; /* 기본 정중앙 오프셋을 0%로 초기화 */
+      --screen-page-width: 210mm;
+      --screen-page-height: 297mm;
+      --print-page-width: 210mm;
+      --print-page-height: 296mm;
     }
 
     /* 어떤 환경에서도 동일한 표준 명조체를 보장하는 CSS 선언 */
@@ -115,19 +119,21 @@
 
     /* 프리뷰 및 인쇄 시 공통 페이지 브레이크 제어 */
     .print-page {
-      page-break-after: always !important;
-      break-after: page !important;
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
+      page-break-after: auto !important;
+      break-after: auto !important;
+      page-break-before: auto !important;
+      break-before: auto !important;
+      page-break-inside: auto !important;
+      break-inside: auto !important;
     }
     .print-page:last-child, .print-page:last-of-type {
-      page-break-after: avoid !important;
-      break-after: avoid !important;
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
+      page-break-after: auto !important;
+      break-after: auto !important;
+      page-break-inside: auto !important;
+      break-inside: auto !important;
     }
 
-    /* 표준 크로미움 브라우저 인쇄 레이아웃 지원 */
+    /* Safari/WebKit까지 안정적으로 맞추는 인쇄 레이아웃 */
     @media print {
       .no-print {
         display: none !important;
@@ -146,15 +152,24 @@
         print-color-adjust: exact !important;
       }
 
-      main, #print-area-wrapper, #pages-container {
+      #main-layout-container,
+      main,
+      #print-area-wrapper,
+      #pages-container {
         display: block !important;
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
         height: auto !important;
         min-height: 0 !important;
+        overflow: visible !important;
         box-shadow: none !important;
         background: transparent !important;
+      }
+
+      #pages-container {
+        contain: none !important;
+        align-items: stretch !important;
       }
 
       * {
@@ -199,24 +214,41 @@
 
       .print-page {
         box-shadow: none !important;
-        margin: 0 auto !important;
+        margin: 0 !important;
         border: none !important;
-        break-after: page !important;
-        page-break-after: always !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
+        width: var(--print-page-width) !important;
+        height: var(--print-page-height) !important;
+        max-width: var(--print-page-width) !important;
+        max-height: var(--print-page-height) !important;
+        break-after: auto !important;
+        page-break-after: auto !important;
+        break-before: auto !important;
+        page-break-before: auto !important;
+        page-break-inside: auto !important;
+        break-inside: auto !important;
         box-sizing: border-box !important;
         display: block !important; 
         position: relative !important;
-        overflow: hidden !important;
+        float: none !important;
+        clear: both !important;
+        overflow: visible !important;
         background-color: white !important;
+        -webkit-column-break-after: auto !important;
+        -webkit-column-break-before: auto !important;
+      }
+
+      .print-page + .print-page {
+        break-before: page !important;
+        page-break-before: always !important;
+        -webkit-column-break-before: always !important;
       }
 
       .print-page:last-child, .print-page:last-of-type {
-        break-after: avoid-page !important;
-        page-break-after: avoid !important;
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
+        break-after: auto !important;
+        page-break-after: auto !important;
+        -webkit-column-break-after: auto !important;
+        break-inside: auto !important;
+        page-break-inside: auto !important;
       }
 
       [contenteditable="true"]:empty::before {
@@ -237,13 +269,13 @@
     }
 
     .portrait-page {
-      width: 210mm;
-      height: 296mm;
+      width: var(--screen-page-width);
+      height: var(--screen-page-height);
     }
 
     .landscape-page {
-      width: 297mm;
-      height: 209mm; 
+      width: var(--screen-page-width);
+      height: var(--screen-page-height); 
     }
 
     ::-webkit-scrollbar {
@@ -647,39 +679,52 @@
       if (orientation === 'portrait') {
         styleEl.innerHTML = `
           @page { size: A4 portrait !important; margin: 0 !important; }
+          :root {
+            --screen-page-width: 210mm;
+            --screen-page-height: 297mm;
+            --print-page-width: 210mm;
+            --print-page-height: 296mm;
+          }
           .print-page { 
-            width: 210mm !important; 
-            height: 296mm !important; 
-            max-width: 210mm !important; 
-            max-height: 296mm !important; 
+            width: var(--screen-page-width) !important; 
+            height: var(--screen-page-height) !important; 
+            max-width: var(--screen-page-width) !important; 
+            max-height: var(--screen-page-height) !important; 
             margin: 0 auto 2.5rem auto !important;
           }
           @media print {
             .print-page {
-              width: 210mm !important;
-              height: 295.5mm !important;
-              max-width: 210mm !important;
-              max-height: 295.5mm !important;
-              margin: 0 auto !important;
+              width: var(--print-page-width) !important;
+              height: var(--print-page-height) !important;
+              max-width: var(--print-page-width) !important;
+              max-height: var(--print-page-height) !important;
+              margin: 0 !important;
             }
           }
         `;
       } else {
         styleEl.innerHTML = `
           @page { size: A4 landscape !important; margin: 0 !important; }
+          :root {
+            --screen-page-width: 297mm;
+            --screen-page-height: 210mm;
+            --print-page-width: 297mm;
+            --print-page-height: 209mm;
+          }
           .print-page { 
-            width: 297mm !important; 
-            height: 209mm !important; 
-            max-width: 297mm !important; 
-            max-height: 209mm !important; 
+            width: var(--screen-page-width) !important; 
+            height: var(--screen-page-height) !important; 
+            max-width: var(--screen-page-width) !important; 
+            max-height: var(--screen-page-height) !important; 
             margin: 0 auto 2.5rem auto !important;
           }
           @media print {
             .print-page {
-              width: 297mm !important;
-              height: 208.5mm !important;
-              max-width: 297mm !important;
-              max-height: 208.5mm !important;
+              width: var(--print-page-width) !important;
+              height: var(--print-page-height) !important;
+              max-width: var(--print-page-width) !important;
+              max-height: var(--print-page-height) !important;
+              margin: 0 !important;
             }
           }
         `;
@@ -1810,6 +1855,14 @@
     // 기계식 CSS 변수와 슬라이더 기본 수치 0% 일관 동기화
     updateCharYOffset(0);
     document.getElementById('charYOffsetSlider').value = 0;
+
+    function prepareSafariPrintLayout() {
+      updatePageStyleSheet();
+      renderPages();
+      document.body.offsetHeight;
+    }
+
+    window.addEventListener('beforeprint', prepareSafariPrintLayout);
   </script>
 </body>
 </html>
