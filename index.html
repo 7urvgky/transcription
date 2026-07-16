@@ -360,6 +360,10 @@
           <label class="block text-slate-700 font-bold mb-2 text-sm">5. 출력 방식</label>
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2.5">
             <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="show-first-page" checked class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+              <span class="ml-2.5 text-xs text-slate-700 font-bold">원문 보기 표시</span>
+            </label>
+            <label class="flex items-center cursor-pointer">
               <input type="checkbox" id="pattern-guide" checked class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
               <span class="ml-2.5 text-xs text-slate-700 font-bold">따라쓰기 글씨 포함</span>
             </label>
@@ -370,10 +374,6 @@
           </div>
           
           <div class="mt-4 pt-3 border-t border-slate-200 space-y-2.5">
-            <label class="flex items-center cursor-pointer">
-              <input type="checkbox" id="exclude-first-page" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
-              <span class="ml-2.5 text-xs text-slate-700 font-bold">첫 페이지(원문 보기) 제외</span>
-            </label>
             <label class="flex items-center cursor-pointer">
               <input type="checkbox" id="hide-manuscript-header" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
               <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 페이지에 이름 등 표시 안 함</span>
@@ -489,7 +489,7 @@
     let schoolName = "건국초등학교";
     let gradeInfo = "";
     let studentName = "";
-    let excludeFirstPage = false; 
+    let showFirstPage = true; 
     let hideManuscriptHeader = false; 
     let hideCharCount = false;
     let orientation = "portrait";
@@ -538,8 +538,8 @@
 
     document.getElementById('pattern-guide').addEventListener('change', renderPages);
     document.getElementById('pattern-empty').addEventListener('change', renderPages);
-    document.getElementById('exclude-first-page').addEventListener('change', (e) => {
-      excludeFirstPage = e.target.checked;
+    document.getElementById('show-first-page').addEventListener('change', (e) => {
+      showFirstPage = e.target.checked;
       renderPages();
     });
     document.getElementById('hide-manuscript-header').addEventListener('change', (e) => {
@@ -1247,7 +1247,7 @@
       // -------------------------------------------------------------
       // 제 1 페이지 그룹: 원문을 깔끔하게 수록한 [원문 읽기 판]
       // -------------------------------------------------------------
-      if (!excludeFirstPage) {
+      if (showFirstPage) {
         const paragraphs = sourceText.split('\n');
         const sourcePages = paginateSourceText(paragraphs);
 
