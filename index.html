@@ -278,19 +278,22 @@
 
   <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
     
-    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 p-6 overflow-y-auto no-print shrink-0 lg:sticky lg:top-0 lg:h-[calc(100vh-72px)] flex flex-col justify-between space-y-6">
+    <!-- 왼쪽 사이드바: 최상단 영역에 인쇄 버튼 영역을 고정 배치 -->
+    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:sticky lg:top-0 lg:h-[calc(100vh-72px)] flex flex-col">
       
-      <div class="space-y-6">
-        <!-- 인쇄 버튼 단독 배치 및 디자인 강화 -->
-        <div class="pb-4 border-b border-slate-200">
-          <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2 transition-all active:scale-[0.98]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-            </svg>
-            <span class="text-base tracking-wide">인쇄 및 PDF로 저장</span>
-          </button>
-        </div>
+      <!-- [고정] 인쇄 및 PDF 저장 버튼 패널 -->
+      <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
+        <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2 transition-all active:scale-[0.98]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+          </svg>
+          <span class="text-base tracking-wide">인쇄 및 PDF로 저장</span>
+        </button>
+      </div>
 
+      <!-- [스크롤 영역] 셋팅 및 구성 필드 패널 -->
+      <div class="flex-1 overflow-y-auto p-6 pt-4 space-y-6">
+        
         <!-- 1. 용지 방향 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm">1. 용지 방향</label>
@@ -332,8 +335,8 @@
             
             <!-- 원고지 가로 칸 수 -->
             <div>
-              <span class="block text-xs font-bold text-slate-600 mb-1.5">원고지 가로 칸 수</span>
-              <select id="grid-cols-select" class="w-full p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white">
+              <span class="block text-slate-600 font-semibold text-xs mb-1.5">원고지 가로 칸 수</span>
+              <select id="grid-cols-select" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white">
                 <option value="10">10칸 (초등 저학년 / 큰 글자)</option>
                 <option value="12">12칸</option>
                 <option value="14">14칸</option>
@@ -346,8 +349,8 @@
               </select>
             </div>
 
-            <!-- 세부 가이드 제어 옵션 -->
-            <div class="space-y-2 pt-2 border-t border-slate-200/60">
+            <!-- 세부 옵션 체크박스 3종 -->
+            <div class="space-y-2 pt-1 border-t border-slate-200/60">
               <label class="flex items-center cursor-pointer">
                 <input type="checkbox" id="hide-manuscript-header" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
                 <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 페이지에 이름 등 표시 안 함</span>
@@ -362,72 +365,73 @@
               </label>
             </div>
 
-            <!-- 원고지 색상 선택 -->
-            <div class="pt-2 border-t border-slate-200/60">
-              <span class="block text-xs font-bold text-slate-600 mb-1.5">원고지 색</span>
-              <div class="flex flex-wrap gap-1.5 items-center">
-                <button onclick="setGridColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="검은색" style="background-color: #000000;">
-                  <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                </button>
-                <button onclick="setGridColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="녹색" style="background-color: #059669;">
-                  <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                </button>
-                <button onclick="setGridColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="빨간색" style="background-color: #ef4444;">
-                  <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                </button>
-                <button onclick="setGridColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="파란색" style="background-color: #2563eb;">
-                  <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                </button>
-                <button onclick="setGridColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="진한 빨간색" style="background-color: #991b1b;">
-                  <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                </button>
-                <div class="relative flex items-center">
-                  <button onclick="document.getElementById('grid-color-picker').click()" class="py-1 px-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 flex items-center space-x-1 shadow-sm active:scale-95 transition-all" title="다른 색 선택">
-                    <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
-                    <span>다른 색</span>
-                  </button>
-                  <input type="color" id="grid-color-picker" value="#059669" class="sr-only" oninput="setGridColor(this.value, true)">
-                </div>
-              </div>
-            </div>
-
-            <!-- 점선 색상 선택 -->
-            <div id="guide-color-section" class="pt-2 border-t border-slate-200/60">
-              <span class="block text-xs font-bold text-slate-600 mb-1.5">점선 색</span>
-              <div class="flex flex-wrap gap-1.5 items-center">
-                <button onclick="setGuideColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="검은색" style="background-color: #000000;">
-                  <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                </button>
-                <button onclick="setGuideColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="녹색" style="background-color: #059669;">
-                  <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                </button>
-                <button onclick="setGuideColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="빨간색" style="background-color: #ef4444;">
-                  <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                </button>
-                <button onclick="setGuideColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="파란색" style="background-color: #2563eb;">
-                  <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                </button>
-                <button onclick="setGuideColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="진한 빨간색" style="background-color: #991b1b;">
-                  <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                </button>
-                <div class="relative flex items-center">
-                  <button onclick="document.getElementById('guide-color-picker').click()" class="py-1 px-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 flex items-center space-x-1 shadow-sm active:scale-95 transition-all" title="다른 색 선택">
-                    <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
-                    <span>다른 색</span>
-                  </button>
-                  <input type="color" id="guide-color-picker" value="#ef4444" class="sr-only" oninput="setGuideColor(this.value, true)">
-                </div>
-              </div>
-            </div>
-
             <!-- 글자 상하 위치 미세 조정 -->
-            <div class="pt-2 border-t border-slate-200/60">
+            <div class="pt-3 border-t border-slate-200/60">
               <label class="block text-slate-700 font-bold mb-1 text-xs flex justify-between">
                 <span>글자 상하 위치 미세 조정</span>
                 <span id="charYOffsetVal" class="text-emerald-600 font-bold">0%</span>
               </label>
               <input type="range" id="charYOffsetSlider" min="-15" max="15" step="0.5" value="0" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" oninput="updateCharYOffset(this.value)">
-              <p class="text-[10px] text-slate-400 mt-1 leading-relaxed">프린터 환경에 따라 글자가 칸 중앙에 맞지 않을 때 조절하세요.</p>
+              <p class="text-[10px] text-slate-400 mt-1">시스템 환경에 따라 원고지 안의 글자 높이가 맞지 않을 때 슬라이더로 올리거나 내리세요.</p>
+            </div>
+
+            <!-- 원고지 및 점선 색상 팔레트 -->
+            <div class="pt-3 border-t border-slate-200/60 space-y-3">
+              <div>
+                <span class="block text-slate-600 font-semibold text-xs mb-1.5">원고지 색</span>
+                <div class="flex flex-wrap gap-2 items-center">
+                  <button onclick="setGridColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="검은색" style="background-color: #000000;">
+                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGridColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="녹색" style="background-color: #059669;">
+                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGridColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="빨간색" style="background-color: #ef4444;">
+                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGridColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="파란색" style="background-color: #2563eb;">
+                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGridColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="진한 빨간색" style="background-color: #991b1b;">
+                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <div class="relative flex items-center">
+                    <button onclick="document.getElementById('grid-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 flex items-center space-x-1 shadow-sm active:scale-95 transition-all" title="다른 색 선택">
+                      <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
+                      <span>다른 색</span>
+                    </button>
+                    <input type="color" id="grid-color-picker" value="#059669" class="sr-only" oninput="setGridColor(this.value, true)">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <span class="block text-slate-500 font-semibold text-[11px] mb-1.5">원고지 가운데 점선 색</span>
+                <div class="flex flex-wrap gap-2 items-center">
+                  <button onclick="setGuideColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="검은색" style="background-color: #000000;">
+                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGuideColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="녹색" style="background-color: #059669;">
+                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGuideColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="빨간색" style="background-color: #ef4444;">
+                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGuideColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="파란색" style="background-color: #2563eb;">
+                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGuideColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="진한 빨간색" style="background-color: #991b1b;">
+                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <div class="relative flex items-center">
+                    <button onclick="document.getElementById('guide-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 flex items-center space-x-1 shadow-sm active:scale-95 transition-all" title="다른 색 선택">
+                      <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
+                      <span>다른 색</span>
+                    </button>
+                    <input type="color" id="guide-color-picker" value="#ef4444" class="sr-only" oninput="setGuideColor(this.value, true)">
+                  </div>
+                </div>
+              </div>
             </div>
 
           </div>
@@ -457,12 +461,13 @@
         <!-- 6. 출력 설정 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm">6. 출력 설정</label>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2.5">
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
             <label class="flex items-center cursor-pointer">
-              <input type="checkbox" id="show-first-page" checked class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+              <input type="checkbox" id="exclude-first-page" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+              <!-- 내부에서 reversed logic 제어로 showFirstPage 변수를 핸들링하므로 뷰 상에는 '원문 보기 표시'로 부드럽게 출력 -->
               <span class="ml-2.5 text-xs text-slate-700 font-bold">원문 보기 표시</span>
             </label>
-            <label class="flex items-center cursor-pointer">
+            <label class="flex items-center cursor-pointer pt-1 border-t border-slate-200/50">
               <input type="checkbox" id="pattern-guide" checked class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
               <span class="ml-2.5 text-xs text-slate-700 font-bold">따라쓰기 글씨 포함</span>
             </label>
@@ -492,7 +497,7 @@
     let schoolName = "건국초등학교";
     let gradeInfo = "";
     let studentName = "";
-    let showFirstPage = true; 
+    let excludeFirstPage = false; 
     let hideManuscriptHeader = false; 
     let hideCharCount = false;
     let orientation = "portrait";
@@ -541,8 +546,9 @@
 
     document.getElementById('pattern-guide').addEventListener('change', renderPages);
     document.getElementById('pattern-empty').addEventListener('change', renderPages);
-    document.getElementById('show-first-page').addEventListener('change', (e) => {
-      showFirstPage = e.target.checked;
+    document.getElementById('exclude-first-page').addEventListener('change', (e) => {
+      // '원문 보기 표시' 체크 상태의 토글에 비례하여 excludeFirstPage 여부를 반전 핸들링
+      excludeFirstPage = !e.target.checked;
       renderPages();
     });
     document.getElementById('hide-manuscript-header').addEventListener('change', (e) => {
@@ -822,7 +828,7 @@
     function parseTextToManuscriptCells(text, cols) {
       const cells = [];
       const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
-      const isPunctuation = (c) => /[.,!?'"ным“”鮮‘’()（）[\]{}<>~?;:：；]/.test(c);
+      const isPunctuation = (c) => /[.,!?'"ным“”鮮‘’()(\\][\]{}<>~?;:：；]/.test(c);
       const paragraphs = text.split('\n');
 
       paragraphs.forEach((pText, pIdx) => {
@@ -929,6 +935,9 @@
 
       return cells;
     }
+
+    // 기본 체크박스 상태값 동기화 설정 (원문 보기 표시 기본 체크)
+    document.getElementById('exclude-first-page').checked = true;
 
     function calculateOptimalRows(cols) {
       if (cols === "line") {
@@ -1250,7 +1259,7 @@
       // -------------------------------------------------------------
       // 제 1 페이지 그룹: 원문을 깔끔하게 수록한 [원문 읽기 판]
       // -------------------------------------------------------------
-      if (showFirstPage) {
+      if (!excludeFirstPage) {
         const paragraphs = sourceText.split('\n');
         const sourcePages = paginateSourceText(paragraphs);
 
@@ -1521,8 +1530,7 @@
                 const fontSizeNum = 12; 
                 const adjustedFontSizeMm = baseFontSizeMm * (fontSizeNum / 12);
                 textSpan.style.fontSize = `${adjustedFontSizeMm}mm`;
-                // 글자 상하 위치 미세 조정 값을 줄노트 가이드 텍스트 박스에도 반영
-                textSpan.style.transform = "translateY(var(--char-y-offset, 0%))";
+                textSpan.style.transform = "translateY(var(--char-y-offset, 0%))"; // 줄노트 가이드 문자 높이 조절 바인딩 탑재
                 rowDiv.appendChild(textSpan);
               }
 
@@ -1576,13 +1584,13 @@
                     if (puncts.length === 1) {
                       const p = puncts[0];
                       if (p === '.' || p === ',') {
-                        // 온점/반점: 실제 원고지 규격에 입각하여 정확히 우측 하단 구석에 배치하되 수직 높이 상향 조정 (y="57" -> y="53")
+                        // 온점/반점: 실제 원고지 규격에 입각하여 정확히 우측 하단 구석에 배치하되 수직 높이 상향 조정 (y="63" -> y="53")
                         svgHtml += `<text x="78" y="53" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-bold">${p}</text>`;
                       } else if (p === '!' || p === '?') {
                         // 느낌표/물음표: 우측 세로 중앙에 고정
                         svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       } else if (p === '"' || p === "'" || p === '”' || p === '’') {
-                        // 따옴표: 우측 상단 슬롯에 고정하고 세로 높이 하향 조정 (y="34" -> y="40")
+                        // 따옴표: 우측 상단 슬롯에 고정하고 세로 높이 하향 조정 (y="28" -> y="40")
                         svgHtml += `<text x="76" y="40" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       } else {
                         svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="54" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
@@ -1595,10 +1603,10 @@
                       let y1 = 50, y2 = 50;
                       let fontSize = 46;
                       
-                      if (p1 === '.' || p1 === ',') y1 = 53; // y=57 -> y=53으로 상향 조정
-                      if (p2 === '.' || p2 === ',') y2 = 53; // y=57 -> y=53으로 상향 조정
-                      if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 40; // y=34 -> y=40으로 하향 조정
-                      if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 40; // y=34 -> y=40으로 하향 조정
+                      if (p1 === '.' || p1 === ',') y1 = 53; // y=70 -> y=53으로 상향 조정
+                      if (p2 === '.' || p2 === ',') y2 = 53; // y=70 -> y=53으로 상향 조정
+                      if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 40; // y=28 -> y=40으로 하향 조정
+                      if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 40; // y=28 -> y=40으로 하향 조정
 
                       svgHtml += `<text x="68" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
                       svgHtml += `<text x="86" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
@@ -1607,14 +1615,14 @@
                       puncts.forEach((p, idx) => {
                         const x = 64 + idx * 12;
                         let y = 50;
-                        if (p === '.' || p === ',') y = 53; // y=57 -> y=53으로 상향 조정
-                        if (p === '"' || p === "'" || p === '”' || p === '’') y = 40; // y=34 -> y=40으로 하향 조정
+                        if (p === '.' || p === ',') y = 53; // y=70 -> y=53으로 상향 조정
+                        if (p === '"' || p === "'" || p === '”' || p === '’') y = 40; // y=28 -> y=40으로 하향 조정
                         svgHtml += `<text x="${x}" y="${y}" dominant-baseline="central" text-anchor="middle" font-size="38" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
                       });
                     }
                   } else if (cellData.isPeriodQuoteCombo) {
                     // 마침표와 닫는 따옴표가 연속할 때 한 칸에 패키지 배치
-                    // 마침표는 왼쪽 아래 (x="28", y="60" -> y="54"), 닫는 따옴표는 오른쪽 위에 (x="72", y="40")로 단독 위치와 정밀 일치
+                    // 마침표는 왼쪽 아래 (x="28", y="54"), 닫는 따옴표는 오른쪽 위에 (x="72", y="40")로 위치 미세 수정
                     const p1 = cellData.char;
                     const p2 = cellData.squeezedPunct;
                     svgHtml += `<text x="28" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
@@ -1623,13 +1631,13 @@
                     // Normal Cell: 기기 무관하게 수학적 상하좌우 정중앙 완벽 정렬
                     const char = cellData.char;
                     if (char === '.' || char === ',') {
-                      // 단독 온점/반점은 실제 원고지 규격인 좌측 하단 코너 영역에 찍히되 수직 높이 소폭 상향 조정 (y=60 -> y="54")
+                      // 단독 온점/반점은 실제 원고지 규격인 좌측 하단 코너 영역에 찍히되 수직 높이 소폭 상향 조정 (y=66 -> y=54)
                       svgHtml += `<text x="28" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${char}</text>`;
                     } else if (char === '“' || char === '‘') {
-                      // 여는 따옴표: 칸의 오른쪽 위 세로 좌표 하향 조정 (y=34 -> y=40)
+                      // 여는 따옴표: 칸의 오른쪽 위 세로 좌표 하향 조정 (y=28 -> y=40)
                       svgHtml += `<text x="72" y="40" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
                     } else if (char === '”' || char === '’') {
-                      // 닫는 따옴표: 칸의 왼쪽 위 세로 좌표 하향 조정 (y=34 -> y=40)
+                      // 닫는 따옴표: 칸의 왼쪽 위 세로 좌표 하향 조정 (y=28 -> y=40)
                       svgHtml += `<text x="28" y="40" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
                     } else {
                       svgHtml += `<text x="50" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
@@ -1715,8 +1723,13 @@
       updateHeaderAndTitle();
     }
 
+    // 초기 로드 시 프리셋 동기화 및 실행
     updatePageStyleSheet();
     renderPages();
+    
+    // 기본 프리셋 활성화 체크 표시 (녹색 & 빨간색 설정)
+    setGridColor('#059669');
+    setGuideColor('#ef4444');
   </script>
 </body>
 </html>
