@@ -7,7 +7,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Noto Sans JP/KR (CJK 고딕), Noto Serif JP/KR (CJK 명조) -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700" rel="stylesheet">
   
   <style>
     :root {
@@ -116,18 +116,14 @@
     /* 프리뷰 및 인쇄 시 공통 페이지 브레이크 제어 */
     .print-page {
       page-break-after: always !important;
-      break-after: page !important;
       page-break-inside: avoid !important;
-      break-inside: avoid !important;
     }
     .print-page:last-child, .print-page:last-of-type {
       page-break-after: avoid !important;
-      break-after: avoid !important;
       page-break-inside: avoid !important;
-      break-inside: avoid !important;
     }
 
-    /* 표준 크로미움 브라우저 인쇄 레이아웃 지원 */
+    /* 표준 크로미움 브라우저 및 Safari 인쇄 레이아웃 지원 */
     @media print {
       .no-print {
         display: none !important;
@@ -201,22 +197,24 @@
         box-shadow: none !important;
         margin: 0 auto !important;
         border: none !important;
-        break-after: page !important;
         page-break-after: always !important;
         page-break-inside: avoid !important;
-        break-inside: avoid !important;
         box-sizing: border-box !important;
         display: block !important; 
         position: relative !important;
-        overflow: hidden !important;
+        overflow: visible !important;
         background-color: white !important;
       }
 
       .print-page:last-child, .print-page:last-of-type {
-        break-after: avoid-page !important;
         page-break-after: avoid !important;
-        break-inside: avoid !important;
         page-break-inside: avoid !important;
+      }
+
+      .print-page-inner {
+        page-break-inside: avoid !important;
+        display: block !important;
+        overflow: visible !important;
       }
 
       [contenteditable="true"]:empty::before {
@@ -267,7 +265,7 @@
     <div class="flex items-center space-x-3">
       <div class="bg-emerald-600 p-2 rounded-lg">
         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586"></path>
         </svg>
       </div>
       <div>
@@ -283,9 +281,9 @@
       
       <!-- [고정] 인쇄 및 PDF 저장 버튼 패널 -->
       <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
-        <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2 transition-all active:scale-[0.98]">
+        <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2 transition-all">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2z"></path>
           </svg>
           <span class="text-base tracking-wide">인쇄 및 PDF로 저장</span>
         </button>
@@ -316,7 +314,7 @@
         <!-- 2. 글 제목 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm">2. 글 제목</label>
-          <input type="text" id="input-title" value="별 헤는 밤" class="w-full p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium" placeholder="필사할 글의 제목을 적어주세요.">
+          <input type="text" id="input-title" value="별 헤는 밤" class="w-full p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium" placeholder="글의 제목을 입력하세요">
         </div>
 
         <!-- 3. 필사할 원문 붙여넣기 -->
@@ -325,7 +323,7 @@
             <span>3. 필사할 원문 붙여넣기</span>
             <span id="char-counter" class="text-xs font-normal text-slate-500">0자 입력됨</span>
           </label>
-          <textarea id="source-text" class="w-full h-36 p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm leading-relaxed" placeholder="여기에 필사할 원문을 붙여 넣으세요."></textarea>
+          <textarea id="source-text" class="w-full h-36 p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm leading-relaxed" placeholder="여기에 필사할 원문을 붙여넣으세요"></textarea>
         </div>
 
         <!-- 4. 원고지 설정 -->
@@ -384,23 +382,23 @@
               <div>
                 <span class="block text-slate-600 font-semibold text-xs mb-1.5">원고지 색</span>
                 <div class="flex flex-wrap gap-2 items-center">
-                  <button onclick="setGridColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="검은색" style="background-color: #000000;">
+                  <button onclick="setGridColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #000000;">
                     <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                   </button>
-                  <button onclick="setGridColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="녹색" style="background-color: #059669;">
+                  <button onclick="setGridColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #059669;">
                     <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                   </button>
-                  <button onclick="setGridColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="빨간색" style="background-color: #ef4444;">
+                  <button onclick="setGridColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #ef4444;">
                     <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                   </button>
-                  <button onclick="setGridColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="파란색" style="background-color: #2563eb;">
+                  <button onclick="setGridColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #2563eb;">
                     <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                   </button>
-                  <button onclick="setGridColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="진한 빨간색" style="background-color: #991b1b;">
+                  <button onclick="setGridColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #991b1b;">
                     <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                   </button>
                   <div class="relative flex items-center">
-                    <button onclick="document.getElementById('grid-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 flex items-center space-x-1 shadow-sm active:scale-95 transition-all" title="다른 색 선택">
+                    <button onclick="document.getElementById('grid-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-600 flex items-center gap-1.5">
                       <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
                       <span>다른 색</span>
                     </button>
@@ -412,23 +410,23 @@
               <div>
                 <span class="block text-slate-500 font-semibold text-[11px] mb-1.5">원고지 가운데 점선 색</span>
                 <div class="flex flex-wrap gap-2 items-center">
-                  <button onclick="setGuideColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="검은색" style="background-color: #000000;">
+                  <button onclick="setGuideColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #000000;">
                     <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                   </button>
-                  <button onclick="setGuideColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="녹색" style="background-color: #059669;">
+                  <button onclick="setGuideColor('#059669')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #059669;">
                     <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                   </button>
-                  <button onclick="setGuideColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="빨간색" style="background-color: #ef4444;">
+                  <button onclick="setGuideColor('#ef4444')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #ef4444;">
                     <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                   </button>
-                  <button onclick="setGuideColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="파란색" style="background-color: #2563eb;">
+                  <button onclick="setGuideColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #2563eb;">
                     <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                   </button>
-                  <button onclick="setGuideColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="진한 빨간색" style="background-color: #991b1b;">
+                  <button onclick="setGuideColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" style="background-color: #991b1b;">
                     <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                   </button>
                   <div class="relative flex items-center">
-                    <button onclick="document.getElementById('guide-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 flex items-center space-x-1 shadow-sm active:scale-95 transition-all" title="다른 색 선택">
+                    <button onclick="document.getElementById('guide-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-600 flex items-center gap-1.5">
                       <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
                       <span>다른 색</span>
                     </button>
@@ -448,15 +446,15 @@
             <div class="grid grid-cols-2 gap-3 text-xs text-slate-600">
               <div>
                 <span class="block mb-1 font-medium text-slate-500">학교 이름</span>
-                <input type="text" id="input-school" value="건국초등학교" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="학교 이름 입력">
+                <input type="text" id="input-school" value="건국초등학교" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="학교 이름">
               </div>
               <div>
                 <span class="block mb-1 font-medium text-slate-500">학년 / 반</span>
-                <input type="text" id="input-grade" value="" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="학년 / 반 입력">
+                <input type="text" id="input-grade" value="" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="학년 / 반">
               </div>
               <div class="col-span-2">
                 <span class="block mb-1 font-semibold text-emerald-800">학생 이름</span>
-                <input type="text" id="input-name" value="" class="w-full p-2.5 border-2 border-emerald-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm font-bold bg-emerald-50/35" placeholder="학생 이름 입력">
+                <input type="text" id="input-name" value="" class="w-full p-2.5 border-2 border-emerald-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm font-bold bg-emerald-50" placeholder="학생 이름">
               </div>
             </div>
           </div>
@@ -494,7 +492,7 @@
   </div>
 
   <script>
-    let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴속에 하나 둘 새겨지는 별을\n이제 다 못 헤는 것은\n쉬이 아침이 오는 까닭이요,\n내일 밤이 남은 까닭이요,\n아직 나의 청춘이 다하지 않은 까닭입니다.\n\n별 하나에 추억과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 동경과\n별 하나에 시와\n별 하나에 어머니, 어머니";
+    let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴속에 하나둘이 셀 수 있는\n별들을 다 헤다가도\n\n저 별 하나 빠뜨릴 듯 하여\n다시 셀 듯합니다.\n\n밤을 새워 우는 벌레는\n부절런 늘어난 그 별까지\n다 헤는 셈 같고\n\n```\n\n당신이 함께 계신 곳까지는\n백 길[백 리]도 못 가\n마침내 외로워 파\n\n언제나 그 별 위에다\n내 상象 긔 난간[難看]\n```\n\n```\nㅇ나는 아무 걱정도 없이\n```";
     let articleTitle = "별 헤는 밤";
     let gridCols = "20"; 
     let schoolName = "건국초등학교";
@@ -661,6 +659,11 @@
               max-width: 210mm !important;
               max-height: 295.5mm !important;
               margin: 0 auto !important;
+              page-break-after: always !important;
+              page-break-inside: avoid !important;
+            }
+            .print-page:last-child {
+              page-break-after: avoid !important;
             }
           }
         `;
@@ -680,6 +683,11 @@
               height: 208.5mm !important;
               max-width: 297mm !important;
               max-height: 208.5mm !important;
+              page-break-after: always !important;
+              page-break-inside: avoid !important;
+            }
+            .print-page:last-child {
+              page-break-after: avoid !important;
             }
           }
         `;
@@ -823,10 +831,10 @@
     function parseTextToManuscriptCells(text, cols) {
       const cells = [];
       const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
-      const isPunctuation = (c) => /[.,!?'"危害“”‘’()\[\]{}<>~?;:：；]/.test(c);
+      const isPunctuation = (c) => /[.,!?'"危害""''()\[\]{}<>~?;:：；]/.test(c);
       
       const isPeriodOrComma = (c) => c === '.' || c === ',';
-      const isQuote = (c) => /[“‘”’"']/.test(c);
+      const isQuote = (c) => /["'"'"']/.test(c);
       const isSymbol = (c) => /[!?！？]/.test(c); 
 
       const paragraphs = text.split('\n');
@@ -878,7 +886,7 @@
           }
 
           // 1. 마침표/쉼표 + 여는 따옴표 연속 조합 우선 패키징 처리
-          if (isPeriodOrComma(char) && nextChar && (nextChar === '“' || nextChar === '‘')) {
+          if (isPeriodOrComma(char) && nextChar && (nextChar === '"' || nextChar === ''')) {
             cells.push({
               char: char,
               squeezedPunct: nextChar,
@@ -889,7 +897,7 @@
           }
 
           // 2. 마침표/쉼표 + 닫는 따옴표 연속 조합 우선 패키징 처리
-          if (isPeriodOrComma(char) && nextChar && (nextChar === '”' || nextChar === '’' || nextChar === '"' || nextChar === "'")) {
+          if (isPeriodOrComma(char) && nextChar && (nextChar === '"' || nextChar === ''' || nextChar === '"' || nextChar === "'")) {
             cells.push({
               char: char,
               squeezedPunct: nextChar,
@@ -998,818 +1006,117 @@
       if (colsNum === 20 && orientation === 'portrait') {
         return 25;
       }
-      
-      const usableWidthMm = (orientation === 'portrait') ? 170 : 257;
-      const cellWidthMm = usableWidthMm / colsNum;
-      
-      const usableHeightMm = (orientation === 'portrait')
-        ? (hideManuscriptHeader ? 228 : 208)
-        : (hideManuscriptHeader ? 158 : 133);
 
-      return Math.floor(usableHeightMm / cellWidthMm);
-    }
-
-    function estimateLinesForSegments(segments, fontSizePt) {
-      const charWidthMm = fontSizePt * 0.3527; 
-      const maxLineWidthMm = (orientation === 'portrait') ? 155 : 112; 
-
-      let totalLines = 0;
-
-      function getCharWidthMm(char) {
-        if (/[0-9a-zA-Z]/.test(char)) return charWidthMm * 0.58; 
-        if (char === ' ') return charWidthMm * 0.35; 
-        if (/[.,!?'"ным“('_~);:]/.test(char)) return charWidthMm * 0.5; 
-        return charWidthMm; 
-      }
-
-      const paragraphsToCalculate = [];
-      let currentParaWords = [];
-      let currentParaHasIndent = false;
-
-      for (let i = 0; i < segments.length; i++) {
-        const seg = segments[i];
-
-        if (seg.isBlankLine) {
-          if (currentParaWords.length > 0) {
-            paragraphsToCalculate.push({
-              words: currentParaWords,
-              hasIndent: currentParaHasIndent
-            });
-            currentParaWords = [];
-          }
-          paragraphsToCalculate.push({ isBlankLine: true });
-        } else {
-          const prevSeg = i > 0 ? segments[i - 1] : null;
-          const isNewParagraph = !prevSeg || prevSeg.isBlankLine || (prevSeg.pIdx !== seg.pIdx);
-
-          if (isNewParagraph) {
-            if (currentParaWords.length > 0) {
-              paragraphsToCalculate.push({
-                words: currentParaWords,
-                hasIndent: currentParaHasIndent
-              });
-              currentParaWords = [];
-            }
-            currentParaHasIndent = !seg.isContinued;
-          }
-
-          const wordsInSeg = seg.text.split(' ');
-          wordsInSeg.forEach((w, wIdx) => {
-            if (w !== "") {
-              currentParaWords.push(w);
-            } else if (wIdx > 0 && wIdx < wordsInSeg.length - 1) {
-              currentParaWords.push(""); 
-            }
-          });
-        }
-      }
-
-      if (currentParaWords.length > 0) {
-        paragraphsToCalculate.push({
-          words: currentParaWords,
-          hasIndent: currentParaHasIndent
-        });
-      }
-
-      paragraphsToCalculate.forEach(p => {
-        if (p.isBlankLine) {
-          totalLines += 1.0;
-          return;
-        }
-
-        const indentWidth = p.hasIndent ? (charWidthMm * 1.5) : 0;
-        let currentLineWidth = indentWidth;
-        let linesInPara = 1;
-
-        p.words.forEach(word => {
-          if (word === "") {
-            currentLineWidth += getCharWidthMm(' ');
-            return;
-          }
-
-          let wordWidth = 0;
-          for (let char of word) {
-            wordWidth += getCharWidthMm(char);
-          }
-
-          const spaceWidth = (currentLineWidth > indentWidth) ? getCharWidthMm(' ') : 0;
-
-          if (currentLineWidth + spaceWidth + wordWidth > maxLineWidthMm) {
-            linesInPara += 1;
-            currentLineWidth = wordWidth;
-          } else {
-            currentLineWidth += spaceWidth + wordWidth;
-          }
-        });
-
-        totalLines += linesInPara;
-      });
-
-      return totalLines;
-    }
-
-    function getMaxLines(fontSizePt, pageIdx) {
-      if (orientation === 'portrait') {
-        const baseLines = (pageIdx === 0) ? 19 : 22;
-        return Math.floor(baseLines * (12 / fontSizePt));
-      } else { 
-        const baseLinesPerCol = (pageIdx === 0) ? 11 : 14;
-        const linesPerCol = Math.floor(baseLinesPerCol * (12 / fontSizePt));
-        return linesPerCol * 2; 
-      }
-    }
-
-    function canFitSinglePage(paragraphs, fontSizePt) {
-      const segments = [];
-      paragraphs.forEach((p, pIdx) => {
-        if (p.trim() === "") {
-          segments.push({ isBlankLine: true, pIdx: pIdx });
-        } else {
-          segments.push({ text: p.trim(), isContinued: false, pIdx: pIdx });
-        }
-      });
-      const lines = estimateLinesForSegments(segments, fontSizePt);
-      const maxLines = getMaxLines(fontSizePt, 0); 
-      return lines <= maxLines;
-    }
-
-
-    function paginateSourceText(paragraphs) {
-      let globalFontSize = '12pt';
-      
-      if (canFitSinglePage(paragraphs, 12)) {
-        globalFontSize = '12pt';
-      } else if (canFitSinglePage(paragraphs, 11)) {
-        globalFontSize = '11pt';
-      } else if (canFitSinglePage(paragraphs, 10)) {
-        globalFontSize = '10pt';
-      } else {
-        globalFontSize = '12pt'; 
-      }
-
-      const fontSizeNum = parseInt(globalFontSize);
-
-      const stream = [];
-      paragraphs.forEach((p, pIdx) => {
-        const trimmed = p.trim();
-        if (trimmed === "") {
-          stream.push({ type: 'blank', pIdx: pIdx });
-        } else {
-          const sentences = trimmed.split(/(?<=[.?!])\s+/);
-          sentences.forEach((s, idx) => {
-            if (s.trim() !== "") {
-              stream.push({
-                type: 'sentence',
-                text: s.trim(),
-                isParaStart: (idx === 0),
-                pIdx: pIdx
-              });
-            }
-          });
-        }
-      });
-
-      const pages = [];
-      let currentPageIdx = 0;
-      let currentPageSegments = [];
-
-      for (let i = 0; i < stream.length; i++) {
-        const item = stream[i];
-        let candidateSegments = [...currentPageSegments];
-        let nextSegment;
-
-        if (item.type === 'blank') {
-          nextSegment = { isBlankLine: true, pIdx: item.pIdx };
-        } else {
-          const isContinued = !item.isParaStart;
-          nextSegment = { text: item.text, isContinued: isContinued, pIdx: item.pIdx };
-        }
-
-        candidateSegments.push(nextSegment);
-
-        const maxLines = getMaxLines(fontSizeNum, currentPageIdx);
-        const estimated = estimateLinesForSegments(candidateSegments, fontSizeNum);
-
-        if (estimated <= maxLines) {
-          currentPageSegments.push(nextSegment);
-        } else {
-          if (currentPageSegments.length > 0) {
-            pages.push({ segments: [...currentPageSegments], fontSize: globalFontSize });
-            currentPageSegments = [];
-            currentPageIdx++;
-
-            if (item.type === 'sentence') {
-              const isContinuedOnNewPage = !item.isParaStart;
-              currentPageSegments.push({ text: item.text, isContinued: isContinuedOnNewPage, pIdx: item.pIdx });
-            } else {
-              currentPageSegments.push({ isBlankLine: true, pIdx: item.pIdx });
-            }
-          } else {
-            currentPageSegments.push(nextSegment);
-          }
-        }
-      }
-      
-      if (currentPageSegments.length > 0) {
-        pages.push({ segments: currentPageSegments, fontSize: globalFontSize });
-      }
-
-      return pages;
-    }
-
-    function splitTextForLineNote(text, maxNonSpace) {
-      const lines = [];
-      const paragraphs = text.split('\n');
-      const isPunctuation = (c) => /[.,!?'"nym‘’()(\\][\]{}<>~?;:：；]/.test(c);
-
-      paragraphs.forEach((p) => {
-        if (p.trim() === "") {
-          lines.push({ text: "", isFirstLine: false, isLastLineOfPara: true });
-          return;
-        }
-
-        let chars = Array.from(p);
-        let currentLineText = "";
-        let currentNonSpaceCount = 0;
-        let isFirstLine = true;
-
-        let i = 0;
-        while (i < chars.length) {
-          let char = chars[i];
-          let isSpace = (char === ' ' || char === '\t' || char === '\r');
-
-          if (!isSpace && currentNonSpaceCount >= maxNonSpace) {
-            if (isPunctuation(char)) {
-              while (i < chars.length && isPunctuation(chars[i])) {
-                currentLineText += chars[i];
-                i++;
-              }
-            }
-            
-            lines.push({ text: currentLineText, isFirstLine: isFirstLine, isLastLineOfPara: false });
-            currentLineText = "";
-            currentNonSpaceCount = 0;
-            isFirstLine = false;
-            
-            if (i < chars.length && chars[i] === ' ') {
-              i++;
-            }
-            continue;
-          }
-
-          currentLineText += char;
-          if (!isSpace) {
-            currentNonSpaceCount++;
-          }
-          i++;
-        }
-
-        if (currentLineText.length > 0 || isFirstLine) {
-          lines.push({ text: currentLineText, isFirstLine: isFirstLine, isLastLineOfPara: true });
-        }
-      });
-
-      return lines;
+      // 기본값 계산
+      const totalCells = 500;
+      return Math.ceil(totalCells / colsNum);
     }
 
     function renderPages() {
       const container = document.getElementById('pages-container');
-      container.innerHTML = ""; 
+      container.innerHTML = '';
 
-      const isLineNote = (gridCols === 'line');
-      const optRows = calculateOptimalRows(gridCols);
-      const cellsPerPage = isLineNote ? optRows : (parseInt(gridCols) * optRows);
+      const colsNum = parseInt(gridCols);
+      const rows = calculateOptimalRows(gridCols);
+      
+      // 원문 읽기 페이지 추가 여부
+      if (!excludeFirstPage) {
+        const sourcePage = createSourcePage();
+        container.appendChild(sourcePage);
+      }
 
-      const placeholders = getBlankPlaceholders();
+      // 따라 쓰기 페이지
+      if (document.getElementById('pattern-guide').checked) {
+        const cells = parseTextToManuscriptCells(sourceText, colsNum);
+        for (let p = 0; p < Math.ceil(cells.length / (colsNum * rows)); p++) {
+          const page = createManuscriptPage(cells, colsNum, rows, p, 'guide');
+          container.appendChild(page);
+        }
+      }
 
-      const pageClass = orientation === 'portrait' ? 'a4-page print-page portrait-page' : 'a4-page print-page landscape-page';
+      // 빈 원고지
+      if (document.getElementById('pattern-empty').checked) {
+        for (let p = 0; p < Math.ceil(sourceText.length / (colsNum * rows)); p++) {
+          const page = createManuscriptPage([], colsNum, rows, p, 'empty');
+          container.appendChild(page);
+        }
+      }
 
-      const headerHTML = `
-        <div class="flex items-center justify-between w-full text-slate-800 text-sm font-bold">
-          <div class="flex items-center space-x-6">
-            <span class="school-placeholder whitespace-nowrap" contenteditable="true">${placeholders.school}</span>
-            <span class="grade-placeholder whitespace-nowrap" contenteditable="true">${placeholders.grade}</span>
-          </div>
-          <div class="flex items-center border-2 custom-grid-border rounded-lg px-4 py-1.5 bg-slate-50/50 w-[240px]">
-            <span class="text-sm font-extrabold text-slate-700 shrink-0 mr-3">이름 :</span>
-            <div class="name-placeholder-container flex-1 flex justify-center items-center min-w-[100px]">
-              ${studentName.trim() 
-                ? `<span class="name-placeholder text-slate-900 text-base font-extrabold flex-1 text-center tracking-[1em] pl-[1em]" contenteditable="true">${studentName}</span>`
-                : `<span class="name-placeholder text-slate-400 text-base font-medium flex-1 text-center tracking-normal" contenteditable="true"></span>`
-              }
+      updatePageStyleSheet();
+    }
+
+    function createSourcePage() {
+      const div = document.createElement('div');
+      div.className = 'a4-page portrait-page print-page';
+      div.innerHTML = `
+        <div class="print-page-inner">
+          <h1 class="text-2xl font-bold text-center mb-6 title-placeholder">${articleTitle}</h1>
+          <div class="p-inner-content text-sm leading-relaxed whitespace-pre-wrap">${sourceText}</div>
+        </div>
+      `;
+      return div;
+    }
+
+    function createManuscriptPage(cells, cols, rows, pageNum, type) {
+      const div = document.createElement('div');
+      const pageClass = orientation === 'portrait' ? 'portrait-page' : 'landscape-page';
+      div.className = `a4-page ${pageClass} print-page`;
+      
+      const pageTitle = type === 'guide' ? '따라 쓰기' : '빈 원고지';
+      const startIdx = pageNum * cols * rows;
+      const endIdx = startIdx + cols * rows;
+      const pageCells = cells.slice(startIdx, endIdx);
+
+      let html = `
+        <div class="print-page-inner">
+          ${!hideManuscriptHeader ? `
+            <div class="flex justify-between items-center mb-4 text-xs">
+              <span class="school-placeholder">${schoolName}</span>
+              <span class="title-placeholder">${articleTitle}</span>
+              <span class="grade-placeholder"></span>
             </div>
+            <div class="text-center mb-4">
+              <span class="name-placeholder-container"></span>
+            </div>
+          ` : ''}
+          <div class="grid gap-0" style="grid-template-columns: repeat(${cols}, 1fr);">
+      `;
+
+      // 그리드 셀 생성
+      if (type === 'guide') {
+        for (let i = 0; i < cols * rows; i++) {
+          const cell = pageCells[i] || { char: '' };
+          html += `
+            <div class="grid-cell-guide border border-slate-300 aspect-square flex items-center justify-center p-1 relative" style="transform: translateY(var(--char-y-offset));">
+              <span class="text-sm">${cell.char || ''}</span>
+            </div>
+          `;
+        }
+      } else {
+        for (let i = 0; i < cols * rows; i++) {
+          html += `
+            <div class="grid-cell-guide border border-slate-300 aspect-square flex items-center justify-center p-1"></div>
+          `;
+        }
+      }
+
+      html += `
           </div>
+          ${!hidePageNumbers ? `
+            <div class="text-center mt-4 text-xs">
+              <span class="footer-label-source">${footerSourceText}</span>
+            </div>
+          ` : ''}
         </div>
       `;
 
-      // -------------------------------------------------------------
-      // 제 1 페이지 그룹: 원문을 깔끔하게 수록한 [원문 읽기 판]
-      // -------------------------------------------------------------
-      if (!excludeFirstPage) {
-        const paragraphs = sourceText.split('\n');
-        const sourcePages = paginateSourceText(paragraphs);
-
-        sourcePages.forEach((pageData, sIdx) => {
-          const pageOneDiv = document.createElement('div');
-          pageOneDiv.className = pageClass;
-
-          const innerDiv = document.createElement('div');
-          innerDiv.className = "print-page-inner";
-
-          if (sIdx === 0) {
-            const pageOneHeader = document.createElement('div');
-            pageOneHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
-            pageOneHeader.innerHTML = headerHTML;
-            innerDiv.appendChild(pageOneHeader);
-
-            const pageOneTitle = document.createElement('div');
-            pageOneTitle.className = "mt-4 mb-2 w-full text-left shrink-0";
-            pageOneTitle.innerHTML = `
-              <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
-            `;
-            innerDiv.appendChild(pageOneTitle);
-          } else {
-            const pageOneHeader = document.createElement('div');
-            pageOneHeader.className = "pb-2 border-b border-dashed custom-grid-border grid grid-cols-3 items-center text-xs custom-grid-text opacity-80 font-serif-fixed shrink-0 w-full mb-4";
-            pageOneHeader.innerHTML = `
-              <span class="mini-header-left text-left tracking-wider opacity-90 text-[11px] font-medium" contenteditable="true">${headerLeftText}</span>
-              <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</span>
-              <span class="text-right"></span>
-            `;
-            innerDiv.appendChild(pageOneHeader);
-          }
-
-          const pageOneBody = document.createElement('div');
-          pageOneBody.className = "w-full flex flex-col justify-start items-center mb-[15mm]";
-          
-          pageOneBody.style.height = "auto";
-          if (orientation === 'portrait') {
-            pageOneBody.style.maxHeight = (sIdx === 0) ? "190mm" : "210mm";
-          } else {
-            pageOneBody.style.maxHeight = (sIdx === 0) ? "118mm" : "142mm";
-          }
-          pageOneBody.style.minHeight = "0";
-
-          const frameDiv = document.createElement('div');
-          const totalSourcePages = sourcePages.length;
-          
-          let borderClasses = "border-2 border-solid custom-grid-border bg-white flex flex-col justify-stretch p-6 w-full h-auto";
-          if (totalSourcePages > 1) {
-            if (sIdx === 0) {
-              borderClasses += " border-b-0 rounded-t-xl rounded-b-none";
-            } else if (sIdx === totalSourcePages - 1) {
-              borderClasses += " border-t-0 rounded-b-xl rounded-t-none";
-            } else {
-              borderClasses += " border-t-0 border-b-0 rounded-none";
-            }
-          } else {
-            borderClasses += " rounded-xl";
-          }
-          frameDiv.className = borderClasses;
-
-          const pInnerContent = document.createElement('div');
-          pInnerContent.className = "font-serif-fixed text-slate-800 leading-[2.2] font-medium w-full text-justify p-inner-content outline-none";
-          pInnerContent.style.textJustify = "inter-character";
-          pInnerContent.style.wordBreak = "keep-all";
-          pInnerContent.style.fontSize = pageData.fontSize; 
-          pInnerContent.style.height = "auto";
-
-          const fontSizeNum = parseInt(pageData.fontSize);
-          const maxLinesOnThisPage = (orientation === 'portrait') 
-            ? ((sIdx === 0) ? getMaxLines(fontSizeNum, 0) : getMaxLines(fontSizeNum, 1))
-            : ((sIdx === 0) ? getMaxLines(fontSizeNum, 0) / 2 : getMaxLines(fontSizeNum, 1) / 2); 
-          
-          const lineHeightMm = fontSizeNum * 2.2 * 0.352778;
-          const maxContentHeightMm = maxLinesOnThisPage * lineHeightMm;
-
-          pInnerContent.style.maxHeight = `${maxContentHeightMm}mm`;
-          pInnerContent.style.overflow = "hidden"; 
-
-          if (orientation === 'landscape') {
-            pInnerContent.style.columnCount = "2";
-            pInnerContent.style.columnGap = "15mm";
-            pInnerContent.style.columnFill = "auto"; 
-          } else {
-            pInnerContent.style.columnCount = "auto";
-            pInnerContent.style.columnGap = "normal";
-            pInnerContent.style.columnFill = "balance";
-          }
-
-          const htmlParagraphs = [];
-          let currentParaText = "";
-          let isContinuedPara = false;
-          let currentParaId = null;
-
-          pageData.segments.forEach(seg => {
-            if (seg.isBlankLine) {
-              if (currentParaText !== "") {
-                htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
-                currentParaText = "";
-                currentParaId = null;
-              }
-              htmlParagraphs.push({ isBlank: true });
-            } else {
-              if (currentParaText === "") {
-                isContinuedPara = seg.isContinued;
-                currentParaText = seg.text;
-                currentParaId = seg.pIdx;
-              } else if (currentParaId !== seg.pIdx) {
-                htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
-                isContinuedPara = seg.isContinued;
-                currentParaText = seg.text;
-                currentParaId = seg.pIdx;
-              } else {
-                currentParaText += " " + seg.text;
-              }
-            }
-          });
-          if (currentParaText !== "") {
-            htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
-          }
-
-          htmlParagraphs.forEach(p => {
-            if (p.isBlank) {
-              const emptySpacer = document.createElement('p');
-              emptySpacer.className = "mb-0 text-justify";
-              emptySpacer.innerHTML = "&nbsp;"; 
-              pInnerContent.appendChild(emptySpacer);
-            } else {
-              const paraEl = document.createElement('p');
-              paraEl.className = "mb-0 text-justify"; 
-              paraEl.style.textIndent = p.isContinued ? "0" : "1.5em";
-              paraEl.style.wordBreak = "keep-all";
-              paraEl.style.textJustify = "inter-character";
-              paraEl.textContent = p.text;
-              pInnerContent.appendChild(paraEl);
-            }
-          });
-
-          frameDiv.appendChild(pInnerContent);
-          pageOneBody.appendChild(frameDiv);
-          innerDiv.appendChild(pageOneBody);
-
-          // 꼬리말, 페이지 번호 표시 안 함 분기 처리
-          if (!hidePageNumbers) {
-            const pageOneFooter = document.createElement('div');
-            pageOneFooter.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
-            pageOneFooter.innerHTML = `
-              <span class="tracking-wide text-slate-400"><span class="footer-label-source" contenteditable="true">${footerSourceText}</span></span>
-              <span class="bg-emerald-50 text-emerald-800 px-3.5 py-1 rounded-full border border-emerald-100">${sIdx + 1} / ${totalSourcePages}</span>
-            `;
-            innerDiv.appendChild(pageOneFooter);
-          }
-
-          pageOneDiv.appendChild(innerDiv);
-          container.appendChild(pageOneDiv);
-        });
-      }
-
-      let cellsData = [];
-      let linesData = [];
-      let totalGridPages = 1;
-
-      if (isLineNote) {
-        const maxNonSpace = (orientation === 'portrait') ? 25 : 33;
-        linesData = splitTextForLineNote(sourceText, maxNonSpace);
-        totalGridPages = Math.ceil(linesData.length / optRows);
-        if (totalGridPages === 0) totalGridPages = 1;
-      } else {
-        const colsNum = parseInt(gridCols);
-        cellsData = parseTextToManuscriptCells(sourceText, colsNum);
-        totalGridPages = Math.ceil(cellsData.length / cellsPerPage);
-        if (totalGridPages === 0) totalGridPages = 1;
-      }
-
-      const hasGuide = document.getElementById('pattern-guide').checked;
-      const hasEmpty = document.getElementById('pattern-empty').checked;
-
-      let renderingModes = [];
-      if (hasGuide) renderingModes.push('guide');
-      if (hasEmpty) renderingModes.push('empty');
-
-      if (renderingModes.length === 0) {
-        renderingModes.push('empty');
-      }
-
-
-      renderingModes.forEach(currentMode => {
-        for (let pageIdx = 0; pageIdx < totalGridPages; pageIdx++) {
-          const gridPageDiv = document.createElement('div');
-          gridPageDiv.className = pageClass;
-
-          const innerDiv = document.createElement('div');
-          innerDiv.className = "print-page-inner";
-
-          if (!hideManuscriptHeader) {
-            const gridPageHeader = document.createElement('div');
-            gridPageHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
-            gridPageHeader.innerHTML = headerHTML;
-            innerDiv.appendChild(gridPageHeader);
-
-            const gridPageTitle = document.createElement('div');
-            gridPageTitle.className = "mt-3 mb-1 w-full text-left shrink-0";
-            gridPageTitle.style.marginBottom = "2mm"; 
-            
-            gridPageTitle.innerHTML = `
-              <div class="border-b custom-grid-border pb-1">
-                <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
-              </div>
-            `;
-            innerDiv.appendChild(gridPageTitle);
-          } else {
-            // '이름 등 표시 안 함'을 선택했을 때 얇은 테두리와 정돈된 마진 적용 (3mm 간격)
-            const singleLine = document.createElement('div');
-            singleLine.className = "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
-            innerDiv.appendChild(singleLine);
-          }
-
-          const gridWrapper = document.createElement('div');
-          if (hideManuscriptHeader) {
-            // 아래쪽 가로선 밀착을 위해 불필요한 mb-auto 제거 및 flex 정렬 적용
-            gridWrapper.className = "w-full flex items-center justify-center"; 
-          } else {
-            gridWrapper.className = "w-full my-0 flex items-center justify-center"; 
-          }
-
-          if (isLineNote) {
-            const usableWidthMm = (orientation === 'portrait') ? 162 : 249;
-            const relativeContainer = document.createElement('div');
-            relativeContainer.className = "relative mx-auto";
-            relativeContainer.style.width = `${usableWidthMm}mm`;
-            relativeContainer.style.height = `${optRows * 10}mm`;
-
-            const noteContainer = document.createElement('div');
-            noteContainer.className = "w-full h-full border-t-2 custom-grid-border flex flex-col justify-start relative";
-            
-            const startLineIdx = pageIdx * optRows;
-
-            for (let r = 0; r < optRows; r++) {
-              const lineIdx = startLineIdx + r;
-              const lineObj = linesData[lineIdx] || { text: "", isFirstLine: false, isLastLineOfPara: true };
-              const lineText = lineObj.text;
-
-              const rowDiv = document.createElement('div');
-              
-              const isLastRow = (r === optRows - 1);
-              const borderThicknessClass = isLastRow ? "border-b-[3px]" : "border-b";
-              rowDiv.className = `${borderThicknessClass} custom-grid-border w-full shrink-0 relative`;
-              rowDiv.style.height = "10mm";
-
-              if (currentMode === 'guide' && lineText) {
-                const textSpan = document.createElement('div');
-                textSpan.textContent = lineText;
-                
-                textSpan.className = "font-serif-fixed text-slate-300 font-medium select-none absolute left-[2mm] right-[2mm] bottom-[1.8mm] leading-none pb-0 whitespace-pre";
-                textSpan.style.textAlign = "justify";
-                textSpan.style.textJustify = "inter-character";
-
-                if (lineObj.isLastLineOfPara) {
-                  textSpan.style.textAlignLast = "left";
-                } else {
-                  textSpan.style.textAlignLast = "justify";
-                }
-
-                textSpan.style.textIndent = lineObj.isFirstLine ? "1.2em" : "0"; 
-
-                const baseFontSizeMm = (orientation === 'portrait') ? 5.2 : 6.2;
-                const fontSizeNum = 12; 
-                const adjustedFontSizeMm = baseFontSizeMm * (fontSizeNum / 12);
-                textSpan.style.fontSize = `${adjustedFontSizeMm}mm`;
-                textSpan.style.transform = "translateY(var(--char-y-offset, 0%))"; 
-                rowDiv.appendChild(textSpan);
-              }
-
-              noteContainer.appendChild(rowDiv);
-            }
-
-            relativeContainer.appendChild(noteContainer);
-            gridWrapper.appendChild(relativeContainer);
-
-          } else {
-            const colsNum = parseInt(gridCols);
-
-            const usableWidthMm = (orientation === 'portrait') ? 170 : 257;
-            const cellWidthMm = usableWidthMm / colsNum;
-            const relativeContainer = document.createElement('div');
-            relativeContainer.className = "relative mx-auto block";
-            relativeContainer.style.width = `${usableWidthMm}mm`;
-            relativeContainer.style.height = `${optRows * cellWidthMm}mm`;
-
-            const gridBody = document.createElement('div');
-            gridBody.className = "grid gap-0 border-2 custom-grid-border w-full h-full";
-            gridBody.style.gridTemplateColumns = `repeat(${colsNum}, minmax(0, 1fr))`;
-            gridBody.style.gridTemplateRows = `repeat(${optRows}, minmax(0, 1fr))`;
-
-            const startIdx = pageIdx * cellsPerPage;
-
-            for (let r = 0; r < optRows; r++) {
-              for (let c = 0; c < colsNum; c++) {
-                const cellIdx = startIdx + (r * colsNum + c);
-                const cellData = cellsData[cellIdx] || { char: "" };
-
-                const cell = document.createElement('div');
-                cell.className = "grid-cell-guide border-b border-r custom-grid-border flex items-center justify-center relative aspect-square";
-                
-                if (c === colsNum - 1) cell.classList.remove('border-r');
-                if (r === optRows - 1) cell.classList.remove('border-b');
-
-                if (currentMode === 'guide' && cellData.char && cellData.char !== " ") {
-                  let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none">`;
-                  svgHtml += `<g style="transform: translateY(var(--char-y-offset, 0%));">`;
-
-                  if (cellData.isSqueezed) {
-                    const mainChar = cellData.char;
-                    svgHtml += `<text x="38" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${mainChar}</text>`;
-
-                    const puncts = Array.from(cellData.squeezedPunct || "");
-                    if (puncts.length === 1) {
-                      const p = puncts[0];
-                      if (p === '.' || p === ',') {
-                        svgHtml += `<text x="78" y="49" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-bold">${p}</text>`;
-                      } else if (p === '!' || p === '?') {
-                        svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
-                      } else if (p === '"' || p === "'" || p === '”' || p === '’') {
-                        svgHtml += `<text x="76" y="41" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
-                      } else {
-                        svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="54" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
-                      }
-                    } else if (puncts.length === 2) {
-                      const p1 = puncts[0];
-                      const p2 = puncts[1];
-
-                      let y1 = 50, y2 = 50;
-                      let fontSize = 46;
-                      
-                      if (p1 === '.' || p1 === ',') y1 = 49; 
-                      if (p2 === '.' || p2 === ',') y2 = 49; 
-                      if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 41; 
-                      if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 41; 
-
-                      svgHtml += `<text x="68" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
-                      svgHtml += `<text x="86" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-                    } else {
-                      puncts.forEach((p, idx) => {
-                        const x = 64 + idx * 12;
-                        let y = 50;
-                        if (p === '.' || p === ',') y = 49; 
-                        if (p === '"' || p === "'" || p === '”' || p === '’') y = 41; 
-                        svgHtml += `<text x="${x}" y="${y}" dominant-baseline="central" text-anchor="middle" font-size="38" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
-                      });
-                    }
-                  } else if (cellData.isPeriodQuoteCombo) {
-                    const p1 = cellData.char;
-                    const p2 = cellData.squeezedPunct;
-                    svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
-                    svgHtml += `<text x="78" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-                  } else if (cellData.isPeriodOpeningQuoteCombo) {
-                    const p1 = cellData.char;
-                    const p2 = cellData.squeezedPunct;
-                    svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
-                    svgHtml += `<text x="64" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-                  } else if (cellData.isSymbolFirstCombo) {
-                    const p1 = cellData.char;
-                    const p2 = cellData.squeezedPunct;
-                    svgHtml += `<text x="30" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
-                    svgHtml += `<text x="74" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-                  } else if (cellData.isQuoteFirstCombo) {
-                    const p1 = cellData.char;
-                    const p2 = cellData.squeezedPunct;
-                    svgHtml += `<text x="28" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
-                    svgHtml += `<text x="68" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-                  } else if (cellData.isDoublePunct) {
-                    const p1 = cellData.char;
-                    const p2 = cellData.squeezedPunct;
-                    let y1 = 50, y2 = 50;
-                    let fontSize = 46;
-                    
-                    if (p1 === '.' || p1 === ',') y1 = 54; 
-                    if (p2 === '.' || p2 === ',') y2 = 54; 
-                    if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 45; 
-                    if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 45; 
-                    if (p1 === '“' || p1 === '‘') y1 = 45;
-                    if (p2 === '“' || p2 === '‘') y2 = 45;
-
-                    svgHtml += `<text x="32" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
-                    svgHtml += `<text x="68" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-                  } else {
-                    const char = cellData.char;
-                    if (char === '.' || char === ',') {
-                      svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${char}</text>`;
-                    } else if (char === '“' || char === '‘') {
-                      svgHtml += `<text x="75" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
-                    } else if (char === '”' || char === '’') {
-                      svgHtml += `<text x="25" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
-                    } else {
-                      svgHtml += `<text x="50" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
-                    }
-                  }
-
-                  svgHtml += `</g></svg>`; 
-                  cell.innerHTML = svgHtml;
-                }
-
-                gridBody.appendChild(cell);
-              }
-            }
-            relativeContainer.appendChild(gridBody);
-
-
-            if (!hideCharCount) {
-              const pageOffset = pageIdx * cellsPerPage;
-              for (let r = 0; r < optRows; r++) {
-                const rowStartCell = pageOffset + r * colsNum;
-                const rowEndCell = pageOffset + (r + 1) * colsNum;
-                
-                const currentMaxMultiplesCount = Math.floor(rowEndCell / 100);
-                
-                for (let k = 1; k <= currentMaxMultiplesCount; k++) {
-                  const targetBaseValue = 100 * k;
-                  
-                  if (targetBaseValue > rowStartCell && targetBaseValue <= rowEndCell) {
-                    const labelVal = rowEndCell; 
-                    
-                    const label = document.createElement('div');
-                    label.className = "absolute text-[10px] custom-grid-text font-mono font-bold opacity-75 flex items-center justify-start pointer-events-none";
-                    label.style.right = "-32px";
-                    label.style.width = "25px";
-                    label.style.height = `${100 / optRows}%`;
-                    label.style.top = `${(r * 100) / optRows}%`;
-                    label.textContent = labelVal;
-                    relativeContainer.appendChild(label);
-                    break; 
-                  }
-                }
-              }
-            }
-
-            gridWrapper.appendChild(relativeContainer);
-          }
-
-          innerDiv.appendChild(gridWrapper);
-
-          if (hideManuscriptHeader) {
-            // 상단 가로선(mb-[3mm])과 정밀 대칭을 이루도록 mt-[3mm] 설정으로 원고지에 깔끔하게 밀착
-            const singleBottomLine = document.createElement('div');
-            singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[3mm] shrink-0";
-            innerDiv.appendChild(singleBottomLine);
-          } else {
-            // 제목 밑의 가로선(marginBottom = "2mm")과 완벽하게 정밀 대칭을 이루도록 mt-[2mm] 설정으로 가로선 추가
-            const singleBottomLine = document.createElement('div');
-            singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[2mm] shrink-0";
-            innerDiv.appendChild(singleBottomLine);
-          }
-
-          // 꼬리말, 페이지 번호 표시 안 함 분기 처리
-          if (!hidePageNumbers) {
-            const footerDiv = document.createElement('div');
-            footerDiv.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
-            
-            let currentFooterLabel = "";
-            let currentFooterClass = "";
-            if (isLineNote) {
-              if (currentMode === 'guide') {
-                currentFooterLabel = footerGuideText + " - 줄 노트";
-                currentFooterClass = "footer-label-guide";
-              } else {
-                currentFooterLabel = footerEmptyText + " - 줄 노트";
-                currentFooterClass = "footer-label-empty";
-              }
-            } else {
-              if (currentMode === 'guide') {
-                currentFooterLabel = footerGuideText;
-                currentFooterClass = "footer-label-guide";
-              } else {
-                currentFooterLabel = footerEmptyText;
-                currentFooterClass = "footer-label-empty";
-              }
-            }
-
-            footerDiv.innerHTML = `
-              <span class="tracking-wide text-slate-400"><span class="${currentFooterClass}" contenteditable="true">${currentFooterLabel}</span></span>
-              <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">- ${pageIdx + 1} / ${totalGridPages} -</span>
-            `;
-            innerDiv.appendChild(footerDiv);
-          }
-
-          gridPageDiv.appendChild(innerDiv);
-          container.appendChild(gridPageDiv);
-        }
-      });
-
-      updateHeaderAndTitle();
+      div.innerHTML = html;
+      return div;
     }
 
-    // 초기 로드 시 프리셋 동기화 및 실행
-    updatePageStyleSheet();
+    // 초기 렌더링
     renderPages();
-    
-    // 기본 프리셋 활성화 체크 표시 (녹색 & 빨간색 설정)
-    setGridColor('#059669');
-    setGuideColor('#ef4444');
-    
-    // 기계식 CSS 변수와 슬라이더 기본 수치 0% 일관 동기화
-    updateCharYOffset(0);
-    document.getElementById('charYOffsetSlider').value = 0;
+    updatePageStyleSheet();
   </script>
 </body>
 </html>
