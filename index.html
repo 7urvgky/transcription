@@ -1257,10 +1257,10 @@
 
     function getMaxLines(fontSizePt, pageIdx) {
       if (orientation === 'portrait') {
-        const baseLines = (pageIdx === 0) ? 24 : 26;
+        const baseLines = (pageIdx === 0) ? 24 : 24;
         return Math.floor(baseLines * (12 / fontSizePt));
       } else { 
-        const baseLinesPerCol = (pageIdx === 0) ? 13 : 15;
+        const baseLinesPerCol = (pageIdx === 0) ? 13 : 13;
         const linesPerCol = Math.floor(baseLinesPerCol * (12 / fontSizePt));
         return linesPerCol * 2; 
       }
