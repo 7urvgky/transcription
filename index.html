@@ -582,7 +582,7 @@
         
         <!-- 클릭 시 숫자를 직접 입력할 수 있는 하이브리드 인디케이터 컨테이너 -->
         <div class="flex items-center justify-center min-w-[85px]">
-          <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">자동 (100%)</span>
+          <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">자동</span>
           <input id="zoom-input-field" type="number" min="30" max="150" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
         </div>
 
@@ -618,6 +618,11 @@
     let footerSourceText = "원문 읽기";
     let footerGuideText = "따라 쓰기";
     let footerEmptyText = "원고지";
+
+    // 사용자가 직접 편집한 꼬리말 텍스트를 온전히 통째로 담을 상태 변수 추가
+    let customFooterSourceText = null;
+    let customFooterGuideText = null;
+    let customFooterEmptyText = null;
 
     // 실시간 색상 및 불투명도 제어기 전역 상태 변수 선언
     let currentGridColor = '#69afa0';
@@ -879,8 +884,8 @@
         syncMetadata('school-placeholder', schoolName, target);
       }
       else if (target.classList.contains('grade-placeholder')) {
-        gradeInfo = txt === "" ? " " : txt;
-        document.getElementById('input-grade').value = gradeInfo === " " ? "" : gradeInfo;
+        gridInfo = txt === "" ? " " : txt;
+        document.getElementById('input-grade').value = gridInfo === " " ? "" : gridInfo;
         syncMetadata('grade-placeholder', gradeInfo, target);
       }
       else if (target.classList.contains('name-placeholder')) {
@@ -907,16 +912,16 @@
         document.title = articleTitle ? articleTitle : "필사 용지 만들기";
       }
       else if (target.classList.contains('footer-label-source')) {
-        footerSourceText = txt;
-        syncMetadata('footer-label-source', footerSourceText, target);
+        customFooterSourceText = txt === "" ? null : txt;
+        syncMetadata('footer-label-source', txt, target);
       }
       else if (target.classList.contains('footer-label-guide')) {
-        footerGuideText = txt;
-        syncMetadata('footer-label-guide', footerGuideText, target);
+        customFooterGuideText = txt === "" ? null : txt;
+        syncMetadata('footer-label-guide', txt, target);
       }
       else if (target.classList.contains('footer-label-empty')) {
-        footerEmptyText = txt;
-        syncMetadata('footer-label-empty', footerEmptyText, target);
+        customFooterEmptyText = txt === "" ? null : txt;
+        syncMetadata('footer-label-empty', txt, target);
       }
     });
 
@@ -1597,8 +1602,12 @@
           if (!hidePageNumbers) {
             const pageOneFooter = document.createElement('div');
             pageOneFooter.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
+            
+            // 사용자가 수정한 전체 텍스트가 있다면 그것을 노출, 없다면 기본 라벨 노출
+            const displaySourceFooter = customFooterSourceText !== null ? customFooterSourceText : footerSourceText;
+            
             pageOneFooter.innerHTML = `
-              <span class="tracking-wide text-slate-400"><span class="footer-label-source" contenteditable="true">${footerSourceText}</span></span>
+              <span class="tracking-wide text-slate-400"><span class="footer-label-source" contenteditable="true">${displaySourceFooter}</span></span>
               <span class="bg-emerald-50 text-emerald-800 px-3.5 py-1 rounded-full border border-emerald-100">${sIdx + 1} / ${totalSourcePages}</span>
             `;
             innerDiv.appendChild(pageOneFooter);
@@ -1926,20 +1935,22 @@
             
             let currentFooterLabel = "";
             let currentFooterClass = "";
+            
+            // 사용자가 수정한 커스텀 전체 텍스트가 존재하면 그것을 최우선 적용, 없을 때는 시스템 동적 수식어 결합
             if (isLineNote) {
               if (currentMode === 'guide') {
-                currentFooterLabel = footerGuideText + " - 줄 노트";
+                currentFooterLabel = customFooterGuideText !== null ? customFooterGuideText : (footerGuideText + " - 줄 노트");
                 currentFooterClass = "footer-label-guide";
               } else {
-                currentFooterLabel = footerEmptyText + " - 줄 노트";
+                currentFooterLabel = customFooterEmptyText !== null ? customFooterEmptyText : (footerEmptyText + " - 줄 노트");
                 currentFooterClass = "footer-label-empty";
               }
             } else {
               if (currentMode === 'guide') {
-                currentFooterLabel = footerGuideText;
+                currentFooterLabel = customFooterGuideText !== null ? customFooterGuideText : (footerGuideText + " - 가로 " + gridCols + "칸");
                 currentFooterClass = "footer-label-guide";
               } else {
-                currentFooterLabel = footerEmptyText;
+                currentFooterLabel = customFooterEmptyText !== null ? customFooterEmptyText : (footerEmptyText + " - 가로 " + gridCols + "칸");
                 currentFooterClass = "footer-label-empty";
               }
             }
@@ -1991,11 +2002,9 @@
         let scale = 1;
 
         if (previewZoomMode === 'auto') {
-          // 자동 맞춤 모드: 화면 폭을 초과할 때 자동으로 가로 폭에 맞춥니다.
-          if (pageNaturalWidth > availableWidth && availableWidth > 0) {
+          // 자동 맞춤 모드: 모드와 무관하게 언제나 프리뷰 페이지 폭이 화면 가로에 가득 차도록 계산식을 일원화
+          if (availableWidth > 0 && pageNaturalWidth > 0) {
             scale = availableWidth / pageNaturalWidth;
-          } else {
-            scale = 1;
           }
         } else {
           // 수동 비율 모드: 설정된 zoom 배율 수치(%)를 그대로 매핑합니다.
@@ -2012,16 +2021,7 @@
       const indicator = document.getElementById('zoom-indicator-text');
       if (indicator) {
         if (previewZoomMode === 'auto') {
-          if (wrappers[0]) {
-            const page = wrappers[0].querySelector('.print-page');
-            if (page) {
-              const pageNaturalWidth = page.offsetWidth;
-              const autoScale = availableWidth > 0 && pageNaturalWidth > availableWidth ? (availableWidth / pageNaturalWidth) : 1;
-              indicator.textContent = `자동 (${Math.round(autoScale * 100)}%)`;
-            }
-          } else {
-            indicator.textContent = '자동 (100%)';
-          }
+          indicator.textContent = '자동';
         } else {
           indicator.textContent = `${previewZoomValue}%`;
         }
@@ -2090,12 +2090,12 @@
     function updateZoomModeUI() {
       const btn = document.getElementById('btn-zoom-mode');
       if (btn) {
-        if (previewZoomMode === 'auto') {
+        if (previewZoomMode === 'manual') {
+          // 폭 맞춤이 되지 않은 수동 모드일 때 불이 켜지도록(초록색 활성화) 설정
           btn.className = "bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
-          btn.textContent = "폭 맞춤";
         } else {
+          // 폭 맞춤이 정밀하게 적용된 상태라면 불이 꺼지도록(어두운색) 설정
           btn.className = "bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
-          btn.textContent = "폭 맞춤";
         }
       }
     }
@@ -2149,6 +2149,18 @@
       updateZoomModeUI();
       adjustPreviewScale();
     }
+
+    // [신규] 수치 직접 조절 시(1씩 증감 화살표 포함) 실시간 프리뷰 크기 동기화 바인딩
+    document.getElementById('zoom-input-field').addEventListener('input', (e) => {
+      let num = parseInt(e.target.value);
+      if (!isNaN(num)) {
+        num = Math.max(30, Math.min(150, num));
+        previewZoomValue = num;
+        previewZoomMode = 'manual';
+        updateZoomModeUI();
+        adjustPreviewScale();
+      }
+    });
 
     // 초기 로드 시 프리셋 동기화 및 실행
     updatePageStyleSheet();
