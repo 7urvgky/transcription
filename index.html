@@ -1258,10 +1258,10 @@
     function getMaxLines(fontSizePt, pageIdx) {
       if (orientation === 'portrait') {
         const baseLines = (pageIdx === 0) ? 23 : 25;
-        return Math.floor(baseLines * (12 / fontSizePt));
+        return Math.floor(baseLines * (11 / fontSizePt));
       } else { 
-        const baseLinesPerCol = (pageIdx === 0) ? 14 : 16;
-        const linesPerCol = Math.floor(baseLinesPerCol * (12 / fontSizePt));
+        const baseLinesPerCol = (pageIdx === 0) ? 16 : 18;
+        const linesPerCol = Math.floor(baseLinesPerCol * (10 / fontSizePt));
         return linesPerCol * 2; 
       }
     }
@@ -1492,16 +1492,14 @@
           pageOneBody.className = "w-full flex flex-col justify-start items-center mb-[15mm]";
           
           const totalSourcePages = sourcePages.length;
-          const isLastPage = (sIdx === totalSourcePages - 1);
 
           pageOneBody.style.height = "auto";
           if (orientation === 'portrait') {
             pageOneBody.style.maxHeight = (sIdx === 0) ? "175mm" : "195mm";
           } else {
-            // 가로 모드 마지막 페이지일 경우 전체 프레임 높이를 15mm 감축
+            // 가로 모드일 때 첫 페이지와 이후 페이지에 맞추어 일관되게 고정 물리 높이 적용 (감축 제거)
             const baseHeight = (sIdx === 0) ? 108 : 132;
-            const finalHeight = isLastPage ? (baseHeight - 15) : baseHeight;
-            pageOneBody.style.maxHeight = `${finalHeight}mm`;
+            pageOneBody.style.maxHeight = `${baseHeight}mm`;
           }
           pageOneBody.style.minHeight = "0";
 
@@ -1535,12 +1533,8 @@
             : ((sIdx === 0) ? getMaxLines(fontSizeNum, 0) / 2 : getMaxLines(fontSizeNum, 1) / 2); 
           
           const lineHeightMm = fontSizeNum * 2.2 * 0.352778;
-          let maxContentHeightMm = maxLinesOnThisPage * lineHeightMm;
-
-          // 가로 모드이면서 마지막 페이지일 경우, 텍스트 높이 기준선도 15mm 감축하여 불필요한 공백 제거
-          if (orientation === 'landscape' && isLastPage) {
-            maxContentHeightMm = Math.max(0, maxContentHeightMm - 15);
-          }
+          // 15mm 감축 조건식을 제거하여 계산된 원본 최대 콘텐츠 높이를 온전히 적용
+          const maxContentHeightMm = maxLinesOnThisPage * lineHeightMm;
 
           pInnerContent.style.maxHeight = `${maxContentHeightMm}mm`;
           pInnerContent.style.overflow = "hidden"; 
@@ -1548,13 +1542,8 @@
           if (orientation === 'landscape') {
             pInnerContent.style.columnCount = "2";
             pInnerContent.style.columnGap = "15mm";
-            if (isLastPage) {
-              pInnerContent.style.columnFill = "auto"; 
-              pInnerContent.style.height = `${maxContentHeightMm}mm`;
-            } else {
-              pInnerContent.style.columnFill = "balance";
-              pInnerContent.style.height = "auto";
-            }
+            pInnerContent.style.columnFill = "auto"; 
+            pInnerContent.style.height = `${maxContentHeightMm}mm`;
           } else {
             pInnerContent.style.columnCount = "auto";
             pInnerContent.style.columnGap = "normal";
