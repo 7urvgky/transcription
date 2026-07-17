@@ -13,7 +13,8 @@
     :root {
       --guide-display: block;
       --guide-color: rgba(255, 140, 140, 0.35); /* 기본값 R:255 G:140 B:140 투명도 0.35 적용 */
-      --grid-color: rgba(105, 175, 160, 1);  /* 기본값 연한 녹색, 투명도 1 적용 */
+      --grid-color: rgba(105, 175, 160, 1);  /* 기본값 연한 녹색, 투명도 1 항상 고정 */
+      --manuscript-grid-color: rgba(105, 175, 160, 1); /* 원고지 격자 전용 색상 (슬라이더 투명도 연동) */
       --char-y-offset: 0%; /* 기본 정중앙 오프셋을 0%로 초기화 */
     }
 
@@ -36,6 +37,11 @@
     }
     .custom-grid-text {
       color: var(--grid-color) !important;
+    }
+
+    /* 원고지 격자 전용 테두리 클래스 (투명도 조절 슬라이더의 유일한 적용처) */
+    .manuscript-grid-border {
+      border-color: var(--manuscript-grid-color) !important;
     }
 
     /* 십자 가이드선 스타일 (연한 투명도 0.35 적용 및 동적 바인딩) */
@@ -229,8 +235,8 @@
         clear: both !important;
         overflow: visible !important;
         background-color: white !important;
-        -webkit-column-break-after: auto !important;
-        -webkit-column-break-before: auto !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       .print-page + .print-page {
@@ -441,7 +447,7 @@
                     <span>원고지 선 투명도</span>
                     <span id="gridOpacityVal" class="text-emerald-600 font-bold">100%</span>
                   </div>
-                  <input type="range" id="gridOpacitySlider" min="10" max="100" step="5" value="100" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" oninput="updateGridOpacity(this.value)">
+                  <input type="range" id="gridOpacitySlider" min="0" max="100" step="5" value="100" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" oninput="updateGridOpacity(this.value)">
                 </div>
               </div>
 
@@ -477,7 +483,7 @@
                     <span>가운데 점선 투명도</span>
                     <span id="guideOpacityVal" class="text-emerald-600 font-bold">35%</span>
                   </div>
-                  <input type="range" id="guideOpacitySlider" min="10" max="100" step="5" value="35" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" oninput="updateGuideOpacity(this.value)">
+                  <input type="range" id="guideOpacitySlider" min="0" max="100" step="5" value="35" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" oninput="updateGuideOpacity(this.value)">
                 </div>
               </div>
             </div>
@@ -624,10 +630,12 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    // 전역 투명도 값을 포함하여 rgba 문자열로 스타일을 적용하도록 기능 확장
     function setGridColor(val, isCustom = false) {
       currentGridColor = val;
-      document.documentElement.style.setProperty('--grid-color', hexToRgba(val, gridOpacity));
+      // 일반 UI용 grid-color는 투명도 적용 없이 언제나 100% 선명하게 유지
+      document.documentElement.style.setProperty('--grid-color', val);
+      // 오직 원고지 격자 전용에만 슬라이더의 투명도 값을 혼합하여 셋팅
+      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(val, gridOpacity));
       
       const buttons = document.querySelectorAll('.grid-color-check');
       buttons.forEach(el => el.classList.add('hidden'));
@@ -659,11 +667,11 @@
       document.documentElement.style.setProperty('--guide-color', hexToRgba(currentGuideColor, guideOpacity));
     }
 
-    // 원고지 선과 가운데 점선 투명도를 실시간 보정 처리하는 슬라이더 함수 구현
+    // 원고지 선 전역 투명도 실시간 제어 (다른 헤더나 이름 란에는 영향 미침 방지)
     function updateGridOpacity(val) {
       gridOpacity = val / 100;
       document.getElementById('gridOpacityVal').innerText = val + '%';
-      document.documentElement.style.setProperty('--grid-color', hexToRgba(currentGridColor, gridOpacity));
+      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(currentGridColor, gridOpacity));
     }
 
     function updateGuideOpacity(val) {
@@ -1425,6 +1433,7 @@
           const frameDiv = document.createElement('div');
           const totalSourcePages = sourcePages.length;
           
+          // 원문 읽기 테두리는 opacity에 관계없이 언제나 100% solid 선으로 렌더링되도록 custom-grid-border 유지
           let borderClasses = "border-2 border-solid custom-grid-border bg-white flex flex-col justify-stretch p-6 w-full h-auto";
           if (totalSourcePages > 1) {
             if (sIdx === 0) {
@@ -1563,7 +1572,6 @@
         renderingModes.push('empty');
       }
 
-
       renderingModes.forEach(currentMode => {
         for (let pageIdx = 0; pageIdx < totalGridPages; pageIdx++) {
           const gridPageDiv = document.createElement('div');
@@ -1611,7 +1619,8 @@
             relativeContainer.style.height = `${optRows * 10}mm`;
 
             const noteContainer = document.createElement('div');
-            noteContainer.className = "w-full h-full border-t-2 custom-grid-border flex flex-col justify-start relative";
+            // 줄노트의 본체 선들에는 슬라이더 투명도를 매핑하기 위해 manuscript-grid-border 클래스 적용
+            noteContainer.className = "w-full h-full border-t-2 manuscript-grid-border flex flex-col justify-start relative";
             
             const startLineIdx = pageIdx * optRows;
 
@@ -1624,7 +1633,7 @@
               
               const isLastRow = (r === optRows - 1);
               const borderThicknessClass = isLastRow ? "border-b-[3px]" : "border-b";
-              rowDiv.className = `${borderThicknessClass} custom-grid-border w-full shrink-0 relative`;
+              rowDiv.className = `${borderThicknessClass} manuscript-grid-border w-full shrink-0 relative`;
               rowDiv.style.height = "10mm";
 
               if (currentMode === 'guide' && lineText) {
@@ -1668,7 +1677,8 @@
             relativeContainer.style.height = `${optRows * cellWidthMm}mm`;
 
             const gridBody = document.createElement('div');
-            gridBody.className = "grid gap-0 border-2 custom-grid-border w-full h-full";
+            // 원고지 격자 테두리(border-2) 역시 opacity 조절 시 함께 페이드되어야 하므로 manuscript-grid-border 바인딩
+            gridBody.className = "grid gap-0 border-2 manuscript-grid-border w-full h-full";
             gridBody.style.gridTemplateColumns = `repeat(${colsNum}, minmax(0, 1fr))`;
             gridBody.style.gridTemplateRows = `repeat(${optRows}, minmax(0, 1fr))`;
 
@@ -1680,7 +1690,8 @@
                 const cellData = cellsData[cellIdx] || { char: "" };
 
                 const cell = document.createElement('div');
-                cell.className = "grid-cell-guide border-b border-r custom-grid-border flex items-center justify-center relative aspect-square";
+                // 원고지 각 셀의 테두리(boder-b, border-r)에는 실시간 투명도가 상시 적용되도록 manuscript-grid-border 장착
+                cell.className = "grid-cell-guide border-b border-r manuscript-grid-border flex items-center justify-center relative aspect-square";
                 
                 if (c === colsNum - 1) cell.classList.remove('border-r');
                 if (r === optRows - 1) cell.classList.remove('border-b');
@@ -1785,7 +1796,6 @@
             }
             relativeContainer.appendChild(gridBody);
 
-
             if (!hideCharCount) {
               const pageOffset = pageIdx * cellsPerPage;
               for (let r = 0; r < optRows; r++) {
@@ -1801,6 +1811,7 @@
                     const labelVal = rowEndCell; 
                     
                     const label = document.createElement('div');
+                    // 글자 수 안내 표시 텍스트는 불투명도에 무관하게 항상 가독성이 높도록 solid 색상(custom-grid-text) 바인딩
                     label.className = "absolute text-[10px] custom-grid-text font-mono font-bold opacity-75 flex items-center justify-start pointer-events-none";
                     label.style.right = "-32px";
                     label.style.width = "25px";
@@ -1822,6 +1833,7 @@
           if (hideManuscriptHeader) {
             // 상단 가로선(mb-[3mm])과 정밀 대칭을 이루도록 mt-[3mm] 설정으로 원고지에 깔끔하게 밀착
             const singleBottomLine = document.createElement('div');
+            // 가로선은 페이지 전체 프레임 조판선이므로 선명함을 유지하도록 custom-grid-border 적용
             singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[3mm] shrink-0";
             innerDiv.appendChild(singleBottomLine);
           } else {
