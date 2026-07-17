@@ -45,6 +45,7 @@
     }
 
     /* 십자 가이드선 스타일 (연한 투명도 0.35 적용 및 동적 바인딩) */
+    /* 따라쓰기 글자(z-index: 10)보다 아래에 배치되도록 z-index: 1 지정 */
     .grid-cell-guide {
       position: relative;
       box-sizing: border-box;
@@ -59,6 +60,7 @@
       border-left: 1px dashed var(--guide-color) !important;
       transform: translateX(-50%);
       pointer-events: none;
+      z-index: 1;
     }
     .grid-cell-guide::after {
       content: "";
@@ -70,6 +72,7 @@
       border-top: 1px dashed var(--guide-color) !important;
       transform: translateY(-50%);
       pointer-events: none;
+      z-index: 1;
     }
 
     /* 인라인 편집 모드 시 시각적 반응형 힌트 및 포커스 스타일링 */
@@ -1697,7 +1700,8 @@
                 if (r === optRows - 1) cell.classList.remove('border-b');
 
                 if (currentMode === 'guide' && cellData.char && cellData.char !== " ") {
-                  let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none">`;
+                  // 따라쓰기 글자가 십자 가이드선보다 위에 겹쳐 그려지도록 style="z-index: 10;"을 명시적으로 추가
+                  let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none" style="z-index: 10;">`;
                   svgHtml += `<g style="transform: translateY(var(--char-y-offset, 0%));">`;
 
                   if (cellData.isSqueezed) {
