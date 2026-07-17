@@ -44,6 +44,37 @@
       border-color: var(--manuscript-grid-color) !important;
     }
 
+    /* 십자 가이드선 스타일 (연한 투명도 0.35 적용 및 동적 바인딩) */
+    /* 따라쓰기 글자(z-index: 10)보다 아래에 배치되도록 z-index: 1 지정 */
+    .grid-cell-guide {
+      position: relative;
+      box-sizing: border-box;
+    }
+    .grid-cell-guide::before {
+      content: "";
+      display: var(--guide-display) !important;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      border-left: 1px dashed var(--guide-color) !important;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .grid-cell-guide::after {
+      content: "";
+      display: var(--guide-display) !important;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      border-top: 1px dashed var(--guide-color) !important;
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
     /* 인라인 편집 모드 시 시각적 반응형 힌트 및 포커스 스타일링 */
     [contenteditable="true"] {
       transition: all 0.2s ease;
@@ -579,7 +610,7 @@
     let excludeFirstPage = false; 
     let hideManuscriptHeader = false; 
     let hideCharCount = false;
-    let hidePageNumbers = false; 
+    let hidePageNumbers = false; // 글로벌 변수 누락 해결을 위한 정의 추가
     let orientation = "portrait";
 
     let headerLeftText = "";
@@ -588,18 +619,18 @@
     let footerGuideText = "따라 쓰기";
     let footerEmptyText = "원고지";
 
-    // 사용자가 직접 편집한 꼬리말 텍스트를 담을 상태 변수
+    // 사용자가 직접 편집한 꼬리말 텍스트를 온전히 통째로 담을 상태 변수 추가
     let customFooterSourceText = null;
     let customFooterGuideText = null;
     let customFooterEmptyText = null;
 
-    // 실시간 색상 및 불투명도 제어기 전역 상태 변수
+    // 실시간 색상 및 불투명도 제어기 전역 상태 변수 선언
     let currentGridColor = '#69afa0';
     let currentGuideColor = '#ff8c8c';
     let gridOpacity = 1.0;
     let guideOpacity = 0.35;
 
-    // 화면 프리뷰 배율 제어 상태 변수
+    // [신규] 화면 프리뷰 배율 제어 상태 변수
     let previewZoomMode = 'auto'; // 'auto' (자동 맞춤) 또는 'manual' (수동 조절)
     let previewZoomValue = 100;   // 수동 조절 시 사용할 퍼센트 값 (30% ~ 150%)
 
@@ -667,7 +698,9 @@
 
     function setGridColor(val, isCustom = false) {
       currentGridColor = val;
+      // 일반 UI용 grid-color는 투명도 적용 없이 언제나 100% 선명하게 유지
       document.documentElement.style.setProperty('--grid-color', val);
+      // 오직 원고지 격자 전용에만 슬라이더의 투명도 값을 혼합하여 셋팅
       document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(val, gridOpacity));
       
       const buttons = document.querySelectorAll('.grid-color-check');
@@ -700,6 +733,7 @@
       document.documentElement.style.setProperty('--guide-color', hexToRgba(currentGuideColor, guideOpacity));
     }
 
+    // 원고지 선 전역 투명도 실시간 제어 (다른 헤더나 이름 란에는 영향 미침 방지)
     function updateGridOpacity(val) {
       gridOpacity = val / 100;
       document.getElementById('gridOpacityVal').innerText = val + '%';
@@ -931,6 +965,8 @@
       }
     }, true);
 
+
+    // 구두점/기호 연속 2개까지 한 칸 배치 보존 + 한글 규칙 준수
     function parseTextToManuscriptCells(text, cols) {
       const cells = [];
       const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
@@ -975,18 +1011,20 @@
           let nextChar = pText[charIdx + 1];
           let colIndex = cells.length % cols;
 
+          // 행말(마지막 칸) 구두점 압착 시 예외 적용 (문자 1개 + 구두점/기호 단 1개만 매핑)
           const isAtRowEnd = (colIndex === 0 && cells.length > 0);
 
           if (isPunctuation(char) && isAtRowEnd) {
             let targetIdx = cells.length - 1;
             if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
-              cells[targetIdx].squeezedPunct = char; 
+              cells[targetIdx].squeezedPunct = char; // 문자가 섞일 때는 단 한 개만 압착 허용
               cells[targetIdx].isSqueezed = true;
               charIdx += 1;
               continue;
             }
           }
 
+          // 1. 마침표/쉼표 + 여는 따옴표 연속 조합 우선 패키징 처리
           if (isPeriodOrComma(char) && nextChar && (nextChar === '“' || nextChar === '‘')) {
             cells.push({
               char: char,
@@ -997,6 +1035,7 @@
             continue;
           }
 
+          // 2. 마침표/쉼표 + 닫는 따옴표 연속 조합 우선 패키징 처리
           if (isPeriodOrComma(char) && nextChar && (nextChar === '”' || nextChar === '’' || nextChar === '"' || nextChar === "'")) {
             cells.push({
               char: char,
@@ -1007,6 +1046,7 @@
             continue;
           }
 
+          // 3. 기호(물음표, 느낌표) + 따옴표 이어질 때 한 칸 표시
           if (isSymbol(char) && nextChar && isQuote(nextChar)) {
             cells.push({
               char: char,
@@ -1017,6 +1057,7 @@
             continue;
           }
 
+          // 4. 따옴표 + 기호 이어질 때 한 칸 표시
           if (isQuote(char) && nextChar && isSymbol(nextChar)) {
             cells.push({
               char: char,
@@ -1027,6 +1068,7 @@
             continue;
           }
 
+          // 5. 일반 연속 기호/구두점 처리 (구두점, 기호가 연속 될 때 한 칸에 두 개까지 허용)
           if (isPunctuation(char) && nextChar && isPunctuation(nextChar)) {
             cells.push({
               char: char,
@@ -1045,6 +1087,7 @@
             if (cells.length > 0) {
               const prevCell = cells[cells.length - 1];
               if (prevCell && (prevCell.char === '.' || prevCell.char === ',')) {
+                // 마침표 + 닫는 따옴표가 있을 때는 다음 띄어쓰기를 무시하지 않음
                 if (prevCell.isPeriodQuoteCombo) {
                   cells.push({ char: " ", isSpace: true });
                   charIdx++;
@@ -1087,6 +1130,7 @@
       return cells;
     }
 
+
     function calculateOptimalRows(cols) {
       if (cols === "line") {
         if (orientation === 'portrait') {
@@ -1097,6 +1141,7 @@
       }
       const colsNum = parseInt(cols);
       
+      // 세로모드 20칸 선택 시 정확히 25줄(500칸)을 렌더링하도록 강제 설정
       if (colsNum === 20 && orientation === 'portrait') {
         return 25;
       }
@@ -1235,6 +1280,7 @@
       return lines <= maxLines;
     }
 
+
     function paginateSourceText(paragraphs) {
       let globalFontSize = '12pt';
       
@@ -1318,6 +1364,7 @@
       return pages;
     }
 
+    // [중요 교정] 구두점 정규식 수정을 통해 행두금칙(줄 처음에 마침표/물음표 등이 오는 것 방지) 완벽 보장
     function splitTextForLineNote(text, maxNonSpace) {
       const lines = [];
       const paragraphs = text.split('\n');
@@ -1340,6 +1387,7 @@
           let isSpace = (char === ' ' || char === '\t' || char === '\r');
 
           if (!isSpace && currentNonSpaceCount >= maxNonSpace) {
+            // 줄 시작점에 구두점이 올 경우 예외 조판 필터링 가동 (모든 구두점을 전 줄 마지막으로 연쇄 흡수)
             if (isPunctuation(char)) {
               while (i < chars.length && isPunctuation(chars[i])) {
                 currentLineText += chars[i];
@@ -1373,255 +1421,6 @@
       return lines;
     }
 
-    function createSVGGrid(currentMode, pageIdx, colsNum, optRows, cellsPerPage, cellsData) {
-      const W = (orientation === 'portrait') ? 170 : 257;
-      const S = W / colsNum;
-      const H = optRows * S;
-
-      let svgContent = `<svg width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" class="w-full h-auto select-none mx-auto block" style="overflow: visible;">`;
-
-      // 1. 가운데 십자 가이드 점선 렌더링 (텍스트보다 밑에 배치되도록 우선 렌더링)
-      const hideGuides = document.getElementById('hide-grid-guides').checked;
-      if (!hideGuides) {
-        svgContent += ``;
-        for (let r = 0; r < optRows; r++) {
-          for (let c = 0; c < colsNum; c++) {
-            const cx = (c + 0.5) * S;
-            const cy = (r + 0.5) * S;
-            const rx = c * S;
-            const ry = r * S;
-            
-            // 가로 점선
-            svgContent += `<line x1="${rx}" y1="${cy}" x2="${rx + S}" y2="${cy}" stroke="var(--guide-color)" stroke-width="0.12" stroke-dasharray="0.6,0.6" style="display: var(--guide-display);" />`;
-            // 세로 점선
-            svgContent += `<line x1="${cx}" y1="${ry}" x2="${cx}" y2="${ry + S}" stroke="var(--guide-color)" stroke-width="0.12" stroke-dasharray="0.6,0.6" style="display: var(--guide-display);" />`;
-          }
-        }
-      }
-
-      // 2. 외곽 테두리 및 내부 원고지 칸 격자 드로잉
-      svgContent += ``;
-      // 가장자리 메인 사각형 테두리 (외곽선 0.5mm 두께)
-      svgContent += `<rect x="0" y="0" width="${W}" height="${H}" stroke="var(--manuscript-grid-color)" stroke-width="0.5" fill="none" class="manuscript-grid-border" />`;
-      // 내부 가로선
-      for (let r = 1; r < optRows; r++) {
-        const y = r * S;
-        svgContent += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="var(--manuscript-grid-color)" stroke-width="0.25" class="manuscript-grid-border" />`;
-      }
-      // 내부 세로선
-      for (let c = 1; c < colsNum; c++) {
-        const x = c * S;
-        svgContent += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="var(--manuscript-grid-color)" stroke-width="0.25" class="manuscript-grid-border" />`;
-      }
-
-      // 3. 따라쓰기 폰트 및 압착 조판 글자 렌더링
-      if (currentMode === 'guide') {
-        svgContent += ``;
-        const startIdx = pageIdx * cellsPerPage;
-        // 원래 버전의 62% 컴팩트한 글자 크기로 복원하여 시각적 안정감 극대화
-        const fontSize = S * 0.62; 
-
-        // 미세조정 상하 오프셋 CSS 변수 전파 그룹
-        svgContent += `<g style="transform: translateY(var(--char-y-offset, 0%));">`;
-
-        for (let r = 0; r < optRows; r++) {
-          for (let c = 0; c < colsNum; c++) {
-            const cellIdx = startIdx + (r * colsNum + c);
-            const cellData = cellsData[cellIdx];
-            if (!cellData || !cellData.char || cellData.char === " ") continue;
-
-            const cx = (c + 0.5) * S;
-            const cy = (r + 0.5) * S;
-
-            if (cellData.isSqueezed) {
-              const mainChar = cellData.char;
-              const mainX = c * S + 0.38 * S;
-              const mainY = r * S + 0.50 * S;
-              const mainFS = fontSize * 1.0; 
-
-              svgContent += `<text x="${mainX}" y="${mainY}" dominant-baseline="central" text-anchor="middle" font-size="${mainFS}" class="font-serif-fixed fill-current text-slate-300 font-medium">${mainChar}</text>`;
-
-              const puncts = Array.from(cellData.squeezedPunct || "");
-              if (puncts.length === 1) {
-                const p = puncts[0];
-                let px = c * S + 0.76 * S;
-                let py = r * S + 0.50 * S;
-                let pFS = fontSize * 0.9;
-                if (p === '.' || p === ',') {
-                  px = c * S + 0.78 * S;
-                  py = r * S + 0.49 * S;
-                } else if (p === '"' || p === "'" || p === '”' || p === '’') {
-                  py = r * S + 0.41 * S;
-                }
-                svgContent += `<text x="${px}" y="${py}" dominant-baseline="central" text-anchor="middle" font-size="${pFS}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
-              } else if (puncts.length === 2) {
-                const p1 = puncts[0];
-                const p2 = puncts[1];
-                let py1 = r * S + 0.50 * S;
-                let py2 = r * S + 0.50 * S;
-                const px1 = c * S + 0.68 * S;
-                const px2 = c * S + 0.86 * S;
-                const pFS = fontSize * 0.74;
-
-                if (p1 === '.' || p1 === ',') py1 = r * S + 0.49 * S;
-                if (p2 === '.' || p2 === ',') py2 = r * S + 0.49 * S;
-                if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') py1 = r * S + 0.41 * S;
-                if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') py2 = r * S + 0.41 * S;
-
-                svgContent += `<text x="${px1}" y="${py1}" dominant-baseline="central" text-anchor="middle" font-size="${pFS}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
-                svgContent += `<text x="${px2}" y="${py2}" dominant-baseline="central" text-anchor="middle" font-size="${pFS}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-              }
-            } else if (cellData.isPeriodQuoteCombo || cellData.isPeriodOpeningQuoteCombo) {
-              const p1 = cellData.char;
-              const p2 = cellData.squeezedPunct;
-              const px1 = c * S + 0.25 * S;
-              const py1 = r * S + 0.54 * S;
-              const px2 = c * S + (cellData.isPeriodOpeningQuoteCombo ? 0.64 : 0.78) * S;
-              const py2 = r * S + 0.45 * S;
-              const fsVal = fontSize * 1.0;
-
-              svgContent += `<text x="${px1}" y="${py1}" dominant-baseline="central" text-anchor="middle" font-size="${fsVal}" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
-              svgContent += `<text x="${px2}" y="${py2}" dominant-baseline="central" text-anchor="middle" font-size="${fsVal}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-            } else if (cellData.isSymbolFirstCombo) {
-              const p1 = cellData.char;
-              const p2 = cellData.squeezedPunct;
-              const px1 = c * S + 0.30 * S;
-              const py1 = r * S + 0.50 * S;
-              const px2 = c * S + 0.74 * S;
-              const py2 = r * S + 0.41 * S;
-              const fs1 = fontSize * 0.9;
-              const fs2 = fontSize * 1.0;
-
-              svgContent += `<text x="${px1}" y="${py1}" dominant-baseline="central" text-anchor="middle" font-size="${fs1}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
-              svgContent += `<text x="${px2}" y="${py2}" dominant-baseline="central" text-anchor="middle" font-size="${fs2}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-            } else if (cellData.isQuoteFirstCombo) {
-              const p1 = cellData.char;
-              const p2 = cellData.squeezedPunct;
-              const px1 = c * S + 0.28 * S;
-              const py1 = r * S + 0.41 * S;
-              const px2 = c * S + 0.68 * S;
-              const py2 = r * S + 0.50 * S;
-              const fs1 = fontSize * 1.0;
-              const fs2 = fontSize * 0.9;
-
-              svgContent += `<text x="${px1}" y="${py1}" dominant-baseline="central" text-anchor="middle" font-size="${fs1}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
-              svgContent += `<text x="${px2}" y="${py2}" dominant-baseline="central" text-anchor="middle" font-size="${fs2}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-            } else if (cellData.isDoublePunct) {
-              const p1 = cellData.char;
-              const p2 = cellData.squeezedPunct;
-              let py1 = r * S + 0.50 * S;
-              let py2 = r * S + 0.50 * S;
-              const px1 = c * S + 0.32 * S;
-              const px2 = c * S + 0.68 * S;
-              const fsVal = fontSize * 0.74;
-
-              if (p1 === '.' || p1 === ',') py1 = r * S + 0.54 * S;
-              if (p2 === '.' || p2 === ',') py2 = r * S + 0.54 * S;
-              if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’' || p1 === '“' || p1 === '‘') py1 = r * S + 0.45 * S;
-              if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’' || p2 === '“' || p2 === '‘') py2 = r * S + 0.45 * S;
-
-              svgContent += `<text x="${px1}" y="${py1}" dominant-baseline="central" text-anchor="middle" font-size="${fsVal}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
-              svgContent += `<text x="${px2}" y="${py2}" dominant-baseline="central" text-anchor="middle" font-size="${fsVal}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
-            } else {
-              const char = cellData.char;
-              let px = cx;
-              let py = cy;
-              let fontStyle = "font-medium";
-              if (char === '.' || char === ',') {
-                px = c * S + 0.25 * S;
-                py = r * S + 0.54 * S;
-                fontStyle = "font-bold";
-              } else if (char === '“' || char === '‘') {
-                px = c * S + 0.75 * S;
-                py = r * S + 0.45 * S;
-              } else if (char === '”' || char === '’') {
-                px = c * S + 0.25 * S;
-                py = r * S + 0.45 * S;
-              }
-              svgContent += `<text x="${px}" y="${py}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 ${fontStyle}">${char}</text>`;
-            }
-          }
-        }
-        svgContent += `</g>`;
-      }
-
-      // 4. 우측 누적 글자 수 마커 표시 (A4 페이지 안쪽 여백에 정밀 드로잉)
-      const hideCharCount = document.getElementById('hide-char-count').checked;
-      if (!hideCharCount) {
-        const pageOffset = pageIdx * cellsPerPage;
-        for (let r = 0; r < optRows; r++) {
-          const rowEndCell = pageOffset + (r + 1) * colsNum;
-          const currentMaxMultiplesCount = Math.floor(rowEndCell / 100);
-
-          for (let k = 1; k <= currentMaxMultiplesCount; k++) {
-            const targetBaseValue = 100 * k;
-            if (targetBaseValue > (pageOffset + r * colsNum) && targetBaseValue <= rowEndCell) {
-              const labelVal = rowEndCell;
-              const lx = W + 2; // 우측 격자 바깥으로 2mm 이동
-              const ly = (r + 0.5) * S;
-              svgContent += `<text x="${lx}" y="${ly}" dominant-baseline="central" text-anchor="start" font-size="2.8" font-family="monospace" class="custom-grid-text font-bold fill-current opacity-75">${labelVal}</text>`;
-              break;
-            }
-          }
-        }
-      }
-
-      svgContent += `</svg>`;
-      return svgContent;
-    }
-
-    function createSVGLineNote(currentMode, pageIdx, optRows, linesData) {
-      const W = (orientation === 'portrait') ? 162 : 249;
-      const H = optRows * 10;
-
-      let svgContent = `<svg width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" class="w-full h-auto select-none mx-auto block" style="overflow: visible;">`;
-
-      svgContent += ``;
-      // 상단 가로줄선 (0.5mm)
-      svgContent += `<line x1="0" y1="0" x2="${W}" y2="0" stroke="var(--manuscript-grid-color)" stroke-width="0.5" class="manuscript-grid-border" />`;
-      // 중간 및 하단 가로줄선 목록
-      for (let r = 1; r <= optRows; r++) {
-        const y = r * 10;
-        const strokeWidth = (r === optRows) ? 0.6 : 0.25; 
-        svgContent += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="var(--manuscript-grid-color)" stroke-width="${strokeWidth}" class="manuscript-grid-border" />`;
-      }
-
-      // 줄노트용 따라쓰기 원문 텍스트 렌더링
-      if (currentMode === 'guide') {
-        svgContent += ``;
-        const startLineIdx = pageIdx * optRows;
-        const baseFontSizeMm = (orientation === 'portrait') ? 5.2 : 6.2;
-        const fontSizeNum = 12; 
-        const adjustedFontSizeMm = baseFontSizeMm * (fontSizeNum / 12);
-
-        svgContent += `<g style="transform: translateY(var(--char-y-offset, 0%));">`;
-
-        for (let r = 0; r < optRows; r++) {
-          const lineIdx = startLineIdx + r;
-          const lineObj = linesData[lineIdx] || { text: "", isFirstLine: false, isLastLineOfPara: true };
-          const lineText = lineObj.text;
-          if (!lineText) continue;
-
-          const indent = lineObj.isFirstLine ? (adjustedFontSizeMm * 1.5) : 0;
-          const yPos = (r * 10) + 8.0; 
-
-          if (lineObj.isLastLineOfPara) {
-            // 단락의 마지막 줄은 왼쪽 정렬
-            svgContent += `<text x="${2 + indent}" y="${yPos}" font-size="${adjustedFontSizeMm}" class="font-serif-fixed fill-current text-slate-300 font-medium">${lineText}</text>`;
-          } else {
-            // 가로 폭에 딱 맞춰 자동 균등 분배(Justify)를 처리하는 SVG 표준 textLength 사용
-            const textW = W - 4 - indent;
-            svgContent += `<text x="${2 + indent}" y="${yPos}" font-size="${adjustedFontSizeMm}" textLength="${textW}" lengthAdjust="spacing" class="font-serif-fixed fill-current text-slate-300 font-medium">${lineText}</text>`;
-          }
-        }
-
-        svgContent += `</g>`;
-      }
-
-      svgContent += `</svg>`;
-      return svgContent;
-    }
-
     function renderPages() {
       const container = document.getElementById('pages-container');
       container.innerHTML = ""; 
@@ -1653,7 +1452,7 @@
       `;
 
       // -------------------------------------------------------------
-      // 제 1 페이지 그룹: 원문을 깔끔하게 수록한 [원문 읽기 판] (HTML 플로우 레이아웃)
+      // 제 1 페이지 그룹: 원문을 깔끔하게 수록한 [원문 읽기 판]
       // -------------------------------------------------------------
       if (!excludeFirstPage) {
         const paragraphs = sourceText.split('\n');
@@ -1698,12 +1497,15 @@
           if (orientation === 'portrait') {
             pageOneBody.style.maxHeight = (sIdx === 0) ? "175mm" : "195mm";
           } else {
+            // 가로 모드일 때 첫 페이지와 이후 페이지에 맞추어 일관되게 고정 물리 높이 적용 (감축 제거)
             const baseHeight = (sIdx === 0) ? 108 : 132;
             pageOneBody.style.maxHeight = `${baseHeight}mm`;
           }
           pageOneBody.style.minHeight = "0";
 
           const frameDiv = document.createElement('div');
+          
+          // 원문 읽기 테두리는 opacity에 관계없이 언제나 100% solid 선으로 렌더링되도록 custom-grid-border 유지
           let borderClasses = "border-2 border-solid custom-grid-border bg-white flex flex-col justify-stretch p-6 w-full h-auto";
           if (totalSourcePages > 1) {
             if (sIdx === 0) {
@@ -1731,6 +1533,7 @@
             : ((sIdx === 0) ? getMaxLines(fontSizeNum, 0) / 2 : getMaxLines(fontSizeNum, 1) / 2); 
           
           const lineHeightMm = fontSizeNum * 2.2 * 0.352778;
+          // 15mm 감축 조건식을 제거하여 계산된 원본 최대 콘텐츠 높이를 온전히 적용
           const maxContentHeightMm = maxLinesOnThisPage * lineHeightMm;
 
           pInnerContent.style.maxHeight = `${maxContentHeightMm}mm`;
@@ -1801,10 +1604,12 @@
           pageOneBody.appendChild(frameDiv);
           innerDiv.appendChild(pageOneBody);
 
+          // 꼬리말, 페이지 번호 표시 안 함 분기 처리
           if (!hidePageNumbers) {
             const pageOneFooter = document.createElement('div');
             pageOneFooter.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
             
+            // 사용자가 수정한 전체 텍스트가 있다면 그것을 노출, 없다면 기본 라벨 노출
             const displaySourceFooter = customFooterSourceText !== null ? customFooterSourceText : footerSourceText;
             
             pageOneFooter.innerHTML = `
@@ -1816,6 +1621,7 @@
 
           pageOneDiv.appendChild(innerDiv);
           
+          // 화면 맞춤 스케일 래퍼 추가
           const scaleWrapper = document.createElement('div');
           scaleWrapper.className = "page-scale-wrapper mb-10";
           scaleWrapper.appendChild(pageOneDiv);
@@ -1823,9 +1629,6 @@
         });
       }
 
-      // -------------------------------------------------------------
-      // 제 2 페이지 그룹: 따라쓰기 및 빈 원고지 판 (초정밀 SVG 드로잉)
-      // -------------------------------------------------------------
       let cellsData = [];
       let linesData = [];
       let totalGridPages = 1;
@@ -1871,6 +1674,7 @@
             gridPageTitle.className = "mt-3 mb-1 w-full text-left shrink-0";
             gridPageTitle.style.marginBottom = "2mm"; 
             
+            // 줄노트 선택 시 제목 밑의 얇은 가로선 제외
             const borderClass = isLineNote ? "" : "border-b custom-grid-border pb-1";
             gridPageTitle.innerHTML = `
               <div class="${borderClass}">
@@ -1879,6 +1683,7 @@
             `;
             innerDiv.appendChild(gridPageTitle);
           } else {
+            // '이름 등 표시 안 함'을 선택했을 때, 줄노트가 아닌 경우에만 얇은 테두리 적용 (3mm 간격)
             if (!isLineNote) {
               const singleLine = document.createElement('div');
               singleLine.className = "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
@@ -1887,30 +1692,249 @@
           }
 
           const gridWrapper = document.createElement('div');
-          gridWrapper.className = "w-full flex items-center justify-center my-0"; 
+          if (hideManuscriptHeader) {
+            // 아래쪽 가로선 밀착을 위해 불필요한 mb-auto 제거 및 flex 정렬 적용
+            gridWrapper.className = "w-full flex items-center justify-center"; 
+          } else {
+            gridWrapper.className = "w-full my-0 flex items-center justify-center"; 
+          }
 
-          // -------------------------------------------------------------
-          // 격자/선 부분 핵심 로직: HTML 대신 단일 SVG 문자열 동적 매핑
-          // -------------------------------------------------------------
           if (isLineNote) {
-            const svgContent = createSVGLineNote(currentMode, pageIdx, optRows, linesData);
-            gridWrapper.innerHTML = svgContent;
+            const usableWidthMm = (orientation === 'portrait') ? 162 : 249;
+            const relativeContainer = document.createElement('div');
+            relativeContainer.className = "relative mx-auto";
+            relativeContainer.style.width = `${usableWidthMm}mm`;
+            relativeContainer.style.height = `${optRows * 10}mm`;
+
+            const noteContainer = document.createElement('div');
+            // 줄노트의 본체 선들에는 슬라이더 투명도를 매핑하기 위해 manuscript-grid-border 클래스 적용
+            noteContainer.className = "w-full h-full border-t-2 manuscript-grid-border flex flex-col justify-start relative";
+            
+            const startLineIdx = pageIdx * optRows;
+
+            for (let r = 0; r < optRows; r++) {
+              const lineIdx = startLineIdx + r;
+              const lineObj = linesData[lineIdx] || { text: "", isFirstLine: false, isLastLineOfPara: true };
+              const lineText = lineObj.text;
+
+              const rowDiv = document.createElement('div');
+              
+              const isLastRow = (r === optRows - 1);
+              const borderThicknessClass = isLastRow ? "border-b-[3px]" : "border-b";
+              rowDiv.className = `${borderThicknessClass} manuscript-grid-border w-full shrink-0 relative`;
+              rowDiv.style.height = "10mm";
+
+              if (currentMode === 'guide' && lineText) {
+                const textSpan = document.createElement('div');
+                textSpan.textContent = lineText;
+                
+                textSpan.className = "font-serif-fixed text-slate-300 font-medium select-none absolute left-[2mm] right-[2mm] bottom-[1.8mm] leading-none pb-0 whitespace-pre";
+                textSpan.style.textAlign = "justify";
+                textSpan.style.textJustify = "inter-character";
+
+                if (lineObj.isLastLineOfPara) {
+                  textSpan.style.textAlignLast = "left";
+                } else {
+                  textSpan.style.textAlignLast = "justify";
+                }
+
+                textSpan.style.textIndent = lineObj.isFirstLine ? "1.2em" : "0"; 
+
+                const baseFontSizeMm = (orientation === 'portrait') ? 5.2 : 6.2;
+                const fontSizeNum = 12; 
+                const adjustedFontSizeMm = baseFontSizeMm * (fontSizeNum / 12);
+                textSpan.style.fontSize = `${adjustedFontSizeMm}mm`;
+                textSpan.style.transform = "translateY(var(--char-y-offset, 0%))"; 
+                rowDiv.appendChild(textSpan);
+              }
+
+              noteContainer.appendChild(rowDiv);
+            }
+
+            relativeContainer.appendChild(noteContainer);
+            gridWrapper.appendChild(relativeContainer);
+
           } else {
             const colsNum = parseInt(gridCols);
-            const svgContent = createSVGGrid(currentMode, pageIdx, colsNum, optRows, cellsPerPage, cellsData);
-            gridWrapper.innerHTML = svgContent;
+
+            const usableWidthMm = (orientation === 'portrait') ? 170 : 257;
+            const cellWidthMm = usableWidthMm / colsNum;
+            const relativeContainer = document.createElement('div');
+            relativeContainer.className = "relative mx-auto block";
+            relativeContainer.style.width = `${usableWidthMm}mm`;
+            relativeContainer.style.height = `${optRows * cellWidthMm}mm`;
+
+            const gridBody = document.createElement('div');
+            // 원고지 격자 테두리(border-2) 역시 opacity 조절 시 함께 페이드되어야 하므로 manuscript-grid-border 바인딩
+            gridBody.className = "grid gap-0 border-2 manuscript-grid-border w-full h-full";
+            gridBody.style.gridTemplateColumns = `repeat(${colsNum}, minmax(0, 1fr))`;
+            gridBody.style.gridTemplateRows = `repeat(${optRows}, minmax(0, 1fr))`;
+
+            const startIdx = pageIdx * cellsPerPage;
+
+            for (let r = 0; r < optRows; r++) {
+              for (let c = 0; c < colsNum; c++) {
+                const cellIdx = startIdx + (r * colsNum + c);
+                const cellData = cellsData[cellIdx] || { char: "" };
+
+                const cell = document.createElement('div');
+                // 원고지 각 셀의 테두리(boder-b, border-r)에는 실시간 투명도가 상시 적용되도록 manuscript-grid-border 장착
+                cell.className = "grid-cell-guide border-b border-r manuscript-grid-border flex items-center justify-center relative aspect-square";
+                
+                if (c === colsNum - 1) cell.classList.remove('border-r');
+                if (r === optRows - 1) cell.classList.remove('border-b');
+
+                if (currentMode === 'guide' && cellData.char && cellData.char !== " ") {
+                  // 따라쓰기 글자가 십자 가이드선보다 위에 겹쳐 그려지도록 style="z-index: 10;"을 명시적으로 추가
+                  let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none" style="z-index: 10;">`;
+                  svgHtml += `<g style="transform: translateY(var(--char-y-offset, 0%));">`;
+
+                  if (cellData.isSqueezed) {
+                    const mainChar = cellData.char;
+                    svgHtml += `<text x="38" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${mainChar}</text>`;
+
+                    const puncts = Array.from(cellData.squeezedPunct || "");
+                    if (puncts.length === 1) {
+                      const p = puncts[0];
+                      if (p === '.' || p === ',') {
+                        svgHtml += `<text x="78" y="49" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-bold">${p}</text>`;
+                      } else if (p === '!' || p === '?') {
+                        svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
+                      } else if (p === '"' || p === "'" || p === '”' || p === '’') {
+                        svgHtml += `<text x="76" y="41" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
+                      } else {
+                        svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="54" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
+                      }
+                    } else if (puncts.length === 2) {
+                      const p1 = puncts[0];
+                      const p2 = puncts[1];
+
+                      let y1 = 50, y2 = 50;
+                      let fontSize = 46;
+                      
+                      if (p1 === '.' || p1 === ',') y1 = 49; 
+                      if (p2 === '.' || p2 === ',') y2 = 49; 
+                      if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 41; 
+                      if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 41; 
+
+                      svgHtml += `<text x="68" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
+                      svgHtml += `<text x="86" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
+                    } else {
+                      puncts.forEach((p, idx) => {
+                        const x = 64 + idx * 12;
+                        let y = 50;
+                        if (p === '.' || p === ',') y = 49; 
+                        if (p === '"' || p === "'" || p === '”' || p === '’') y = 41; 
+                        svgHtml += `<text x="${x}" y="${y}" dominant-baseline="central" text-anchor="middle" font-size="38" class="font-serif-fixed fill-current text-slate-300 font-medium">${p}</text>`;
+                      });
+                    }
+                  } else if (cellData.isPeriodQuoteCombo) {
+                    const p1 = cellData.char;
+                    const p2 = cellData.squeezedPunct;
+                    svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
+                    svgHtml += `<text x="78" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
+                  } else if (cellData.isPeriodOpeningQuoteCombo) {
+                    const p1 = cellData.char;
+                    const p2 = cellData.squeezedPunct;
+                    svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${p1}</text>`;
+                    svgHtml += `<text x="64" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
+                  } else if (cellData.isSymbolFirstCombo) {
+                    const p1 = cellData.char;
+                    const p2 = cellData.squeezedPunct;
+                    svgHtml += `<text x="30" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
+                    svgHtml += `<text x="74" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
+                  } else if (cellData.isQuoteFirstCombo) {
+                    const p1 = cellData.char;
+                    const p2 = cellData.squeezedPunct;
+                    svgHtml += `<text x="28" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
+                    svgHtml += `<text x="68" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
+                  } else if (cellData.isDoublePunct) {
+                    const p1 = cellData.char;
+                    const p2 = cellData.squeezedPunct;
+                    let y1 = 50, y2 = 50;
+                    let fontSize = 46;
+                    
+                    if (p1 === '.' || p1 === ',') y1 = 54; 
+                    if (p2 === '.' || p2 === ',') y2 = 54; 
+                    if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 45; 
+                    if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 45; 
+                    if (p1 === '“' || p1 === '‘') y1 = 45;
+                    if (p2 === '“' || p2 === '‘') y2 = 45;
+
+                    svgHtml += `<text x="32" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p1}</text>`;
+                    svgHtml += `<text x="68" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-300 font-medium">${p2}</text>`;
+                  } else {
+                    const char = cellData.char;
+                    if (char === '.' || char === ',') {
+                      svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-bold">${char}</text>`;
+                    } else if (char === '“' || char === '‘') {
+                      svgHtml += `<text x="75" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
+                    } else if (char === '”' || char === '’') {
+                      svgHtml += `<text x="25" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
+                    } else {
+                      svgHtml += `<text x="50" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-300 font-medium">${char}</text>`;
+                    }
+                  }
+
+                  svgHtml += `</g></svg>`; 
+                  cell.innerHTML = svgHtml;
+                }
+
+                gridBody.appendChild(cell);
+              }
+            }
+            relativeContainer.appendChild(gridBody);
+
+            if (!hideCharCount) {
+              const pageOffset = pageIdx * cellsPerPage;
+              for (let r = 0; r < optRows; r++) {
+                const rowStartCell = pageOffset + r * colsNum;
+                const rowEndCell = pageOffset + (r + 1) * colsNum;
+                
+                const currentMaxMultiplesCount = Math.floor(rowEndCell / 100);
+                
+                for (let k = 1; k <= currentMaxMultiplesCount; k++) {
+                  const targetBaseValue = 100 * k;
+                  
+                  if (targetBaseValue > rowStartCell && targetBaseValue <= rowEndCell) {
+                    const labelVal = rowEndCell; 
+                    
+                    const label = document.createElement('div');
+                    // 글자 수 안내 표시 텍스트는 불투명도에 무관하게 항상 가독성이 높도록 solid 색상(custom-grid-text) 바인딩
+                    label.className = "absolute text-[10px] custom-grid-text font-mono font-bold opacity-75 flex items-center justify-start pointer-events-none";
+                    label.style.right = "-32px";
+                    label.style.width = "25px";
+                    label.style.height = `${100 / optRows}%`;
+                    label.style.top = `${(r * 100) / optRows}%`;
+                    label.textContent = labelVal;
+                    relativeContainer.appendChild(label);
+                    break; 
+                  }
+                }
+              }
+            }
+
+            gridWrapper.appendChild(relativeContainer);
           }
 
           innerDiv.appendChild(gridWrapper);
 
-          // 줄노트가 아닐 때만 아래쪽 가로 안내선 렌더링
+          // 줄노트가 아닐 때만 원고지 아래쪽 가로 안내선 렌더링
           if (!isLineNote) {
-            const marginMm = hideManuscriptHeader ? "3mm" : "2mm";
-            const singleBottomLine = document.createElement('div');
-            singleBottomLine.className = `w-full border-t border-solid custom-grid-border mt-[${marginMm}] shrink-0`;
-            innerDiv.appendChild(singleBottomLine);
+            if (hideManuscriptHeader) {
+              // 아래쪽 가로선 밀착을 위해 불필요한 mb-auto 제거 및 flex 정렬 적용
+              const singleBottomLine = document.createElement('div');
+              singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[3mm] shrink-0";
+              innerDiv.appendChild(singleBottomLine);
+            } else {
+              // 제목 밑의 가로선(marginBottom = "2mm")과 완벽하게 정밀 대칭을 이루도록 mt-[2mm] 설정으로 가로선 추가
+              const singleBottomLine = document.createElement('div');
+              singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[2mm] shrink-0";
+              innerDiv.appendChild(singleBottomLine);
+            }
           }
 
+          // 꼬리말, 페이지 번호 표시 안 함 분기 처리
           if (!hidePageNumbers) {
             const footerDiv = document.createElement('div');
             footerDiv.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
@@ -1918,6 +1942,7 @@
             let currentFooterLabel = "";
             let currentFooterClass = "";
             
+            // 사용자가 수정한 커스텀 전체 텍스트가 존재하면 그것을 최우선 적용, 없을 때는 시스템 동적 수식어 결합
             if (isLineNote) {
               if (currentMode === 'guide') {
                 currentFooterLabel = customFooterGuideText !== null ? customFooterGuideText : (footerGuideText + " - 줄 노트");
@@ -1945,6 +1970,7 @@
 
           gridPageDiv.appendChild(innerDiv);
           
+          // 화면 맞춤 스케일 래퍼 추가
           const scaleWrapper = document.createElement('div');
           scaleWrapper.className = "page-scale-wrapper mb-10";
           scaleWrapper.appendChild(gridPageDiv);
@@ -1956,6 +1982,7 @@
       adjustPreviewScale();
     }
 
+    // [교정 및 고도화] 화면 크기 및 수동 설정 배율에 맞추어 실시간으로 A4 미리보기 비율을 튜닝하는 스크립트
     function adjustPreviewScale() {
       const wrappers = document.querySelectorAll('.page-scale-wrapper');
       if (wrappers.length === 0) return;
@@ -1963,12 +1990,14 @@
       const mainArea = document.querySelector('main');
       if (!mainArea) return;
       
+      // 양쪽 패딩 간격 확보를 위해 48px 차감
       const availableWidth = mainArea.clientWidth - 48; 
       
       wrappers.forEach(wrapper => {
         const page = wrapper.querySelector('.print-page');
         if (!page) return;
         
+        // 원본 크기 실측을 위해 일시적으로 인라인 스케일 및 높이 값 제거
         page.style.transform = '';
         page.style.transformOrigin = '';
         wrapper.style.height = '';
@@ -1979,18 +2008,22 @@
         let scale = 1;
 
         if (previewZoomMode === 'auto') {
+          // 자동 맞춤 모드: 모드와 무관하게 언제나 프리뷰 페이지 폭이 화면 가로에 가득 차도록 계산식을 일원화
           if (availableWidth > 0 && pageNaturalWidth > 0) {
             scale = availableWidth / pageNaturalWidth;
           }
         } else {
+          // 수동 비율 모드: 설정된 zoom 배율 수치(%)를 그대로 매핑합니다.
           scale = previewZoomValue / 100;
         }
 
         page.style.transform = `scale(${scale})`;
         page.style.transformOrigin = 'top center';
+        // 스케일 축소/확대로 인해 빈 공간(Gap)이 생기지 않도록 래퍼 높이를 변경 비율 크기만큼 동기화
         wrapper.style.height = `${pageNaturalHeight * scale}px`;
       });
 
+      // 배율 인디케이터 라벨 UI 동기화
       const indicator = document.getElementById('zoom-indicator-text');
       if (indicator) {
         if (previewZoomMode === 'auto') {
@@ -2022,6 +2055,7 @@
         }
       }
 
+      // 30% 이하 도달 시 축소 버튼 흐리게 및 비활성화 처리
       if (currentVal <= 30) {
         btnOut.classList.add('opacity-30', 'pointer-events-none');
         btnOut.classList.remove('hover:bg-slate-800', 'active:scale-95');
@@ -2030,6 +2064,7 @@
         btnOut.classList.add('hover:bg-slate-800', 'active:scale-95');
       }
 
+      // 150% 이상 도달 시 확대 버튼 흐리게 및 비활성화 처리
       if (currentVal >= 150) {
         btnIn.classList.add('opacity-30', 'pointer-events-none');
         btnIn.classList.remove('hover:bg-slate-800', 'active:scale-95');
@@ -2039,6 +2074,7 @@
       }
     }
 
+    // [신규] 프리뷰 확대 기능
     function zoomIn() {
       if (previewZoomMode === 'auto') {
         const wrappers = document.querySelectorAll('.page-scale-wrapper');
@@ -2048,6 +2084,7 @@
           const availableWidth = mainArea.clientWidth - 48;
           const pageNaturalWidth = page.offsetWidth;
           const autoScale = availableWidth > 0 && pageNaturalWidth > availableWidth ? (availableWidth / pageNaturalWidth) : 1;
+          // 가장 가까운 10% 단위로 올림하여 매뉴얼 모드로 즉시 전환
           previewZoomValue = Math.min(150, Math.ceil((autoScale * 100) / 10) * 10);
         } else {
           previewZoomValue = 100;
@@ -2060,6 +2097,7 @@
       adjustPreviewScale();
     }
 
+    // [신규] 프리뷰 축소 기능
     function zoomOut() {
       if (previewZoomMode === 'auto') {
         const wrappers = document.querySelectorAll('.page-scale-wrapper');
@@ -2069,6 +2107,7 @@
           const availableWidth = mainArea.clientWidth - 48;
           const pageNaturalWidth = page.offsetWidth;
           const autoScale = availableWidth > 0 && pageNaturalWidth > availableWidth ? (availableWidth / pageNaturalWidth) : 1;
+          // 가장 가까운 10% 단위로 내림하여 매뉴얼 모드로 즉시 전환
           previewZoomValue = Math.max(30, Math.floor((autoScale * 100) / 10) * 10);
         } else {
           previewZoomValue = 100;
@@ -2081,28 +2120,33 @@
       adjustPreviewScale();
     }
 
+    // [개선] 프리뷰 자동/수동 모드 토글 기능 (원 클릭으로 자동 맞춤 복귀 가능)
     function toggleZoomMode() {
       if (previewZoomMode === 'manual') {
-        previewZoomMode = 'auto'; 
+        previewZoomMode = 'auto'; // 수동 상태일 때는 즉시 '자동(폭 맞춤)'으로 복구
       } else {
         previewZoomMode = 'manual';
-        previewZoomValue = 100;   
+        previewZoomValue = 100;   // 자동 상태일 때는 기본 수치 100% 수동 모드로 토글
       }
       updateZoomModeUI();
       adjustPreviewScale();
     }
 
+    // [신규] 배율 버튼 상태 스타일 갱신 (명칭 '폭 맞춤' 유지)
     function updateZoomModeUI() {
       const btn = document.getElementById('btn-zoom-mode');
       if (btn) {
         if (previewZoomMode === 'manual') {
+          // 폭 맞춤이 되지 않은 수동 모드일 때 불이 켜지도록(초록색 활성화) 설정
           btn.className = "bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
         } else {
+          // 폭 맞춤이 정밀하게 적용된 상태라면 불이 꺼지도록(어두운색) 설정
           btn.className = "bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
         }
       }
     }
 
+    // [신규] 배율 숫자 텍스트 클릭 시 입력 필드 노출
     function enableZoomInput() {
       const textSpan = document.getElementById('zoom-indicator-text');
       const inputField = document.getElementById('zoom-input-field');
@@ -2128,6 +2172,7 @@
       inputField.select();
     }
 
+    // [신규] 입력 완료 시 수동 조절 배율 적용 및 복귀
     function disableZoomInput(val) {
       const textSpan = document.getElementById('zoom-indicator-text');
       const inputField = document.getElementById('zoom-input-field');
@@ -2138,6 +2183,7 @@
         num = previewZoomValue;
       }
       
+      // 최소/최대 안전 규격 범위 적용
       num = Math.max(30, Math.min(150, num));
       
       previewZoomValue = num;
@@ -2150,6 +2196,7 @@
       adjustPreviewScale();
     }
 
+    // [신규] 수치 직접 조절 시(1씩 증감 화살표 포함) 실시간 프리뷰 크기 동기화 바인딩
     document.getElementById('zoom-input-field').addEventListener('input', (e) => {
       let num = parseInt(e.target.value);
       if (!isNaN(num)) {
@@ -2161,16 +2208,21 @@
       }
     });
 
+    // 초기 로드 시 프리셋 동기화 및 실행
     updatePageStyleSheet();
     renderPages();
     
+    // 기본 프리셋 활성화 체크 표시 (녹색 & 빨간색 설정)
     setGridColor('#69afa0');
     setGuideColor('#ff8c8c');
     
+    // 기계식 CSS 변수와 슬라이더 기본 수치 0% 일관 동기화
     updateCharYOffset(0);
     document.getElementById('charYOffsetSlider').value = 0;
 
+    // 창 크기 변경에 따른 실시간 축소 비율 동기화 리스너 등록
     window.addEventListener('resize', adjustPreviewScale);
+    // 폰트 등이 완전히 교체된 로드 완료 시점에도 스케일 비율 동기화 보장
     window.addEventListener('load', adjustPreviewScale);
   </script>
 </body>
