@@ -886,7 +886,7 @@
       else if (target.classList.contains('grade-placeholder')) {
         gridInfo = txt === "" ? " " : txt;
         document.getElementById('input-grade').value = gridInfo === " " ? "" : gridInfo;
-        syncMetadata('grade-placeholder', gradeInfo, target);
+        syncMetadata('grade-placeholder', gridInfo, target);
       }
       else if (target.classList.contains('name-placeholder')) {
         studentName = txt;
@@ -1257,7 +1257,7 @@
 
     function getMaxLines(fontSizePt, pageIdx) {
       if (orientation === 'portrait') {
-        const baseLines = (pageIdx === 0) ? 19 : 22;
+        const baseLines = (pageIdx === 0) ? 22 : 24;
         return Math.floor(baseLines * (12 / fontSizePt));
       } else { 
         const baseLinesPerCol = (pageIdx === 0) ? 11 : 14;
@@ -2044,7 +2044,7 @@
           const page = wrappers[0].querySelector('.print-page');
           const availableWidth = mainArea.clientWidth - 48;
           const pageNaturalWidth = page.offsetWidth;
-          const autoScale = availableWidth > 0 && pageNaturalWidth > 0 ? (availableWidth / pageNaturalWidth) : 1;
+          const autoScale = availableWidth > 0 && pageNaturalWidth > availableWidth ? (availableWidth / pageNaturalWidth) : 1;
           currentVal = Math.round(autoScale * 100);
         }
       }
