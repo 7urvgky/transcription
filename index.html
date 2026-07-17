@@ -296,6 +296,34 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
+
+    /* 화면 프리뷰용 스케일 래퍼 */
+    @media screen {
+      .page-scale-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        position: relative;
+      }
+      .print-page {
+        margin-bottom: 0 !important;
+      }
+    }
+
+    @media print {
+      .page-scale-wrapper {
+        display: block !important;
+        width: auto !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .print-page {
+        transform: none !important;
+        margin: 0 !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -537,10 +565,36 @@
       </div>
     </aside>
 
-    <main class="flex-1 bg-slate-100 overflow-y-auto p-4 md:p-8 flex flex-col items-center">
+    <!-- [교정] 가로/세로 오버플로우가 모두 원활하도록 overflow-y-auto를 overflow-auto로 변경 -->
+    <main class="flex-1 bg-slate-100 overflow-auto p-4 md:p-8 flex flex-col items-center relative">
       <div id="print-area-wrapper" class="w-full flex flex-col items-center">
         <!-- 동적으로 페이지들이 얹어질 프리뷰 컨테이너 -->
         <div id="pages-container" class="flex flex-col items-center"></div>
+      </div>
+
+      <!-- [신규] 화면 프리뷰 확대/축소 플로팅 컨트롤러 -->
+      <div class="fixed bottom-6 right-6 bg-slate-900/90 backdrop-blur text-white px-3 py-2 rounded-xl shadow-2xl border border-slate-700/50 flex items-center space-x-3 z-30 no-print">
+        <button onclick="zoomOut()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all" title="축소">
+          <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"></path>
+          </svg>
+        </button>
+        
+        <!-- 클릭 시 숫자를 직접 입력할 수 있는 하이브리드 인디케이터 컨테이너 -->
+        <div class="flex items-center justify-center min-w-[85px]">
+          <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">자동 (100%)</span>
+          <input id="zoom-input-field" type="number" min="30" max="150" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
+        </div>
+
+        <button onclick="zoomIn()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all" title="확대">
+          <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+          </svg>
+        </button>
+        <div class="w-px h-4 bg-slate-700"></div>
+        <button onclick="toggleZoomMode()" id="btn-zoom-mode" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95" title="폭 맞춤 전환">
+          폭 맞춤
+        </button>
       </div>
     </main>
 
@@ -570,6 +624,10 @@
     let currentGuideColor = '#ff8c8c';
     let gridOpacity = 1.0;
     let guideOpacity = 0.35;
+
+    // [신규] 화면 프리뷰 배율 제어 상태 변수
+    let previewZoomMode = 'auto'; // 'auto' (자동 맞춤) 또는 'manual' (수동 조절)
+    let previewZoomValue = 100;   // 수동 조절 시 사용할 퍼센트 값 (30% ~ 150%)
 
     // 초기값 할당
     document.getElementById('source-text').value = sourceText;
@@ -705,6 +763,7 @@
 
       updatePageStyleSheet();
       renderPages();
+      adjustPreviewScale();
     }
 
     function updatePageStyleSheet() {
@@ -1303,7 +1362,7 @@
     function splitTextForLineNote(text, maxNonSpace) {
       const lines = [];
       const paragraphs = text.split('\n');
-      const isPunctuation = (c) => /[.,!?'"nym‘’()(\\][\]{}<>~?;:：；]/.test(c);
+      const isPunctuation = (c) => /[.,!?'"nym‘’()(\\][\]{}<>~?;:：；]/ .test(c);
 
       paragraphs.forEach((p) => {
         if (p.trim() === "") {
@@ -1323,10 +1382,8 @@
 
           if (!isSpace && currentNonSpaceCount >= maxNonSpace) {
             if (isPunctuation(char)) {
-              while (i < chars.length && isPunctuation(chars[i])) {
-                currentLineText += chars[i];
-                i++;
-              }
+              currentLineText += char;
+              i++;
             }
             
             lines.push({ text: currentLineText, isFirstLine: isFirstLine, isLastLineOfPara: false });
@@ -1544,7 +1601,12 @@
           }
 
           pageOneDiv.appendChild(innerDiv);
-          container.appendChild(pageOneDiv);
+          
+          // 화면 맞춤 스케일 래퍼 추가
+          const scaleWrapper = document.createElement('div');
+          scaleWrapper.className = "page-scale-wrapper mb-10";
+          scaleWrapper.appendChild(pageOneDiv);
+          container.appendChild(scaleWrapper);
         });
       }
 
@@ -1593,17 +1655,21 @@
             gridPageTitle.className = "mt-3 mb-1 w-full text-left shrink-0";
             gridPageTitle.style.marginBottom = "2mm"; 
             
+            // 줄노트 선택 시 제목 밑의 얇은 가로선 제외
+            const borderClass = isLineNote ? "" : "border-b custom-grid-border pb-1";
             gridPageTitle.innerHTML = `
-              <div class="border-b custom-grid-border pb-1">
+              <div class="${borderClass}">
                 <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
               </div>
             `;
             innerDiv.appendChild(gridPageTitle);
           } else {
-            // '이름 등 표시 안 함'을 선택했을 때 얇은 테두리와 정돈된 마진 적용 (3mm 간격)
-            const singleLine = document.createElement('div');
-            singleLine.className = "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
-            innerDiv.appendChild(singleLine);
+            // '이름 등 표시 안 함'을 선택했을 때, 줄노트가 아닌 경우에만 얇은 테두리 적용 (3mm 간격)
+            if (!isLineNote) {
+              const singleLine = document.createElement('div');
+              singleLine.className = "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
+              innerDiv.appendChild(singleLine);
+            }
           }
 
           const gridWrapper = document.createElement('div');
@@ -1834,17 +1900,19 @@
 
           innerDiv.appendChild(gridWrapper);
 
-          if (hideManuscriptHeader) {
-            // 상단 가로선(mb-[3mm])과 정밀 대칭을 이루도록 mt-[3mm] 설정으로 원고지에 깔끔하게 밀착
-            const singleBottomLine = document.createElement('div');
-            // 가로선은 페이지 전체 프레임 조판선이므로 선명함을 유지하도록 custom-grid-border 적용
-            singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[3mm] shrink-0";
-            innerDiv.appendChild(singleBottomLine);
-          } else {
-            // 제목 밑의 가로선(marginBottom = "2mm")과 완벽하게 정밀 대칭을 이루도록 mt-[2mm] 설정으로 가로선 추가
-            const singleBottomLine = document.createElement('div');
-            singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[2mm] shrink-0";
-            innerDiv.appendChild(singleBottomLine);
+          // 줄노트가 아닐 때만 원고지 아래쪽 가로 안내선 렌더링
+          if (!isLineNote) {
+            if (hideManuscriptHeader) {
+              // 아래쪽 가로선 밀착을 위해 불필요한 mb-auto 제거 및 flex 정렬 적용
+              const singleBottomLine = document.createElement('div');
+              singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[3mm] shrink-0";
+              innerDiv.appendChild(singleBottomLine);
+            } else {
+              // 제목 밑의 가로선(marginBottom = "2mm")과 완벽하게 정밀 대칭을 이루도록 mt-[2mm] 설정으로 가로선 추가
+              const singleBottomLine = document.createElement('div');
+              singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[2mm] shrink-0";
+              innerDiv.appendChild(singleBottomLine);
+            }
           }
 
           // 꼬리말, 페이지 번호 표시 안 함 분기 처리
@@ -1880,11 +1948,202 @@
           }
 
           gridPageDiv.appendChild(innerDiv);
-          container.appendChild(gridPageDiv);
+          
+          // 화면 맞춤 스케일 래퍼 추가
+          const scaleWrapper = document.createElement('div');
+          scaleWrapper.className = "page-scale-wrapper mb-10";
+          scaleWrapper.appendChild(gridPageDiv);
+          container.appendChild(scaleWrapper);
         }
       });
 
       updateHeaderAndTitle();
+      adjustPreviewScale();
+    }
+
+    // [교정 및 고도화] 화면 크기 및 수동 설정 배율에 맞추어 실시간으로 A4 미리보기 비율을 튜닝하는 스크립트
+    function adjustPreviewScale() {
+      const wrappers = document.querySelectorAll('.page-scale-wrapper');
+      if (wrappers.length === 0) return;
+      
+      const mainArea = document.querySelector('main');
+      if (!mainArea) return;
+      
+      // 양쪽 패딩 간격 확보를 위해 48px 차감
+      const availableWidth = mainArea.clientWidth - 48; 
+      
+      wrappers.forEach(wrapper => {
+        const page = wrapper.querySelector('.print-page');
+        if (!page) return;
+        
+        // 원본 크기 실측을 위해 일시적으로 인라인 스케일 및 높이 값 제거
+        page.style.transform = '';
+        page.style.transformOrigin = '';
+        wrapper.style.height = '';
+        
+        const pageNaturalWidth = page.offsetWidth;
+        const pageNaturalHeight = page.offsetHeight;
+        
+        let scale = 1;
+
+        if (previewZoomMode === 'auto') {
+          // 자동 맞춤 모드: 화면 폭을 초과할 때 자동으로 가로 폭에 맞춥니다.
+          if (pageNaturalWidth > availableWidth && availableWidth > 0) {
+            scale = availableWidth / pageNaturalWidth;
+          } else {
+            scale = 1;
+          }
+        } else {
+          // 수동 비율 모드: 설정된 zoom 배율 수치(%)를 그대로 매핑합니다.
+          scale = previewZoomValue / 100;
+        }
+
+        page.style.transform = `scale(${scale})`;
+        page.style.transformOrigin = 'top center';
+        // 스케일 축소/확대로 인해 빈 공간(Gap)이 생기지 않도록 래퍼 높이를 변경 비율 크기만큼 동기화
+        wrapper.style.height = `${pageNaturalHeight * scale}px`;
+      });
+
+      // 배율 인디케이터 라벨 UI 동기화
+      const indicator = document.getElementById('zoom-indicator-text');
+      if (indicator) {
+        if (previewZoomMode === 'auto') {
+          if (wrappers[0]) {
+            const page = wrappers[0].querySelector('.print-page');
+            if (page) {
+              const pageNaturalWidth = page.offsetWidth;
+              const autoScale = availableWidth > 0 && pageNaturalWidth > availableWidth ? (availableWidth / pageNaturalWidth) : 1;
+              indicator.textContent = `자동 (${Math.round(autoScale * 100)}%)`;
+            }
+          } else {
+            indicator.textContent = '자동 (100%)';
+          }
+        } else {
+          indicator.textContent = `${previewZoomValue}%`;
+        }
+      }
+    }
+
+    // [신규] 프리뷰 확대 기능
+    function zoomIn() {
+      if (previewZoomMode === 'auto') {
+        const wrappers = document.querySelectorAll('.page-scale-wrapper');
+        const mainArea = document.querySelector('main');
+        if (wrappers[0] && mainArea) {
+          const page = wrappers[0].querySelector('.print-page');
+          const availableWidth = mainArea.clientWidth - 48;
+          const pageNaturalWidth = page.offsetWidth;
+          const autoScale = availableWidth > 0 && pageNaturalWidth > availableWidth ? (availableWidth / pageNaturalWidth) : 1;
+          // 가장 가까운 10% 단위로 올림하여 매뉴얼 모드로 즉시 전환
+          previewZoomValue = Math.min(150, Math.ceil((autoScale * 100) / 10) * 10);
+        } else {
+          previewZoomValue = 100;
+        }
+        previewZoomMode = 'manual';
+      } else {
+        previewZoomValue = Math.min(150, previewZoomValue + 10);
+      }
+      updateZoomModeUI();
+      adjustPreviewScale();
+    }
+
+    // [신규] 프리뷰 축소 기능
+    function zoomOut() {
+      if (previewZoomMode === 'auto') {
+        const wrappers = document.querySelectorAll('.page-scale-wrapper');
+        const mainArea = document.querySelector('main');
+        if (wrappers[0] && mainArea) {
+          const page = wrappers[0].querySelector('.print-page');
+          const availableWidth = mainArea.clientWidth - 48;
+          const pageNaturalWidth = page.offsetWidth;
+          const autoScale = availableWidth > 0 && pageNaturalWidth > availableWidth ? (availableWidth / pageNaturalWidth) : 1;
+          // 가장 가까운 10% 단위로 내림하여 매뉴얼 모드로 즉시 전환
+          previewZoomValue = Math.max(30, Math.floor((autoScale * 100) / 10) * 10);
+        } else {
+          previewZoomValue = 100;
+        }
+        previewZoomMode = 'manual';
+      } else {
+        previewZoomValue = Math.max(30, previewZoomValue - 10);
+      }
+      updateZoomModeUI();
+      adjustPreviewScale();
+    }
+
+    // [개선] 프리뷰 자동/수동 모드 토글 기능 (원 클릭으로 자동 맞춤 복귀 가능)
+    function toggleZoomMode() {
+      if (previewZoomMode === 'manual') {
+        previewZoomMode = 'auto'; // 수동 상태일 때는 즉시 '자동(폭 맞춤)'으로 복구
+      } else {
+        previewZoomMode = 'manual';
+        previewZoomValue = 100;   // 자동 상태일 때는 기본 수치 100% 수동 모드로 토글
+      }
+      updateZoomModeUI();
+      adjustPreviewScale();
+    }
+
+    // [신규] 배율 버튼 상태 스타일 갱신 (명칭 '폭 맞춤' 유지)
+    function updateZoomModeUI() {
+      const btn = document.getElementById('btn-zoom-mode');
+      if (btn) {
+        if (previewZoomMode === 'auto') {
+          btn.className = "bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
+          btn.textContent = "폭 맞춤";
+        } else {
+          btn.className = "bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
+          btn.textContent = "폭 맞춤";
+        }
+      }
+    }
+
+    // [신규] 배율 숫자 텍스트 클릭 시 입력 필드 노출
+    function enableZoomInput() {
+      const textSpan = document.getElementById('zoom-indicator-text');
+      const inputField = document.getElementById('zoom-input-field');
+      if (!textSpan || !inputField) return;
+
+      let currentVal = previewZoomValue;
+      if (previewZoomMode === 'auto') {
+        const wrappers = document.querySelectorAll('.page-scale-wrapper');
+        const mainArea = document.querySelector('main');
+        if (wrappers[0] && mainArea) {
+          const page = wrappers[0].querySelector('.print-page');
+          const availableWidth = mainArea.clientWidth - 48;
+          const pageNaturalWidth = page.offsetWidth;
+          const autoScale = availableWidth > 0 && pageNaturalWidth > availableWidth ? (availableWidth / pageNaturalWidth) : 1;
+          currentVal = Math.round(autoScale * 100);
+        }
+      }
+
+      inputField.value = currentVal;
+      textSpan.classList.add('hidden');
+      inputField.classList.remove('hidden');
+      inputField.focus();
+      inputField.select();
+    }
+
+    // [신규] 입력 완료 시 수동 조절 배율 적용 및 복귀
+    function disableZoomInput(val) {
+      const textSpan = document.getElementById('zoom-indicator-text');
+      const inputField = document.getElementById('zoom-input-field');
+      if (!textSpan || !inputField) return;
+
+      let num = parseInt(val);
+      if (isNaN(num)) {
+        num = previewZoomValue;
+      }
+      
+      // 최소/최대 안전 규격 범위 적용
+      num = Math.max(30, Math.min(150, num));
+      
+      previewZoomValue = num;
+      previewZoomMode = 'manual';
+
+      inputField.classList.add('hidden');
+      textSpan.classList.remove('hidden');
+
+      updateZoomModeUI();
+      adjustPreviewScale();
     }
 
     // 초기 로드 시 프리셋 동기화 및 실행
@@ -1892,12 +2151,17 @@
     renderPages();
     
     // 기본 프리셋 활성화 체크 표시 (녹색 & 빨간색 설정)
-    setGridColor('#69afa0');
-    setGuideColor('#ff8c8c');
+    setGridColor('#059669');
+    setGuideColor('#ef4444');
     
     // 기계식 CSS 변수와 슬라이더 기본 수치 0% 일관 동기화
     updateCharYOffset(0);
     document.getElementById('charYOffsetSlider').value = 0;
+
+    // 창 크기 변경에 따른 실시간 축소 비율 동기화 리스너 등록
+    window.addEventListener('resize', adjustPreviewScale);
+    // 폰트 등이 완전히 교체된 로드 완료 시점에도 스케일 비율 동기화 보장
+    window.addEventListener('load', adjustPreviewScale);
   </script>
 </body>
 </html>
