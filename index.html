@@ -592,7 +592,7 @@
           </svg>
         </button>
         <div class="w-px h-4 bg-slate-700"></div>
-        <button onclick="toggleZoomMode()" id="btn-zoom-mode" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95" title="폭 맞춤 전환">
+        <button onclick="toggleZoomMode()" id="btn-zoom-mode" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="폭 맞춤 전환">
           폭 맞춤
         </button>
       </div>
@@ -2028,6 +2028,7 @@
       }
 
       updateZoomButtonsState();
+      updateZoomModeUI();
     }
 
     function updateZoomButtonsState() {
