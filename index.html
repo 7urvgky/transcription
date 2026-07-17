@@ -574,7 +574,7 @@
 
       <!-- [신규] 화면 프리뷰 확대/축소 플로팅 컨트롤러 -->
       <div class="fixed bottom-6 right-6 bg-slate-900/90 backdrop-blur text-white px-3 py-2 rounded-xl shadow-2xl border border-slate-700/50 flex items-center space-x-3 z-30 no-print">
-        <button onclick="zoomOut()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all" title="축소">
+        <button id="btn-zoom-out" onclick="zoomOut()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all duration-200" title="축소">
           <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"></path>
           </svg>
@@ -586,7 +586,7 @@
           <input id="zoom-input-field" type="number" min="30" max="150" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
         </div>
 
-        <button onclick="zoomIn()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all" title="확대">
+        <button id="btn-zoom-in" onclick="zoomIn()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all duration-200" title="확대">
           <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
           </svg>
@@ -2025,6 +2025,45 @@
         } else {
           indicator.textContent = `${previewZoomValue}%`;
         }
+      }
+
+      updateZoomButtonsState();
+    }
+
+    function updateZoomButtonsState() {
+      const btnOut = document.getElementById('btn-zoom-out');
+      const btnIn = document.getElementById('btn-zoom-in');
+      if (!btnOut || !btnIn) return;
+
+      let currentVal = previewZoomValue;
+      if (previewZoomMode === 'auto') {
+        const wrappers = document.querySelectorAll('.page-scale-wrapper');
+        const mainArea = document.querySelector('main');
+        if (wrappers[0] && mainArea) {
+          const page = wrappers[0].querySelector('.print-page');
+          const availableWidth = mainArea.clientWidth - 48;
+          const pageNaturalWidth = page.offsetWidth;
+          const autoScale = availableWidth > 0 && pageNaturalWidth > 0 ? (availableWidth / pageNaturalWidth) : 1;
+          currentVal = Math.round(autoScale * 100);
+        }
+      }
+
+      // 30% 이하 도달 시 축소 버튼 흐리게 및 비활성화 처리
+      if (currentVal <= 30) {
+        btnOut.classList.add('opacity-30', 'pointer-events-none');
+        btnOut.classList.remove('hover:bg-slate-800', 'active:scale-95');
+      } else {
+        btnOut.classList.remove('opacity-30', 'pointer-events-none');
+        btnOut.classList.add('hover:bg-slate-800', 'active:scale-95');
+      }
+
+      // 150% 이상 도달 시 확대 버튼 흐리게 및 비활성화 처리
+      if (currentVal >= 150) {
+        btnIn.classList.add('opacity-30', 'pointer-events-none');
+        btnIn.classList.remove('hover:bg-slate-800', 'active:scale-95');
+      } else {
+        btnIn.classList.remove('opacity-30', 'pointer-events-none');
+        btnIn.classList.add('hover:bg-slate-800', 'active:scale-95');
       }
     }
 
