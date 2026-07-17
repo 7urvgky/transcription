@@ -961,11 +961,11 @@
     }, true);
 
 
-    // 구두점/기호 연속 2개까지 한 칸 배치 보존 + 단 문자가 섞일 때는 한 개 제한 연산 엔진
+    // 구두점/기호 연속 2개까지 한 칸 배치 보존 + 한글 규칙 준수
     function parseTextToManuscriptCells(text, cols) {
       const cells = [];
       const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
-      const isPunctuation = (c) => /[.,!?'"危害“”‘’()\[\]{}<>~?;:：；]/.test(c);
+      const isPunctuation = (c) => /[.,!?'"“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
       
       const isPeriodOrComma = (c) => c === '.' || c === ',';
       const isQuote = (c) => /[“‘”’"']/.test(c);
@@ -1359,10 +1359,11 @@
       return pages;
     }
 
+    // [중요 교정] 구두점 정규식 수정을 통해 행두금칙(줄 처음에 마침표/물음표 등이 오는 것 방지) 완벽 보장
     function splitTextForLineNote(text, maxNonSpace) {
       const lines = [];
       const paragraphs = text.split('\n');
-      const isPunctuation = (c) => /[.,!?'"nym‘’()(\\][\]{}<>~?;:：；]/ .test(c);
+      const isPunctuation = (c) => /[.,!?'"“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
 
       paragraphs.forEach((p) => {
         if (p.trim() === "") {
@@ -1381,9 +1382,12 @@
           let isSpace = (char === ' ' || char === '\t' || char === '\r');
 
           if (!isSpace && currentNonSpaceCount >= maxNonSpace) {
+            // 줄 시작점에 구두점이 올 경우 예외 조판 필터링 가동 (모든 구두점을 전 줄 마지막으로 연쇄 흡수)
             if (isPunctuation(char)) {
-              currentLineText += char;
-              i++;
+              while (i < chars.length && isPunctuation(chars[i])) {
+                currentLineText += chars[i];
+                i++;
+              }
             }
             
             lines.push({ text: currentLineText, isFirstLine: isFirstLine, isLastLineOfPara: false });
@@ -1391,7 +1395,7 @@
             currentNonSpaceCount = 0;
             isFirstLine = false;
             
-            if (i < chars.length && chars[i] === ' ') {
+            if (i < chars.length && (chars[i] === ' ' || chars[i] === '\t' || chars[i] === '\r')) {
               i++;
             }
             continue;
@@ -2151,8 +2155,8 @@
     renderPages();
     
     // 기본 프리셋 활성화 체크 표시 (녹색 & 빨간색 설정)
-    setGridColor('#059669');
-    setGuideColor('#ef4444');
+    setGridColor('#69afa0');
+    setGuideColor('#ff8c8c');
     
     // 기계식 CSS 변수와 슬라이더 기본 수치 0% 일관 동기화
     updateCharYOffset(0);
