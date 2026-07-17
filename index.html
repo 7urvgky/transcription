@@ -1491,16 +1491,21 @@
           const pageOneBody = document.createElement('div');
           pageOneBody.className = "w-full flex flex-col justify-start items-center mb-[15mm]";
           
+          const totalSourcePages = sourcePages.length;
+          const isLastPage = (sIdx === totalSourcePages - 1);
+
           pageOneBody.style.height = "auto";
           if (orientation === 'portrait') {
-            pageOneBody.style.maxHeight = (sIdx === 0) ? "190mm" : "210mm";
+            pageOneBody.style.maxHeight = (sIdx === 0) ? "175mm" : "195mm";
           } else {
-            pageOneBody.style.maxHeight = (sIdx === 0) ? "118mm" : "142mm";
+            // 가로 모드 마지막 페이지일 경우 전체 프레임 높이를 15mm 감축
+            const baseHeight = (sIdx === 0) ? 108 : 132;
+            const finalHeight = isLastPage ? (baseHeight - 15) : baseHeight;
+            pageOneBody.style.maxHeight = `${finalHeight}mm`;
           }
           pageOneBody.style.minHeight = "0";
 
           const frameDiv = document.createElement('div');
-          const totalSourcePages = sourcePages.length;
           
           // 원문 읽기 테두리는 opacity에 관계없이 언제나 100% solid 선으로 렌더링되도록 custom-grid-border 유지
           let borderClasses = "border-2 border-solid custom-grid-border bg-white flex flex-col justify-stretch p-6 w-full h-auto";
@@ -1530,7 +1535,12 @@
             : ((sIdx === 0) ? getMaxLines(fontSizeNum, 0) / 2 : getMaxLines(fontSizeNum, 1) / 2); 
           
           const lineHeightMm = fontSizeNum * 2.2 * 0.352778;
-          const maxContentHeightMm = maxLinesOnThisPage * lineHeightMm;
+          let maxContentHeightMm = maxLinesOnThisPage * lineHeightMm;
+
+          // 가로 모드이면서 마지막 페이지일 경우, 텍스트 높이 기준선도 15mm 감축하여 불필요한 공백 제거
+          if (orientation === 'landscape' && isLastPage) {
+            maxContentHeightMm = Math.max(0, maxContentHeightMm - 15);
+          }
 
           pInnerContent.style.maxHeight = `${maxContentHeightMm}mm`;
           pInnerContent.style.overflow = "hidden"; 
@@ -1538,11 +1548,18 @@
           if (orientation === 'landscape') {
             pInnerContent.style.columnCount = "2";
             pInnerContent.style.columnGap = "15mm";
-            pInnerContent.style.columnFill = "auto"; 
+            if (isLastPage) {
+              pInnerContent.style.columnFill = "auto"; 
+              pInnerContent.style.height = `${maxContentHeightMm}mm`;
+            } else {
+              pInnerContent.style.columnFill = "balance";
+              pInnerContent.style.height = "auto";
+            }
           } else {
             pInnerContent.style.columnCount = "auto";
             pInnerContent.style.columnGap = "normal";
             pInnerContent.style.columnFill = "balance";
+            pInnerContent.style.height = "auto";
           }
 
           const htmlParagraphs = [];
