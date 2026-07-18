@@ -567,7 +567,7 @@
         <!-- 클릭 시 숫자를 직접 입력할 수 있는 하이브리드 인디케이터 컨테이너 -->
         <div class="flex items-center justify-center min-w-[85px]">
           <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">자동</span>
-          <input id="zoom-input-field" type="number" min="30" max="180" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
+          <input id="zoom-input-field" type="number" min="30" max="200" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
         </div>
 
         <button id="btn-zoom-in" onclick="zoomIn()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all duration-200" title="확대">
@@ -2043,7 +2043,7 @@
         btnOut.classList.add('hover:bg-slate-800', 'active:scale-95');
       }
 
-      if (currentVal >= 150) {
+      if (currentVal >= 200) {
         btnIn.classList.add('opacity-30', 'pointer-events-none');
         btnIn.classList.remove('hover:bg-slate-800', 'active:scale-95');
       } else {
@@ -2058,13 +2058,13 @@
         if (mainArea && cachedPageWidth > 0) {
           const availableWidth = mainArea.clientWidth - 48;
           const autoScale = availableWidth / cachedPageWidth;
-          previewZoomValue = Math.min(150, Math.ceil((autoScale * 100) / 10) * 10);
+          previewZoomValue = Math.min(200, Math.ceil((autoScale * 100) / 10) * 10);
         } else {
           previewZoomValue = 100;
         }
         previewZoomMode = 'manual';
       } else {
-        previewZoomValue = Math.min(150, previewZoomValue + 10);
+        previewZoomValue = Math.min(200, previewZoomValue + 10);
       }
       updateZoomModeUI();
       adjustPreviewScale();
@@ -2142,7 +2142,7 @@
         num = previewZoomValue;
       }
       
-      num = Math.max(30, Math.min(150, num));
+      num = Math.max(30, Math.min(200, num));
       
       previewZoomValue = num;
       previewZoomMode = 'manual';
@@ -2157,7 +2157,7 @@
     document.getElementById('zoom-input-field').addEventListener('input', (e) => {
       let num = parseInt(e.target.value);
       if (!isNaN(num)) {
-        num = Math.max(30, Math.min(150, num));
+        num = Math.max(30, Math.min(200, num));
         previewZoomValue = num;
         previewZoomMode = 'manual';
         updateZoomModeUI();
