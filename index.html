@@ -338,6 +338,33 @@
           </svg>
           <span class="text-base tracking-wide">인쇄 및 PDF로 저장</span>
         </button>
+      <div class="flex gap-2 mt-2">
+
+  <button
+    onclick="exportSettings()"
+    class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold py-1.5 rounded-lg border border-blue-200 transition-all active:scale-[0.98]">
+
+    저장하기
+
+  </button>
+
+  <button
+    onclick="document.getElementById('import-settings-file').click()"
+    class="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold py-1.5 rounded-lg border border-emerald-200 transition-all active:scale-[0.98]">
+
+    불러오기
+
+  </button>
+
+</div>
+
+<input
+  type="file"
+  id="import-settings-file"
+  accept=".json"
+  onchange="importSettings(event)"
+  class="hidden">
+      
       </div>
 
       <!-- [스크롤 영역] 셋팅 및 구성 필드 패널 -->
@@ -545,6 +572,13 @@
             </label>
           </div>
         </div>
+ <button
+  onclick="resetSavedData()"
+  class="w-full mt-2 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
+
+  초기화
+
+</button>
 
       </div>
     </aside>
@@ -585,6 +619,8 @@
   </div>
 
   <script>
+  'use strict';
+  
     let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴 속에 하나 둘 새겨지는 별을\n이제 다 못 헤는 것은\n쉬이 아침이 오는 까닭이요,\n내일 밤이 남은 까닭이요,\n아직 나의 청춘이 다하지 않은 까닭입니다.\n\n별 하나에 추억과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 동경과\n별 하나에 시와\n별 하나에 어머니, 어머니";
     let articleTitle = "별 헤는 밤";
     let gridCols = "20"; 
@@ -631,6 +667,157 @@
       };
     }
 
+// 자동 저장 추가
+function saveToLocalStorage() {
+
+  const data = {
+
+    sourceText,
+    articleTitle,
+
+    schoolName,
+    gradeInfo,
+    studentName,
+
+    gridCols,
+
+    excludeFirstPage,
+    hideManuscriptHeader,
+    hideCharCount,
+    hidePageNumbers,
+
+    orientation,
+
+    currentGridColor,
+    currentGuideColor,
+
+    gridOpacity,
+    guideOpacity,
+    
+    charYOffset:
+        document.getElementById('charYOffsetSlider').value
+
+  };
+
+  localStorage.setItem(
+    'manuscriptPaperData',
+    JSON.stringify(data)
+  );
+}
+function loadFromLocalStorage() {
+function resetSavedData() {
+
+  if (
+    !confirm(
+      '저장된 내용을 모두 삭제할까요?'
+    )
+  ) {
+    return;
+  }
+
+  localStorage.removeItem(
+    'manuscriptPaperData'
+  );
+
+  location.reload();
+
+}
+
+
+  const saved =
+    localStorage.getItem('manuscriptPaperData');
+
+  if (!saved)
+    return;
+
+  const data = JSON.parse(saved);
+
+  sourceText =
+    data.sourceText ?? sourceText;
+
+  articleTitle =
+    data.articleTitle ?? articleTitle;
+
+  schoolName =
+    data.schoolName ?? schoolName;
+
+  gradeInfo =
+    data.gradeInfo ?? gradeInfo;
+
+  studentName =
+    data.studentName ?? studentName;
+
+  gridCols =
+    data.gridCols ?? gridCols;
+
+  excludeFirstPage =
+    data.excludeFirstPage ?? excludeFirstPage;
+
+  hideManuscriptHeader =
+    data.hideManuscriptHeader ?? hideManuscriptHeader;
+
+  hideCharCount =
+    data.hideCharCount ?? hideCharCount;
+
+  hidePageNumbers =
+    data.hidePageNumbers ?? hidePageNumbers;
+
+  orientation =
+    data.orientation ?? orientation;
+
+  currentGridColor =
+    data.currentGridColor ?? currentGridColor;
+
+  currentGuideColor =
+    data.currentGuideColor ?? currentGuideColor;
+
+  gridOpacity =
+    data.gridOpacity ?? gridOpacity;
+
+  guideOpacity =
+    data.guideOpacity ?? guideOpacity;
+    
+    window.savedCharYOffset =
+    data.charYOffset ?? 0;
+    
+}
+function applyLoadedDataToUI() {
+
+  document.getElementById('source-text').value =
+    sourceText;
+
+  document.getElementById('input-title').value =
+    articleTitle;
+
+  document.getElementById('input-school').value =
+    schoolName;
+
+  document.getElementById('input-grade').value =
+    gradeInfo;
+
+  document.getElementById('input-name').value =
+    studentName;
+
+  document.getElementById('grid-cols-select').value =
+    gridCols;
+
+  document.getElementById('hide-manuscript-header').checked =
+    hideManuscriptHeader;
+
+  document.getElementById('hide-char-count').checked =
+    hideCharCount;
+
+  document.getElementById('hide-page-numbers').checked =
+    hidePageNumbers;
+
+  document.getElementById('exclude-first-page').checked =
+    !excludeFirstPage;
+
+  document.getElementById('char-counter').textContent =
+    `${sourceText.length}자 입력됨`;
+}
+// 자동 저장 추가 끝.
+
     // 초기값 할당
     document.getElementById('source-text').value = sourceText;
     document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
@@ -638,6 +825,8 @@
 
     // 입력 렌더러에 디바운싱 바인딩 (타이핑 시 병목 제거)
     const debouncedRender = debounce(renderPages, 200);
+    const debouncedSave =
+  debounce(saveToLocalStorage, 500);// 자동 저장 디바운스 추가
 
     document.getElementById('source-text').addEventListener('input', (e) => {
       sourceText = e.target.value;
@@ -645,12 +834,19 @@
       debouncedRender();
     });
 
-    document.getElementById('input-title').addEventListener('input', (e) => {
-      articleTitle = e.target.value;
-      document.title = articleTitle ? articleTitle : "필사 용지 만들기";
-      debouncedRender();
-    });
+document.getElementById('input-title')
+.addEventListener('input', (e) => {
 
+  articleTitle = e.target.value;
+
+  document.title =
+      articleTitle
+      ? articleTitle
+      : "필사 용지 만들기";
+
+  updateHeaderAndTitle();
+
+});
     document.getElementById('grid-cols-select').addEventListener('change', (e) => {
       gridCols = e.target.value;
       renderPages();
@@ -744,10 +940,250 @@
     }
 
     function updateCharYOffset(val) {
-      const displayVal = (val > 0 ? '+' : '') + val + '%';
-      document.getElementById('charYOffsetVal').innerText = displayVal;
-      document.documentElement.style.setProperty('--char-y-offset', val + '%');
+
+  const displayVal =
+      (val > 0 ? '+' : '') + val + '%';
+
+  document.getElementById('charYOffsetVal')
+      .innerText = displayVal;
+
+  document.documentElement.style
+      .setProperty('--char-y-offset', val + '%');
+
+  debouncedSave();
+}
+function resetSavedData() {
+
+  localStorage.removeItem(
+    'manuscriptPaperData'
+  );
+
+  location.reload();
+}
+
+function getCurrentSettings() {
+
+  return {
+
+    sourceText,
+    articleTitle,
+
+    schoolName,
+    gradeInfo,
+    studentName,
+
+    gridCols,
+
+    excludeFirstPage,
+    hideManuscriptHeader,
+    hideCharCount,
+    hidePageNumbers,
+
+    orientation,
+
+    currentGridColor,
+    currentGuideColor,
+
+    gridOpacity,
+    guideOpacity,
+
+    charYOffset:
+      document.getElementById(
+        'charYOffsetSlider'
+      ).value
+
+  };
+
+}
+async function exportSettings() {
+
+  const data =
+    getCurrentSettings();
+
+  const json =
+    JSON.stringify(
+      data,
+      null,
+      2
+    );
+
+  // Edge / Chrome
+  if (window.showSaveFilePicker) {
+
+    try {
+
+      const fileHandle =
+        await window.showSaveFilePicker({
+
+          suggestedName:
+            '필사용지설정.json',
+
+          types: [
+            {
+              description: 'JSON 파일',
+              accept: {
+                'application/json': ['.json']
+              }
+            }
+          ]
+
+        });
+
+      const writable =
+        await fileHandle.createWritable();
+
+      await writable.write(json);
+
+      await writable.close();
+
+    } catch (err) {
+
+      console.log('저장 취소');
+
     }
+
+    return;
+
+  }
+
+  // Safari fallback
+
+  const blob =
+    new Blob(
+      [json],
+      {
+        type: 'application/json'
+      }
+    );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const a =
+    document.createElement('a');
+
+  a.href = url;
+
+  a.download =
+    '필사용지설정.json';
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+
+}
+
+function importSettings(event) {
+
+  const file =
+    event.target.files[0];
+
+  if (!file)
+    return;
+
+  const reader =
+    new FileReader();
+
+  reader.onload =
+    function(e) {
+
+      const data =
+        JSON.parse(
+          e.target.result
+        );
+
+      sourceText =
+        data.sourceText ?? sourceText;
+
+      articleTitle =
+        data.articleTitle ?? articleTitle;
+
+      schoolName =
+        data.schoolName ?? schoolName;
+
+      gradeInfo =
+        data.gradeInfo ?? gradeInfo;
+
+      studentName =
+        data.studentName ?? studentName;
+
+      gridCols =
+        data.gridCols ?? gridCols;
+
+      excludeFirstPage =
+        data.excludeFirstPage ?? excludeFirstPage;
+
+      hideManuscriptHeader =
+        data.hideManuscriptHeader ?? hideManuscriptHeader;
+
+      hideCharCount =
+        data.hideCharCount ?? hideCharCount;
+
+      hidePageNumbers =
+        data.hidePageNumbers ?? hidePageNumbers;
+
+      orientation =
+        data.orientation ?? orientation;
+
+      currentGridColor =
+        data.currentGridColor ?? currentGridColor;
+
+      currentGuideColor =
+        data.currentGuideColor ?? currentGuideColor;
+
+      gridOpacity =
+        data.gridOpacity ?? gridOpacity;
+
+      guideOpacity =
+        data.guideOpacity ?? guideOpacity;
+
+      applyLoadedDataToUI();
+
+      updatePageStyleSheet();
+
+      setOrientation(
+        orientation
+      );
+
+      setGridColor(
+        currentGridColor,
+        true
+      );
+
+      setGuideColor(
+        currentGuideColor,
+        true
+      );
+
+      updateGridOpacity(
+        gridOpacity * 100
+      );
+
+      updateGuideOpacity(
+        guideOpacity * 100
+      );
+
+      updateCharYOffset(
+        data.charYOffset || 0
+      );
+
+      document.getElementById(
+        'charYOffsetSlider'
+      ).value =
+        data.charYOffset || 0;
+
+      saveToLocalStorage();
+
+    };
+
+  reader.readAsText(file);
+
+}
+
 
     function setOrientation(mode) {
       orientation = mode;
@@ -779,12 +1215,12 @@
       }
       if (orientation === 'portrait') {
         styleEl.innerHTML = `
-          @page { size: A4 portrait !important; margin: 0 !important; }
+          @page { size: A4 portrait !important; margin: 0mm !important; }
           :root {
             --screen-page-width: 210mm;
             --screen-page-height: 297mm;
             --print-page-width: 210mm;
-            --print-page-height: 296mm;
+            --print-page-height: 297mm;
           }
           .print-page { 
             width: var(--screen-page-width) !important; 
@@ -810,7 +1246,7 @@
             --screen-page-width: 297mm;
             --screen-page-height: 210mm;
             --print-page-width: 297mm;
-            --print-page-height: 209mm;
+            --print-page-height: 210mm;
           }
           .print-page { 
             width: var(--screen-page-width) !important; 
@@ -882,11 +1318,14 @@
         document.getElementById('input-school').value = schoolName === " " ? "" : schoolName;
         syncMetadata('school-placeholder', schoolName, target);
       }
-      else if (target.classList.contains('grade-placeholder')) {
-        gridInfo = txt === "" ? " " : txt;
-        document.getElementById('input-grade').value = gridInfo === " " ? "" : gridInfo;
-        syncMetadata('grade-placeholder', gridInfo, target);
-      }
+else if (target.classList.contains('grade-placeholder')) {
+    gradeInfo = txt === "" ? " " : txt;
+
+    document.getElementById('input-grade').value =
+        gradeInfo === " " ? "" : gradeInfo;
+
+    syncMetadata('grade-placeholder', gradeInfo, target);
+}
       else if (target.classList.contains('name-placeholder')) {
         studentName = txt;
         document.getElementById('input-name').value = studentName;
@@ -958,21 +1397,27 @@
     });
 
     document.addEventListener('blur', (e) => {
-      const target = e.target;
-      if (!target.hasAttribute('contenteditable')) return;
 
-      if (target.textContent.trim() === "") {
-        target.innerHTML = "";
-      }
+  const target = e.target;
 
-      if (
-        target.classList.contains('title-placeholder') ||
-        target.classList.contains('mini-header-center')
-      ) {
-        renderPages();
-      }
-    }, true);
+  if (!target.hasAttribute('contenteditable'))
+      return;
 
+  if (target.textContent.trim() === "") {
+      target.innerHTML = "";
+  }
+
+  if (
+      target.classList.contains('title-placeholder')
+      ||
+      target.classList.contains('mini-header-center')
+  ) {
+
+      updateHeaderAndTitle();
+
+  }
+
+}, true);
 
     function parseTextToManuscriptCells(text, cols) {
       const cells = [];
@@ -1419,8 +1864,11 @@
     }
 
     function renderPages() {
-      const container = document.getElementById('pages-container');
-      container.innerHTML = ""; 
+      const container =
+    document.getElementById('pages-container');
+
+const fragment =
+    document.createDocumentFragment();
 
       const isLineNote = (gridCols === 'line');
       const optRows = calculateOptimalRows(gridCols);
@@ -1616,7 +2064,7 @@
           const scaleWrapper = document.createElement('div');
           scaleWrapper.className = "page-scale-wrapper mb-10";
           scaleWrapper.appendChild(pageOneDiv);
-          container.appendChild(scaleWrapper);
+          fragment.appendChild(scaleWrapper);
         });
       }
 
@@ -1951,15 +2399,16 @@
           const scaleWrapper = document.createElement('div');
           scaleWrapper.className = "page-scale-wrapper mb-10";
           scaleWrapper.appendChild(gridPageDiv);
-          container.appendChild(scaleWrapper);
+          fragment.appendChild(scaleWrapper);
         }
       });
-
+container.replaceChildren(fragment);
       updateHeaderAndTitle();
       
       // [성능 개선 2] 렌더링 직후 최초 1회 실측하여 레이아웃 쓰래싱 예방
       cachePageDimensions();
       adjustPreviewScale();
+      debouncedSave();
     }
 
     // [성능 개선 2] 기하 수치를 전역 메모리에 보관하여 잦은 DOM 계측을 막는 최적화 로직
@@ -2165,15 +2614,30 @@
       }
     });
 
-    updatePageStyleSheet();
-    renderPages();
-    
-    setGridColor('#69afa0');
-    setGuideColor('#ff8c8c');
-    
-    updateCharYOffset(0);
-    document.getElementById('charYOffsetSlider').value = 0;
+    loadFromLocalStorage();
 
+applyLoadedDataToUI();
+
+updatePageStyleSheet();
+
+setOrientation(orientation);
+
+setGridColor(currentGridColor, true);
+
+setGuideColor(currentGuideColor, true);
+
+updateGridOpacity(gridOpacity * 100);
+
+updateGuideOpacity(guideOpacity * 100);
+
+updateCharYOffset(
+    window.savedCharYOffset || 0
+);
+
+document.getElementById(
+    'charYOffsetSlider'
+).value =
+    window.savedCharYOffset || 0;
     window.addEventListener('resize', adjustPreviewScale);
     window.addEventListener('load', () => {
       cachePageDimensions();
