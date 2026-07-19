@@ -67,7 +67,8 @@
 
     /* GPU 가속을 이용한 글자 상하 미세정렬 규칙 일괄 적용 */
     .grid-cell-guide svg g, 
-    .line-note-text-span {
+    .line-note-text-span,
+    .cell-char-span {
       transform: translate3d(0, var(--char-y-offset, 0%), 0) !important;
       transform-origin: center !important;
       will-change: transform;
@@ -144,7 +145,7 @@
       break-inside: avoid !important;
     }
 
-    /* 인쇄 모드 최적화 미디어 쿼리 (출력 오차 방어 및 수동 포커스 잔상 제거) */
+    /* 인쇄 모드 최적화 미디어 쿼리 */
     @media print {
       .no-print {
         display: none !important;
@@ -201,7 +202,6 @@
       .rounded-t-none { border-top-left-radius: 0px !important; border-top-right-radius: 0px !important; }
       .rounded-none { border-radius: 0px !important; }
 
-      /* [교정] 화면 축소용 래퍼의 레이아웃 간섭을 'display: contents'로 완벽 제거 */
       .page-scale-wrapper {
         display: contents !important;
       }
@@ -229,7 +229,6 @@
         background-color: white !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
-        /* [교정] 인라인 줌 배율이 인쇄에 간섭하지 않도록 차단 */
         transform: none !important;
         top: 0 !important;
         left: 0 !important;
@@ -249,7 +248,6 @@
         page-break-inside: avoid !important;
       }
 
-      /* 인쇄 시 지저분한 편집 잔상 및 아웃라인을 강제로 소거 */
       [contenteditable="true"] {
         outline: none !important;
         border-color: transparent !important;
@@ -303,7 +301,7 @@
       }
     }
 
-    /* 1024px 이상 데스크톱 브라우저 환경 독립 고정 레이아웃 */
+    /* 데스크톱 vs 모바일 최적 레이아웃 분기 처리 */
     @media screen and (min-width: 1024px) {
       html, body {
         height: 100vh !important;
@@ -317,7 +315,6 @@
         height: calc(100vh - 72px) !important;
         overflow-y: auto !important;
       }
-      /* 가로세로 고배율 확대 시 잘림 방지를 위해 overflow: auto로 양방향 스크롤 허용 */
       main {
         height: calc(100vh - 72px) !important;
         overflow: auto !important;
@@ -325,7 +322,6 @@
       }
     }
 
-    /* 1024px 미만 소형 웹뷰/모바일 환경을 위한 무중력 풀-스크롤 대응 설계 */
     @media screen and (max-width: 1023px) {
       html, body {
         height: auto !important;
@@ -365,10 +361,10 @@
   <!-- 메인 작업 분할 영역 -->
   <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
     
-    <!-- 왼쪽 사이드바: 설정 영역 제어 보드 -->
+    <!-- 왼쪽 사이드바 -->
     <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 flex flex-col">
       
-      <!-- [고정] 인쇄 및 PDF 저장 버튼 패널 -->
+      <!-- 인쇄 및 PDF 저장 버튼 패널 -->
       <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
         <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2 transition-all active:scale-[0.98]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -387,7 +383,7 @@
         <input type="file" id="import-settings-file" accept=".json" onchange="importSettings(event)" class="hidden">
       </div>
 
-      <!-- [스크롤 영역] 셋팅 및 구성 필드 패널 -->
+      <!-- 셋팅 제어판 영역 -->
       <div class="flex-1 overflow-y-auto p-6 pt-4 space-y-6">
         
         <!-- 1. 용지 방향 -->
@@ -598,17 +594,17 @@
       </div>
     </aside>
 
-    <!-- [교정] 가로/세로 오버플로우와 미리보기 프레임 처리 마운트 구역 -->
+    <!-- 미리보기 프레임 처리 구역 -->
     <main class="flex-1 bg-slate-100 p-4 md:p-8 flex flex-col items-center relative">
       <div id="print-area-wrapper" class="w-full flex flex-col items-center">
         <!-- 동적으로 페이지들이 얹어질 프리뷰 컨테이너 -->
         <div id="pages-container" class="flex flex-col items-center"></div>
       </div>
 
-      <!-- 화면 프리뷰 확대/축소/네비게이션 플로팅 컨트롤러 -->
+      <!-- 플로팅 컨트롤러 -->
       <div class="fixed bottom-6 right-6 bg-slate-900/90 backdrop-blur text-white px-3 py-2 rounded-xl shadow-2xl border border-slate-700/50 flex items-center space-x-3 z-30 no-print">
         
-        <!-- [개선] 현재 화면 표시 쪽 / 전체 쪽 수 대화형 클릭 네비게이션 인디케이터 배지 (배경 흰색 지정) -->
+        <!-- 현재 화면 표시 쪽 / 전체 쪽 수 대화형 클릭 네비게이션 인디케이터 배지 -->
         <div id="pages-badge-container" onclick="enablePageInput(event)" class="bg-white hover:bg-slate-100 text-slate-900 text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-sm flex items-center space-x-1 shrink-0 select-none cursor-pointer transition-all active:scale-95 border border-slate-200" title="클릭하여 원하는 쪽으로 이동">
           <span id="total-pages-badge">📄 계산 중...</span>
           <input id="pages-badge-input" type="number" min="1" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[50px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disablePageInput(this.value)" onkeydown="if(event.key==='Enter') disablePageInput(this.value)" onclick="event.stopPropagation();">
@@ -620,7 +616,7 @@
           </svg>
         </button>
         
-        <!-- 클릭 시 숫자를 직접 입력할 수 있는 하이브리드 인디케이터 컨테이너 -->
+        <!-- 하이브리드 배율 인디케이터 -->
         <div class="flex items-center justify-center min-w-[70px]">
           <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">자동</span>
           <input id="zoom-input-field" type="number" min="30" max="200" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
@@ -633,7 +629,7 @@
         </button>
         <div class="w-px h-4 bg-slate-700"></div>
         
-        <!-- 폭 맞춤과 쪽 맞춤 개별 UI 제어 유닛 -->
+        <!-- 폭 맞춤과 쪽 맞춤 제어 버튼 -->
         <button onclick="setZoomMode('width')" id="btn-zoom-width" class="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="폭 맞춤">
           폭 맞춤
         </button>
@@ -645,7 +641,7 @@
 
   </div>
 
-  <!-- [커스텀 대화상자 모달] alert() 및 confirm() 사용 금지 규정 준수를 위한 모달 마운트 -->
+  <!-- 커스텀 대화상자 모달 -->
   <div id="custom-modal-overlay" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 transition-opacity duration-200 no-print">
     <div class="bg-white rounded-2xl max-w-sm w-full mx-4 shadow-2xl p-6 border border-slate-100 flex flex-col">
       <div class="flex items-start space-x-3.5">
@@ -669,56 +665,67 @@
   <script>
     'use strict';
   
-    // 글로벌 텍스트 및 기본 메타 데이터 정의
-    let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴 속에 하나 둘 새겨지는 별을\n이제 다 못 헤는 것은\n쉬이 아침이 오는 까닭이요,\n내일 밤이 남은 까닭이요,\n아직 나의 청춘이 다하지 않은 까닭입니다.\n\n별 하나에 추억과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 동경과\n별 하나에 시와\n별 하나에 어머니, 어머니";
-    let articleTitle = "별 헤는 밤";
-    let gridCols = "20"; 
-    let schoolName = "건국초등학교";
-    let gradeInfo = "";
-    let studentName = "";
-    let excludeFirstPage = false; 
-    let hideManuscriptHeader = false; 
-    let hideCharCount = false;
-    let hidePageNumbers = false; 
-    let orientation = "portrait";
+    // 단일화된 전역 애플리케이션 상태 (AppState 아키텍처)
+    const AppState = {
+      sourceText: "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴 속에 하나 둘 새겨지는 별을\n이제 다 못 헤는 것은\n쉬이 아침이 오는 까닭이요,\n내일 밤이 남은 까닭이요,\n아직 나의 청춘이 다하지 않은 까닭입니다.\n\n별 하나에 추억과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 동경과\n별 하나에 시와\n별 하나에 어머니, 어머니",
+      articleTitle: "별 헤는 밤",
+      gridCols: "20", 
+      schoolName: "건국초등학교",
+      gradeInfo: "",
+      studentName: "",
+      excludeFirstPage: false, 
+      hideManuscriptHeader: false, 
+      hideCharCount: false,
+      hidePageNumbers: false, 
+      orientation: "portrait",
+      headerLeftText: "",
+      customFooterSourceText: null,
+      customFooterGuideText: null,
+      customFooterEmptyText: null,
 
-    let headerLeftText = "";
-    
-    // 하단 라벨 정보 정의
+      // 실시간 색상 및 불투명도 상태
+      currentGridColor: '#69afa0',
+      currentGuideColor: '#ff8c8c',
+      gridOpacity: 1.0,
+      guideOpacity: 0.35,
+
+      // 화면 프리뷰 배율 제어 상태
+      previewZoomMode: 'width', 
+      previewZoomValue: 100,
+      lastComputedScale: 1.0,
+
+      // 개별 위젯 제어 상태
+      hideGridGuides: false,
+      patternGuide: true,
+      patternEmpty: true,
+      charYOffset: 0
+    };
+
+    // 하단 기본 라벨 상수
     const footerSourceText = "원문 읽기";
     const footerGuideText = "따라 쓰기";
     const footerEmptyText = "원고지";
 
-    // 사용자가 직접 편집한 머리말 및 꼬리말 텍스트 상태 변수
-    let customFooterSourceText = null;
-    let customFooterGuideText = null;
-    let customFooterEmptyText = null;
-
-    // 실시간 색상 및 불투명도 전역 상태 변수
-    let currentGridColor = '#69afa0';
-    let currentGuideColor = '#ff8c8c';
-    let gridOpacity = 1.0;
-    let guideOpacity = 0.35;
-
-    // 화면 프리뷰 배율 제어 상태 변수 (width / page / manual)
-    let previewZoomMode = 'width'; 
-    let previewZoomValue = 100;   
-    window.savedPatternGuide = true;
-    window.savedPatternEmpty = true;
-    window.savedHideGridGuides = false;
-    window.savedCharYOffset = 0;
-
-    // Layout Thrashing 최적화용 캐싱 수치 변수 선언
+    // Layout Thrashing 최적화용 치수 캐시
     let cachedPageWidth = 0;
     let cachedPageHeight = 0;
 
-    // 커스텀 대화상자(Confirm/Alert) 상태를 보존할 콜백 객체
+    // 모달 콜백 핸들러
     let activeModalCallback = null;
-
-    // 대용량 텍스트 경고 모달 중복 팝업 차단용 상태 변수
     window.hasShownLengthWarning = false;
 
-    // 디바운싱(Debounce) 구현 (무거운 조판 연산 딜레이 적용)
+    // [보안 지향] DOM 기반 HTML Injection 차단 탈출 필터
+    function escapeHTML(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // 디바운서
     function debounce(func, wait) {
       let timeout;
       return function(...args) {
@@ -727,83 +734,44 @@
       };
     }
 
-    // 자동 저장 및 꼬리말 문구 복합 보존
+    // 로컬 스토리지 상태 보존
     function saveToLocalStorage() {
-      const data = {
-        sourceText,
-        articleTitle,
-        schoolName,
-        gradeInfo,
-        studentName,
-        gridCols,
-        excludeFirstPage,
-        hideManuscriptHeader,
-        hideCharCount,
-        hidePageNumbers,
-        orientation,
-        currentGridColor,
-        currentGuideColor,
-        gridOpacity,
-        guideOpacity,
-        headerLeftText,
-        customFooterSourceText,
-        customFooterGuideText,
-        customFooterEmptyText,
-        hideGridGuides: document.getElementById('hide-grid-guides').checked,
-        patternGuide: document.getElementById('pattern-guide').checked,
-        patternEmpty: document.getElementById('pattern-empty').checked,
-        charYOffset: document.getElementById('charYOffsetSlider').value
-      };
-      localStorage.setItem('manuscriptPaperData', JSON.stringify(data));
+      localStorage.setItem('manuscriptPaperData', JSON.stringify(AppState));
     }
 
-    // JSON 복합 데이터 불러오기 및 기본값 안전 검증(Null-Guard) 탑재
+    // 로컬 스토리지 안전 수신 및 수화(Hydration)
     function loadFromLocalStorage() {
       const saved = localStorage.getItem('manuscriptPaperData');
       if (!saved) return;
-
-      const data = JSON.parse(saved);
-      sourceText = data.sourceText ?? sourceText;
-      articleTitle = data.articleTitle ?? articleTitle;
-      schoolName = data.schoolName ?? schoolName;
-      gradeInfo = data.gradeInfo ?? gradeInfo;
-      studentName = data.studentName ?? studentName;
-      gridCols = data.gridCols ?? gridCols;
-      excludeFirstPage = data.excludeFirstPage ?? excludeFirstPage;
-      hideManuscriptHeader = data.hideManuscriptHeader ?? hideManuscriptHeader;
-      hideCharCount = data.hideCharCount ?? hideCharCount;
-      hidePageNumbers = data.hidePageNumbers ?? hidePageNumbers;
-      orientation = data.orientation ?? orientation;
-      currentGridColor = data.currentGridColor ?? currentGridColor;
-      currentGuideColor = data.currentGuideColor ?? currentGuideColor;
-      gridOpacity = data.gridOpacity ?? gridOpacity;
-      guideOpacity = data.guideOpacity ?? guideOpacity;
-      headerLeftText = data.headerLeftText ?? headerLeftText;
-      customFooterSourceText = data.customFooterSourceText ?? null;
-      customFooterGuideText = data.customFooterGuideText ?? null;
-      customFooterEmptyText = data.customFooterEmptyText ?? null;
-      window.savedHideGridGuides = data.hideGridGuides ?? false;
-      window.savedPatternGuide = data.patternGuide ?? true;
-      window.savedPatternEmpty = data.patternEmpty ?? true;
-      window.savedCharYOffset = Number(data.charYOffset) ?? 0;    
+      try {
+        const data = JSON.parse(saved);
+        Object.keys(data).forEach(key => {
+          if (key in AppState) {
+            AppState[key] = data[key];
+          }
+        });
+      } catch (err) {
+        console.error("로컬 스토리지 파싱 에러:", err);
+      }
     }
 
+    // Hydrated 상태를 UI 뷰에 정적 매핑
     function applyLoadedDataToUI() {
-      document.getElementById('source-text').value = sourceText;
-      document.getElementById('input-title').value = articleTitle;
-      document.getElementById('input-school').value = schoolName;
-      document.getElementById('input-grade').value = gradeInfo;
-      document.getElementById('input-name').value = studentName;
-      document.getElementById('grid-cols-select').value = gridCols;
-      document.getElementById('hide-manuscript-header').checked = hideManuscriptHeader;
-      document.getElementById('hide-char-count').checked = hideCharCount;
-      document.getElementById('hide-page-numbers').checked = hidePageNumbers;
-      document.getElementById('hide-grid-guides').checked = window.savedHideGridGuides;
-      document.getElementById('pattern-guide').checked = window.savedPatternGuide;
-      document.getElementById('pattern-empty').checked = window.savedPatternEmpty;
-      document.getElementById('exclude-first-page').checked = !excludeFirstPage;
-      document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
-      document.title = articleTitle ? articleTitle : "필사 용지 만들기";
+      document.getElementById('source-text').value = AppState.sourceText;
+      document.getElementById('input-title').value = AppState.articleTitle;
+      document.getElementById('input-school').value = AppState.schoolName;
+      document.getElementById('input-grade').value = AppState.gradeInfo;
+      document.getElementById('input-name').value = AppState.studentName;
+      document.getElementById('grid-cols-select').value = AppState.gridCols;
+      document.getElementById('hide-manuscript-header').checked = AppState.hideManuscriptHeader;
+      document.getElementById('hide-char-count').checked = AppState.hideCharCount;
+      document.getElementById('hide-page-numbers').checked = AppState.hidePageNumbers;
+      document.getElementById('hide-grid-guides').checked = AppState.hideGridGuides;
+      document.getElementById('pattern-guide').checked = AppState.patternGuide;
+      document.getElementById('pattern-empty').checked = AppState.patternEmpty;
+      document.getElementById('exclude-first-page').checked = !AppState.excludeFirstPage;
+      document.getElementById('char-counter').textContent = `${AppState.sourceText.length}자 입력됨`;
+      document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
     }
 
     function showCustomAlert(title, message) {
@@ -846,22 +814,22 @@
       );
     }
 
-    // 렌더링 디바운서 및 저장 디바운서 연계
+    // 렌더 및 저장 디바운서 연계
     const debouncedRender = debounce(renderPages, 200);
     const debouncedSave = debounce(saveToLocalStorage, 500);
 
-    // 원문 입력 필드 핸들러
+    // 이벤트 리스너 바인딩
     document.getElementById('source-text').addEventListener('input', (e) => {
-      sourceText = e.target.value;
-      document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
+      AppState.sourceText = e.target.value;
+      document.getElementById('char-counter').textContent = `${AppState.sourceText.length}자 입력됨`;
       
-      if (sourceText.length > 3000 && !window.hasShownLengthWarning) {
+      if (AppState.sourceText.length > 3000 && !window.hasShownLengthWarning) {
         window.hasShownLengthWarning = true;
         showCustomAlert(
           '대용량 텍스트 안내',
           '원문이 3,000자를 초과했습니다. 원고지 페이지가 과도하게 늘어나면 실시간 렌더링이 다소 느려질 수 있으므로, 3,000자 이내로 나누어 제작하시는 것을 추천합니다.'
         );
-      } else if (sourceText.length <= 3000) {
+      } else if (AppState.sourceText.length <= 3000) {
         window.hasShownLengthWarning = false;
       }
       
@@ -869,49 +837,40 @@
     });
 
     document.getElementById('input-title').addEventListener('input', (e) => {
-      articleTitle = e.target.value;
-      document.title = articleTitle ? articleTitle : "필사 용지 만들기";
+      AppState.articleTitle = e.target.value;
+      document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
       updateHeaderAndTitle();
     });
 
     document.getElementById('grid-cols-select').addEventListener('change', (e) => {
-      gridCols = e.target.value;
+      AppState.gridCols = e.target.value;
       renderPages();
     });
 
-    const inputIds = ['input-school', 'input-grade', 'input-name'];
-    inputIds.forEach(id => {
+    ['input-school', 'input-grade', 'input-name'].forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
         const val = e.target.value;
-        if (id === 'input-school') schoolName = val;
-        if (id === 'input-grade') gradeInfo = val;
-        if (id === 'input-name') studentName = val;
+        if (id === 'input-school') AppState.schoolName = val;
+        if (id === 'input-grade') AppState.gradeInfo = val;
+        if (id === 'input-name') AppState.studentName = val;
         updateHeaderAndTitle();
       });
     });
 
-    // 화면 갱신 체크박스 위젯 연동
-    document.getElementById('pattern-guide').addEventListener('change', renderPages);
-    document.getElementById('pattern-empty').addEventListener('change', renderPages);
+    document.getElementById('pattern-guide').addEventListener('change', (e) => { AppState.patternGuide = e.target.checked; renderPages(); });
+    document.getElementById('pattern-empty').addEventListener('change', (e) => { AppState.patternEmpty = e.target.checked; renderPages(); });
     document.getElementById('exclude-first-page').addEventListener('change', (e) => {
-      excludeFirstPage = !e.target.checked;
+      AppState.excludeFirstPage = !e.target.checked;
       renderPages();
     });
-    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => {
-      hideManuscriptHeader = e.target.checked;
-      renderPages();
+    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; renderPages(); });
+    document.getElementById('hide-char-count').addEventListener('change', (e) => { AppState.hideCharCount = e.target.checked; renderPages(); });
+    document.getElementById('hide-page-numbers').addEventListener('change', (e) => { AppState.hidePageNumbers = e.target.checked; renderPages(); });
+    document.getElementById('hide-grid-guides').addEventListener('change', (e) => {
+      AppState.hideGridGuides = e.target.checked;
+      updateGridGuides();
     });
-    document.getElementById('hide-char-count').addEventListener('change', (e) => {
-      hideCharCount = e.target.checked;
-      renderPages();
-    });
-    document.getElementById('hide-page-numbers').addEventListener('change', (e) => {
-      hidePageNumbers = e.target.checked;
-      renderPages();
-    });
-    document.getElementById('hide-grid-guides').addEventListener('change', updateGridGuides);
 
-    // 색상 변환 유틸리티
     function hexToRgba(hex, alpha = 0.35) {
       hex = hex.replace('#', '');
       let r = parseInt(hex.substring(0, 2), 16);
@@ -920,11 +879,10 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    // 땜질 최적화: 중복 renderPages 호출 제거 및 CSS 속성 다이렉트 바인딩 구조
     function setGridColor(val, isCustom = false) {
-      currentGridColor = val;
+      AppState.currentGridColor = val;
       document.documentElement.style.setProperty('--grid-color', val);
-      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(val, gridOpacity));
+      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(val, AppState.gridOpacity));
       
       const buttons = document.querySelectorAll('.grid-color-check');
       buttons.forEach(el => el.classList.add('hidden'));
@@ -938,7 +896,7 @@
     }
 
     function setGuideColor(val, isCustom = false) {
-      currentGuideColor = val;
+      AppState.currentGuideColor = val;
       updateGridGuides();
 
       const checks = document.querySelectorAll('.guide-color-check');
@@ -953,60 +911,33 @@
     }
 
     function updateGridGuides() {
-      const hideGuides = document.getElementById('hide-grid-guides').checked;
-      document.documentElement.style.setProperty('--guide-display', hideGuides ? 'none' : 'block');
-      document.documentElement.style.setProperty('--guide-color', hexToRgba(currentGuideColor, guideOpacity));
+      document.documentElement.style.setProperty('--guide-display', AppState.hideGridGuides ? 'none' : 'block');
+      document.documentElement.style.setProperty('--guide-color', hexToRgba(AppState.currentGuideColor, AppState.guideOpacity));
     }
 
     function updateGridOpacity(val) {
-      gridOpacity = val / 100;
+      AppState.gridOpacity = val / 100;
       document.getElementById('gridOpacityVal').innerText = val + '%';
-      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(currentGridColor, gridOpacity));
+      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(AppState.currentGridColor, AppState.gridOpacity));
     }
 
     function updateGuideOpacity(val) {
-      guideOpacity = val / 100;
+      AppState.guideOpacity = val / 100;
       document.getElementById('guideOpacityVal').innerText = val + '%';
       updateGridGuides();
     }
 
     function updateCharYOffset(val) {
+      AppState.charYOffset = Number(val);
       const displayVal = (val > 0 ? '+' : '') + val + '%';
       document.getElementById('charYOffsetVal').innerText = displayVal;
       document.documentElement.style.setProperty('--char-y-offset', val + '%');
       debouncedSave();
     }
 
-    // 설정 데이터 추출 유틸리티
-    function getCurrentSettings() {
-      return {
-        sourceText,
-        articleTitle,
-        schoolName,
-        gradeInfo,
-        studentName,
-        gridCols,
-        excludeFirstPage,
-        hideManuscriptHeader,
-        hideCharCount,
-        hidePageNumbers,
-        orientation,
-        currentGridColor,
-        currentGuideColor,
-        gridOpacity,
-        guideOpacity,
-        headerLeftText,
-        customFooterSourceText,
-        customFooterGuideText,
-        customFooterEmptyText,
-        charYOffset: document.getElementById('charYOffsetSlider').value
-      };
-    }
-
-    // 파일 내보내기 및 데이터 스캔 유효성 연계
+    // 설정 JSON 파일 추출
     async function exportSettings() {
-      const data = getCurrentSettings();
-      const json = JSON.stringify(data, null, 2);
+      const json = JSON.stringify(AppState, null, 2);
 
       if (window.showSaveFilePicker) {
         try {
@@ -1037,7 +968,7 @@
       URL.revokeObjectURL(url);
     }
 
-    // 입출력 안전 가드레일 JSON 수신
+    // 설정 데이터 병합 수화
     function importSettings(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1057,57 +988,35 @@
           return;
         }
 
-        // 유효 셋업 전입 가드
-        sourceText = data.sourceText ?? sourceText;
-        articleTitle = data.articleTitle ?? articleTitle;
-        schoolName = data.schoolName ?? schoolName;
-        gradeInfo = data.gradeInfo ?? gradeInfo;
-        studentName = data.studentName ?? studentName;
-        gridCols = data.gridCols ?? gridCols;
-        excludeFirstPage = data.excludeFirstPage ?? excludeFirstPage;
-        hideManuscriptHeader = data.hideManuscriptHeader ?? hideManuscriptHeader;
-        hideCharCount = data.hideCharCount ?? hideCharCount;
-        hidePageNumbers = data.hidePageNumbers ?? hidePageNumbers;
-        orientation = data.orientation ?? orientation;
-        currentGridColor = data.currentGridColor ?? currentGridColor;
-        currentGuideColor = data.currentGuideColor ?? currentGuideColor;
-        gridOpacity = data.gridOpacity ?? gridOpacity;
-        guideOpacity = data.guideOpacity ?? guideOpacity;
-        headerLeftText = data.headerLeftText ?? "";
-        customFooterSourceText = data.customFooterSourceText ?? null;
-        customFooterGuideText = data.customFooterGuideText ?? null;
-        customFooterEmptyText = data.customFooterEmptyText ?? null;
-        window.savedHideGridGuides = data.hideGridGuides ?? false;
-        window.savedPatternGuide = data.patternGuide ?? true;
-        window.savedPatternEmpty = data.patternEmpty ?? true;
+        Object.keys(data).forEach(key => {
+          if (key in AppState) {
+            AppState[key] = data[key];
+          }
+        });
 
         applyLoadedDataToUI();
-        document.getElementById('hide-grid-guides').checked = window.savedHideGridGuides;
-        document.getElementById('pattern-guide').checked = window.savedPatternGuide;
-        document.getElementById('pattern-empty').checked = window.savedPatternEmpty;
         
         updatePageStyleSheet();
-        setOrientation(orientation);
-        setGridColor(currentGridColor, true);
-        setGuideColor(currentGuideColor, true);
-        updateGridOpacity(gridOpacity * 100);
-        updateGuideOpacity(guideOpacity * 100);
-        updateCharYOffset(data.charYOffset || 0);
-        document.getElementById('charYOffsetSlider').value = data.charYOffset || 0;
+        setOrientation(AppState.orientation);
+        setGridColor(AppState.currentGridColor, true);
+        setGuideColor(AppState.currentGuideColor, true);
+        updateGridOpacity(AppState.gridOpacity * 100);
+        updateGuideOpacity(AppState.guideOpacity * 100);
+        updateCharYOffset(AppState.charYOffset);
+        document.getElementById('charYOffsetSlider').value = AppState.charYOffset;
 
         saveToLocalStorage();
       };
       reader.readAsText(file);
     }
 
-    // 용지 상태 변경 및 최적화
     function setOrientation(mode) {
-      orientation = mode;
+      AppState.orientation = mode;
       
       const btnPortrait = document.getElementById('btn-portrait');
       const btnLandscape = document.getElementById('btn-landscape');
 
-      if (orientation === 'portrait') {
+      if (AppState.orientation === 'portrait') {
         btnPortrait.className = "py-2.5 px-4 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-800 font-bold text-sm transition-all flex items-center justify-center space-x-2";
         btnLandscape.className = "py-2.5 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm transition-all flex items-center justify-center space-x-2";
       } else {
@@ -1121,7 +1030,7 @@
       setTimeout(cachePageDimensions, 100);
     }
 
-    // 용지 동적 스타일 시트 업데이트
+    // 용지 인쇄용 미디어 쿼리 주입
     function updatePageStyleSheet() {
       let styleEl = document.getElementById('dynamic-page-style');
       if (!styleEl) {
@@ -1129,7 +1038,7 @@
         styleEl.id = 'dynamic-page-style';
         document.head.appendChild(styleEl);
       }
-      if (orientation === 'portrait') {
+      if (AppState.orientation === 'portrait') {
         styleEl.innerHTML = `
           @page { size: A4 portrait !important; margin: 0mm !important; }
           :root {
@@ -1198,10 +1107,30 @@
 
     function getBlankPlaceholders() {
       return {
-        school: (schoolName === " " || schoolName.trim()) ? schoolName : "",
-        grade: (gradeInfo === " " || gradeInfo.trim()) ? gradeInfo : "__________학년 __________반",
+        school: (AppState.schoolName === " " || AppState.schoolName.trim()) ? AppState.schoolName : "",
+        grade: (AppState.gradeInfo === " " || AppState.gradeInfo.trim()) ? AppState.gradeInfo : "__________학년 __________반",
         name: "" 
       };
+    }
+
+    function buildHeaderHTML(placeholders) {
+      return `
+        <div class="flex items-center justify-between w-full text-slate-800 text-sm font-bold">
+          <div class="flex items-center space-x-6">
+            <span class="school-placeholder whitespace-nowrap" contenteditable="true">${escapeHTML(placeholders.school)}</span>
+            <span class="grade-placeholder whitespace-nowrap" contenteditable="true">${escapeHTML(placeholders.grade)}</span>
+          </div>
+          <div class="flex items-center border-2 custom-grid-border rounded-lg px-4 py-1.5 bg-slate-50/50 w-[240px]">
+            <span class="text-sm font-extrabold text-slate-700 shrink-0 mr-3">이름 :</span>
+            <div class="name-placeholder-container flex-1 flex justify-center items-center min-w-[100px]">
+              ${AppState.studentName.trim() 
+                ? `<span class="name-placeholder text-slate-900 text-base font-extrabold flex-1 text-center tracking-[1em] pl-[1em]" contenteditable="true">${escapeHTML(AppState.studentName)}</span>`
+                : `<span class="name-placeholder text-slate-400 text-base font-medium flex-1 text-center tracking-normal" contenteditable="true"></span>`
+              }
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function updateHeaderAndTitle() {
@@ -1211,15 +1140,15 @@
       document.querySelectorAll('.grade-placeholder').forEach(el => el.textContent = placeholders.grade);
       
       document.querySelectorAll('.name-placeholder-container').forEach(el => {
-        if (studentName.trim()) {
-          el.innerHTML = `<span class="name-placeholder text-slate-900 text-base font-extrabold flex-1 text-center tracking-[1em] pl-[1em]" contenteditable="true">${studentName}</span>`;
+        if (AppState.studentName.trim()) {
+          el.innerHTML = `<span class="name-placeholder text-slate-900 text-base font-extrabold flex-1 text-center tracking-[1em] pl-[1em]" contenteditable="true">${escapeHTML(AppState.studentName)}</span>`;
         } else {
           el.innerHTML = `<span class="name-placeholder text-slate-400 text-base font-medium flex-1 text-center tracking-normal" contenteditable="true"></span>`;
         }
       });
       
       document.querySelectorAll('.title-placeholder').forEach(el => {
-        el.textContent = articleTitle ? articleTitle : '';
+        el.textContent = AppState.articleTitle ? AppState.articleTitle : '';
       });
     }
 
@@ -1231,7 +1160,7 @@
       });
     }
 
-    // 엔터(Enter) 키 입력 시 메타데이터 줄바꿈 방지
+    // 엔터키 줄바꿈 무효화
     document.addEventListener('keydown', (e) => {
       const target = e.target;
       if (target.hasAttribute('contenteditable')) {
@@ -1253,7 +1182,7 @@
       }
     });
 
-    // 지면 실시간 편집 내용 싱크 및 자동 저장 연계
+    // 지면 실시간 편집 내용 싱크
     document.addEventListener('input', (e) => {
       const target = e.target;
       if (!target.hasAttribute('contenteditable')) return;
@@ -1265,55 +1194,55 @@
       const txt = target.textContent;
 
       if (target.classList.contains('school-placeholder')) {
-        schoolName = txt === "" ? " " : txt;
-        document.getElementById('input-school').value = schoolName === " " ? "" : schoolName;
-        syncMetadata('school-placeholder', schoolName, target);
+        AppState.schoolName = txt === "" ? " " : txt;
+        document.getElementById('input-school').value = AppState.schoolName === " " ? "" : AppState.schoolName;
+        syncMetadata('school-placeholder', AppState.schoolName, target);
       }
       else if (target.classList.contains('grade-placeholder')) {
-        gradeInfo = txt === "" ? " " : txt;
-        document.getElementById('input-grade').value = gradeInfo === " " ? "" : gradeInfo;
-        syncMetadata('grade-placeholder', gradeInfo, target);
+        AppState.gradeInfo = txt === "" ? " " : txt;
+        document.getElementById('input-grade').value = AppState.gradeInfo === " " ? "" : AppState.gradeInfo;
+        syncMetadata('grade-placeholder', AppState.gradeInfo, target);
       }
       else if (target.classList.contains('name-placeholder')) {
-        studentName = txt;
-        document.getElementById('input-name').value = studentName;
-        syncMetadata('name-placeholder', studentName, target);
+        AppState.studentName = txt;
+        document.getElementById('input-name').value = AppState.studentName;
+        syncMetadata('name-placeholder', AppState.studentName, target);
       }
       else if (target.classList.contains('title-placeholder')) {
-        articleTitle = txt;
-        document.getElementById('input-title').value = articleTitle;
-        syncMetadata('title-placeholder', articleTitle, target);
-        document.title = articleTitle ? articleTitle : "필사 용지 만들기";
-        syncMetadata('mini-header-center', articleTitle, null);
+        AppState.articleTitle = txt;
+        document.getElementById('input-title').value = AppState.articleTitle;
+        syncMetadata('title-placeholder', AppState.articleTitle, target);
+        document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
+        syncMetadata('mini-header-center', AppState.articleTitle, null);
       }
       else if (target.classList.contains('mini-header-left')) {
-        headerLeftText = txt;
-        syncMetadata('mini-header-left', headerLeftText, target);
+        AppState.headerLeftText = txt;
+        syncMetadata('mini-header-left', AppState.headerLeftText, target);
       }
       else if (target.classList.contains('mini-header-center')) {
-        articleTitle = txt;
-        document.getElementById('input-title').value = articleTitle;
-        syncMetadata('mini-header-center', articleTitle, target);
-        syncMetadata('title-placeholder', articleTitle, null);
-        document.title = articleTitle ? articleTitle : "필사 용지 만들기";
+        AppState.articleTitle = txt;
+        document.getElementById('input-title').value = AppState.articleTitle;
+        syncMetadata('mini-header-center', AppState.articleTitle, target);
+        syncMetadata('title-placeholder', AppState.articleTitle, null);
+        document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
       }
       else if (target.classList.contains('footer-label-source')) {
-        customFooterSourceText = txt === "" ? null : txt;
+        AppState.customFooterSourceText = txt === "" ? null : txt;
         syncMetadata('footer-label-source', txt, target);
       }
       else if (target.classList.contains('footer-label-guide')) {
-        customFooterGuideText = txt === "" ? null : txt;
+        AppState.customFooterGuideText = txt === "" ? null : txt;
         syncMetadata('footer-label-guide', txt, target);
       }
       else if (target.classList.contains('footer-label-empty')) {
-        customFooterEmptyText = txt === "" ? null : txt;
+        AppState.customFooterEmptyText = txt === "" ? null : txt;
         syncMetadata('footer-label-empty', txt, target);
       }
 
       debouncedSave();
     });
 
-    // 클립보드 붙여넣기 일반 텍스트화 보정
+    // 클립보드 붙여넣기 퓨어텍스트 치환 안전 가드
     document.addEventListener('paste', (e) => {
       const target = e.target;
       const isTargetEditable = target.hasAttribute('contenteditable') || target.id === 'source-text';
@@ -1333,14 +1262,20 @@
         target.dispatchEvent(new Event('input', { bubbles: true }));
       } else {
         text = text.replace(/\n/g, ' ');
-        if (document.queryCommandSupported('insertText')) {
+        
+        const selection = window.getSelection();
+        if (selection.rangeCount) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          const textNode = document.createTextNode(text);
+          range.insertNode(textNode);
+          
+          range.setStartAfter(textNode);
+          range.setEndAfter(textNode);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } else if (document.queryCommandSupported('insertText')) {
           document.execCommand('insertText', false, text);
-        } else {
-          const selection = window.getSelection();
-          if (selection.rangeCount) {
-            selection.deleteFromDocument();
-            selection.getRangeAt(0).insertNode(document.createTextNode(text));
-          }
         }
         target.dispatchEvent(new Event('input', { bubbles: true }));
       }
@@ -1359,8 +1294,16 @@
       }
     }, true);
 
-    // 원고지 규격 자간 분석 및 콤보 문자 정렬 엔진 (불변성 100% 확보)
+    // [성능 향상] parseTextToManuscriptCells 결과 캐싱 레이어 탑재
+    let cachedParsedCells = null;
+    let lastParsedText = "";
+    let lastParsedCols = null;
+
     function parseTextToManuscriptCells(text, cols) {
+      if (cachedParsedCells && lastParsedText === text && lastParsedCols === cols) {
+        return cachedParsedCells;
+      }
+
       const cells = [];
       const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
       const isPunctuation = (c) => /[.,!?'"ным“('_~);:]/.test(c) || /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
@@ -1513,37 +1456,40 @@
         }
       });
 
+      lastParsedText = text;
+      lastParsedCols = cols;
+      cachedParsedCells = cells;
+
       return cells;
     }
 
     function calculateOptimalRows(cols) {
       if (cols === "line") {
-        if (orientation === 'portrait') {
-          return hideManuscriptHeader ? 24 : 21; 
+        if (AppState.orientation === 'portrait') {
+          return AppState.hideManuscriptHeader ? 24 : 21; 
         } else {
-          return hideManuscriptHeader ? 16 : 13; 
+          return AppState.hideManuscriptHeader ? 16 : 13; 
         }
       }
       const colsNum = parseInt(cols);
       
-      if (colsNum === 20 && orientation === 'portrait') {
+      if (colsNum === 20 && AppState.orientation === 'portrait') {
         return 25;
       }
       
-      const usableWidthMm = (orientation === 'portrait') ? 170 : 257;
+      const usableWidthMm = (AppState.orientation === 'portrait') ? 170 : 257;
       const cellWidthMm = usableWidthMm / colsNum;
       
-      const usableHeightMm = (orientation === 'portrait')
-        ? (hideManuscriptHeader ? 228 : 208)
-        : (hideManuscriptHeader ? 158 : 133);
+      const usableHeightMm = (AppState.orientation === 'portrait')
+        ? (AppState.hideManuscriptHeader ? 228 : 208)
+        : (AppState.hideManuscriptHeader ? 158 : 133);
 
       return Math.floor(usableHeightMm / cellWidthMm);
     }
 
-    // 줄 수 정밀 계산 유틸리티
     function estimateLinesForSegments(segments, fontSizePt) {
       const charWidthMm = fontSizePt * 0.3527; 
-      const maxLineWidthMm = (orientation === 'portrait') ? 155 : 112; 
+      const maxLineWidthMm = (AppState.orientation === 'portrait') ? 155 : 112; 
 
       let totalLines = 0;
 
@@ -1644,7 +1590,7 @@
     }
 
     function getMaxLines(fontSizePt, pageIdx) {
-      if (orientation === 'portrait') {
+      if (AppState.orientation === 'portrait') {
         const baseLines = (pageIdx === 0) ? 28 : 30;
         return Math.floor(baseLines * (10 / fontSizePt));
       } else { 
@@ -1806,544 +1752,277 @@
       return lines;
     }
 
-    // 핵심 조판 렌더링 함수 (중복 호출 병목 완벽 제거 버전)
+    // 빈 페이지 뼈대 빌드 엔진
+    function buildSkeletonPage(spec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage) {
+      const wrapper = document.createElement('div');
+      wrapper.className = "page-scale-wrapper mb-10";
+      wrapper.dataset.pageType = spec.type;
+      wrapper.dataset.pageMode = spec.currentMode || 'none';
+
+      const pageDiv = document.createElement('div');
+      pageDiv.className = pageClass;
+
+      const innerDiv = document.createElement('div');
+      innerDiv.className = "print-page-inner";
+      pageDiv.appendChild(innerDiv);
+      wrapper.appendChild(pageDiv);
+
+      if (spec.type === 'source') {
+        if (spec.sIdx === 0) {
+          const pageOneHeader = document.createElement('div');
+          pageOneHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
+          pageOneHeader.innerHTML = headerHTML;
+          innerDiv.appendChild(pageOneHeader);
+
+          const pageOneTitle = document.createElement('div');
+          pageOneTitle.className = "mt-4 mb-2 w-full text-left shrink-0";
+          pageOneTitle.innerHTML = `
+            <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(AppState.articleTitle)}</h2>
+          `;
+          innerDiv.appendChild(pageOneTitle);
+        } else {
+          const pageOneHeader = document.createElement('div');
+          pageOneHeader.className = "pb-2 border-b border-dashed custom-grid-border grid grid-cols-3 items-center text-xs custom-grid-text opacity-80 font-serif-fixed shrink-0 w-full mb-4";
+          pageOneHeader.innerHTML = `
+            <span class="mini-header-left text-left tracking-wider opacity-90 text-[11px] font-medium" contenteditable="true">${escapeHTML(AppState.headerLeftText)}</span>
+            <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${escapeHTML(AppState.articleTitle)}</span>
+            <span class="text-right"></span>
+          `;
+          innerDiv.appendChild(pageOneHeader);
+        }
+
+        const pageOneBody = document.createElement('div');
+        pageOneBody.className = "w-full flex flex-col justify-start items-center mb-[15mm]";
+        
+        if (AppState.orientation === 'portrait') {
+          pageOneBody.style.maxHeight = (spec.sIdx === 0) ? "175mm" : "195mm";
+        } else {
+          const baseHeight = (spec.sIdx === 0) ? 108 : 132;
+          pageOneBody.style.maxHeight = `${baseHeight}mm`;
+        }
+        pageOneBody.style.minHeight = "0";
+
+        const frameDiv = document.createElement('div');
+        let borderClasses = "border-2 border-solid custom-grid-border bg-white flex flex-col justify-stretch p-6 w-full h-auto";
+        if (spec.totalSourcePages > 1) {
+          if (spec.sIdx === 0) borderClasses += " border-b-0 rounded-t-xl rounded-b-none";
+          else if (spec.sIdx === spec.totalSourcePages - 1) borderClasses += " border-t-0 rounded-b-xl rounded-t-none";
+          else borderClasses += " border-t-0 border-b-0 rounded-none";
+        } else {
+          borderClasses += " rounded-xl";
+        }
+        frameDiv.className = borderClasses;
+
+        const pInnerContent = document.createElement('div');
+        pInnerContent.className = "font-serif-fixed text-slate-800 leading-[2.2] font-medium w-full text-justify p-inner-content outline-none";
+        pInnerContent.style.textJustify = "inter-character";
+        pInnerContent.style.wordBreak = "keep-all";
+        pInnerContent.style.fontSize = spec.pageData.fontSize; 
+        pInnerContent.style.height = "auto";
+
+        const fontSizeNum = parseInt(spec.pageData.fontSize);
+        const maxLinesOnThisPage = (AppState.orientation === 'portrait') 
+          ? ((spec.sIdx === 0) ? getMaxLines(fontSizeNum, 0) : getMaxLines(fontSizeNum, 1))
+          : ((spec.sIdx === 0) ? getMaxLines(fontSizeNum, 0) / 2 : getMaxLines(fontSizeNum, 1) / 2); 
+        
+        const lineHeightMm = fontSizeNum * 2.2 * 0.352778;
+        const maxContentHeightMm = maxLinesOnThisPage * lineHeightMm;
+
+        pInnerContent.style.maxHeight = `${maxContentHeightMm}mm`;
+        pInnerContent.style.overflow = "hidden"; 
+
+        if (AppState.orientation === 'landscape') {
+          pInnerContent.style.columnCount = "2";
+          pInnerContent.style.columnGap = "15mm";
+          pInnerContent.style.columnFill = "auto"; 
+          pInnerContent.style.height = `${maxContentHeightMm}mm`;
+        } else {
+          pInnerContent.style.columnCount = "auto";
+          pInnerContent.style.columnGap = "normal";
+          pInnerContent.style.columnFill = "balance";
+          pInnerContent.style.height = "auto";
+        }
+
+        frameDiv.appendChild(pInnerContent);
+        pageOneBody.appendChild(frameDiv);
+        innerDiv.appendChild(pageOneBody);
+
+        if (!AppState.hidePageNumbers) {
+          const pageOneFooter = document.createElement('div');
+          pageOneFooter.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
+          const displaySourceFooter = AppState.customFooterSourceText !== null ? AppState.customFooterSourceText : footerSourceText;
+          pageOneFooter.innerHTML = `
+            <span class="tracking-wide text-slate-400"><span class="footer-label-source" contenteditable="true">${escapeHTML(displaySourceFooter)}</span></span>
+            <span class="bg-emerald-50 text-emerald-800 px-3.5 py-1 rounded-full border border-emerald-100">${spec.sIdx + 1} / ${spec.totalSourcePages}</span>
+          `;
+          innerDiv.appendChild(pageOneFooter);
+        }
+      } else {
+        if (!AppState.hideManuscriptHeader) {
+          const gridPageHeader = document.createElement('div');
+          gridPageHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
+          gridPageHeader.innerHTML = headerHTML;
+          innerDiv.appendChild(gridPageHeader);
+
+          const gridPageTitle = document.createElement('div');
+          gridPageTitle.className = "mt-3 mb-1 w-full text-left shrink-0";
+          gridPageTitle.style.marginBottom = "2mm"; 
+          
+          const borderClass = isLineNote ? "" : "border-b custom-grid-border pb-1";
+          gridPageTitle.innerHTML = `
+            <div class="${borderClass}">
+              <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(AppState.articleTitle)}</h2>
+            </div>
+          `;
+          innerDiv.appendChild(gridPageTitle);
+        } else {
+          if (!isLineNote) {
+            const singleLine = document.createElement('div');
+            singleLine.className = "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
+            innerDiv.appendChild(singleLine);
+          }
+        }
+
+        const gridWrapper = document.createElement('div');
+        gridWrapper.className = AppState.hideManuscriptHeader ? "w-full flex items-center justify-center" : "w-full my-0 flex items-center justify-center"; 
+        innerDiv.appendChild(gridWrapper);
+
+        if (isLineNote) {
+          const usableWidthMm = (AppState.orientation === 'portrait') ? 162 : 249;
+          const relativeContainer = document.createElement('div');
+          relativeContainer.className = "relative mx-auto";
+          relativeContainer.style.width = `${usableWidthMm}mm`;
+          relativeContainer.style.height = `${optRows * 10}mm`;
+
+          const noteContainer = document.createElement('div');
+          noteContainer.className = "w-full h-full border-t-2 manuscript-grid-border flex flex-col justify-start relative";
+          
+          for (let r = 0; r < optRows; r++) {
+            const rowDiv = document.createElement('div');
+            const isLastRow = (r === optRows - 1);
+            const borderThicknessClass = isLastRow ? "border-b-[3px]" : "border-b";
+            rowDiv.className = `${borderThicknessClass} manuscript-grid-border w-full shrink-0 relative`;
+            rowDiv.style.height = "10mm";
+            noteContainer.appendChild(rowDiv);
+          }
+          relativeContainer.appendChild(noteContainer);
+          gridWrapper.appendChild(relativeContainer);
+        } else {
+          const colsNum = parseInt(AppState.gridCols);
+          const usableWidthMm = (AppState.orientation === 'portrait') ? 170 : 257;
+          const cellWidthMm = usableWidthMm / colsNum;
+          
+          const relativeContainer = document.createElement('div');
+          relativeContainer.className = "relative mx-auto block";
+          relativeContainer.style.width = `${usableWidthMm}mm`;
+          relativeContainer.style.height = `${optRows * cellWidthMm}mm`;
+
+          const gridBody = document.createElement('div');
+          gridBody.className = "grid gap-0 border-2 manuscript-grid-border w-full h-full";
+          gridBody.style.gridTemplateColumns = `repeat(${colsNum}, minmax(0, 1fr))`;
+          gridBody.style.gridTemplateRows = `repeat(${optRows}, minmax(0, 1fr))`;
+
+          for (let r = 0; r < optRows; r++) {
+            for (let c = 0; c < colsNum; c++) {
+              const cell = document.createElement('div');
+              cell.className = "grid-cell-guide border-b border-r manuscript-grid-border flex items-center justify-center relative aspect-square";
+              if (c === colsNum - 1) cell.classList.remove('border-r');
+              if (r === optRows - 1) cell.classList.remove('border-b');
+              gridBody.appendChild(cell);
+            }
+          }
+          relativeContainer.appendChild(gridBody);
+
+          if (!AppState.hideCharCount) {
+            const pageOffset = spec.pageIdx * cellsPerPage;
+            for (let r = 0; r < optRows; r++) {
+              const rowStartCell = pageOffset + r * colsNum;
+              const rowEndCell = pageOffset + (r + 1) * colsNum;
+              const currentMaxMultiplesCount = Math.floor(rowEndCell / 100);
+              
+              for (let k = 1; k <= currentMaxMultiplesCount; k++) {
+                const targetBaseValue = 100 * k;
+                if (targetBaseValue > rowStartCell && targetBaseValue <= rowEndCell) {
+                  const labelVal = rowEndCell; 
+                  const label = document.createElement('div');
+                  label.className = "absolute text-[10px] custom-grid-text font-mono font-bold opacity-75 flex items-center justify-start pointer-events-none";
+                  label.style.right = "-32px";
+                  label.style.width = "25px";
+                  label.style.height = `${100 / optRows}%`;
+                  label.style.top = `${(r * 100) / optRows}%`;
+                  label.textContent = labelVal;
+                  relativeContainer.appendChild(label);
+                  break; 
+                }
+              }
+            }
+          }
+          gridWrapper.appendChild(relativeContainer);
+        }
+
+        if (!isLineNote) {
+          if (AppState.hideManuscriptHeader) {
+            const singleBottomLine = document.createElement('div');
+            singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[3mm] shrink-0";
+            innerDiv.appendChild(singleBottomLine);
+          } else {
+            const singleBottomLine = document.createElement('div');
+            singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[2mm] shrink-0";
+            innerDiv.appendChild(singleBottomLine);
+          }
+        }
+
+        if (!AppState.hidePageNumbers) {
+          const footerDiv = document.createElement('div');
+          footerDiv.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
+          
+          let currentFooterLabel = "";
+          let currentFooterClass = "";
+          
+          if (isLineNote) {
+            if (spec.currentMode === 'guide') {
+              currentFooterLabel = AppState.customFooterGuideText !== null ? AppState.customFooterGuideText : (footerGuideText + " - 줄 노트");
+              currentFooterClass = "footer-label-guide";
+            } else {
+              currentFooterLabel = AppState.customFooterEmptyText !== null ? AppState.customFooterEmptyText : (footerEmptyText + " - 줄 노트");
+              currentFooterClass = "footer-label-empty";
+            }
+          } else {
+            if (spec.currentMode === 'guide') {
+              currentFooterLabel = AppState.customFooterGuideText !== null ? AppState.customFooterGuideText : (footerGuideText + " - 가로 " + AppState.gridCols + "칸");
+              currentFooterClass = "footer-label-guide";
+            } else {
+              currentFooterLabel = AppState.customFooterEmptyText !== null ? AppState.customFooterEmptyText : (footerEmptyText + " - 가로 " + AppState.gridCols + "칸");
+              currentFooterClass = "footer-label-empty";
+            }
+          }
+
+          footerDiv.innerHTML = `
+            <span class="tracking-wide text-slate-400"><span class="${currentFooterClass}" contenteditable="true">${escapeHTML(currentFooterLabel)}</span></span>
+            <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">- ${spec.pageIdx + 1} / ${spec.totalGridPages} -</span>
+          `;
+          innerDiv.appendChild(footerDiv);
+        }
+      }
+
+      return wrapper;
+    }
+
+    // [리팩터링] 1. renderPages() 전체 조판 엔진 책임 분배 실행계획부
     function renderPages() {
       const container = document.getElementById('pages-container');
-      const fragment = document.createDocumentFragment();
+      const currentLayoutSignature = AppState.orientation + "_" + AppState.gridCols + "_" + AppState.hideManuscriptHeader + "_" + AppState.hideCharCount + "_" + AppState.hidePageNumbers + "_" + AppState.excludeFirstPage + "_" + AppState.patternGuide + "_" + AppState.patternEmpty;
 
-      const isLineNote = (gridCols === 'line');
-      const optRows = calculateOptimalRows(gridCols);
-      const cellsPerPage = isLineNote ? optRows : (parseInt(gridCols) * optRows);
+      // 단계 A: 페이지 메타 스펙 빌드 (구조 연산 전담)
+      const pageSpecs = buildPageSpecs();
 
-      const placeholders = getBlankPlaceholders();
-      const pageClass = orientation === 'portrait' ? 'a4-page print-page portrait-page' : 'a4-page print-page landscape-page';
+      // 단계 B: DOM 페이지 래퍼 보존 및 조율 (엘리먼트 풀 재사용 기법)
+      adjustDOMWrappersPool(container, pageSpecs, currentLayoutSignature);
 
-      const headerHTML = `
-        <div class="flex items-center justify-between w-full text-slate-800 text-sm font-bold">
-          <div class="flex items-center space-x-6">
-            <span class="school-placeholder whitespace-nowrap" contenteditable="true">${placeholders.school}</span>
-            <span class="grade-placeholder whitespace-nowrap" contenteditable="true">${placeholders.grade}</span>
-          </div>
-          <div class="flex items-center border-2 custom-grid-border rounded-lg px-4 py-1.5 bg-slate-50/50 w-[240px]">
-            <span class="text-sm font-extrabold text-slate-700 shrink-0 mr-3">이름 :</span>
-            <div class="name-placeholder-container flex-1 flex justify-center items-center min-w-[100px]">
-              ${studentName.trim() 
-                ? `<span class="name-placeholder text-slate-900 text-base font-extrabold flex-1 text-center tracking-[1em] pl-[1em]" contenteditable="true">${studentName}</span>`
-                : `<span class="name-placeholder text-slate-400 text-base font-medium flex-1 text-center tracking-normal" contenteditable="true"></span>`
-              }
-            </div>
-          </div>
-        </div>
-      `;
+      // 단계 C: 각 지면 서브 렌더러 분기 및 가상 렌더링 (데이터 바인딩 전담)
+      renderPageContents(pageSpecs, currentLayoutSignature);
 
-      // -------------------------------------------------------------
-      // 제 1 페이지 그룹: [원문 읽기 판]
-      // -------------------------------------------------------------
-      if (!excludeFirstPage) {
-        const paragraphs = sourceText.split('\n');
-        const sourcePages = paginateSourceText(paragraphs);
-
-        sourcePages.forEach((pageData, sIdx) => {
-          const pageOneDiv = document.createElement('div');
-          pageOneDiv.className = pageClass;
-
-          const innerDiv = document.createElement('div');
-          innerDiv.className = "print-page-inner";
-
-          if (sIdx === 0) {
-            const pageOneHeader = document.createElement('div');
-            pageOneHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
-            pageOneHeader.innerHTML = headerHTML;
-            innerDiv.appendChild(pageOneHeader);
-
-            const pageOneTitle = document.createElement('div');
-            pageOneTitle.className = "mt-4 mb-2 w-full text-left shrink-0";
-            pageOneTitle.innerHTML = `
-              <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
-            `;
-            innerDiv.appendChild(pageOneTitle);
-          } else {
-            const pageOneHeader = document.createElement('div');
-            pageOneHeader.className = "pb-2 border-b border-dashed custom-grid-border grid grid-cols-3 items-center text-xs custom-grid-text opacity-80 font-serif-fixed shrink-0 w-full mb-4";
-            pageOneHeader.innerHTML = `
-              <span class="mini-header-left text-left tracking-wider opacity-90 text-[11px] font-medium" contenteditable="true">${headerLeftText}</span>
-              <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</span>
-              <span class="text-right"></span>
-            `;
-            innerDiv.appendChild(pageOneHeader);
-          }
-
-          const pageOneBody = document.createElement('div');
-          pageOneBody.className = "w-full flex flex-col justify-start items-center mb-[15mm]";
-          
-          const totalSourcePages = sourcePages.length;
-
-          pageOneBody.style.height = "auto";
-          if (orientation === 'portrait') {
-            pageOneBody.style.maxHeight = (sIdx === 0) ? "175mm" : "195mm";
-          } else {
-            const baseHeight = (sIdx === 0) ? 108 : 132;
-            pageOneBody.style.maxHeight = `${baseHeight}mm`;
-          }
-          pageOneBody.style.minHeight = "0";
-
-          const frameDiv = document.createElement('div');
-          
-          let borderClasses = "border-2 border-solid custom-grid-border bg-white flex flex-col justify-stretch p-6 w-full h-auto";
-          if (totalSourcePages > 1) {
-            if (sIdx === 0) {
-              borderClasses += " border-b-0 rounded-t-xl rounded-b-none";
-            } else if (sIdx === totalSourcePages - 1) {
-              borderClasses += " border-t-0 rounded-b-xl rounded-t-none";
-            } else {
-              borderClasses += " border-t-0 border-b-0 rounded-none";
-            }
-          } else {
-            borderClasses += " rounded-xl";
-          }
-          frameDiv.className = borderClasses;
-
-          const pInnerContent = document.createElement('div');
-          pInnerContent.className = "font-serif-fixed text-slate-800 leading-[2.2] font-medium w-full text-justify p-inner-content outline-none";
-          pInnerContent.style.textJustify = "inter-character";
-          pInnerContent.style.wordBreak = "keep-all";
-          pInnerContent.style.fontSize = pageData.fontSize; 
-          pInnerContent.style.height = "auto";
-
-          const fontSizeNum = parseInt(pageData.fontSize);
-          const maxLinesOnThisPage = (orientation === 'portrait') 
-            ? ((sIdx === 0) ? getMaxLines(fontSizeNum, 0) : getMaxLines(fontSizeNum, 1))
-            : ((sIdx === 0) ? getMaxLines(fontSizeNum, 0) / 2 : getMaxLines(fontSizeNum, 1) / 2); 
-          
-          const lineHeightMm = fontSizeNum * 2.2 * 0.352778;
-          const maxContentHeightMm = maxLinesOnThisPage * lineHeightMm;
-
-          pInnerContent.style.maxHeight = `${maxContentHeightMm}mm`;
-          pInnerContent.style.overflow = "hidden"; 
-
-          if (orientation === 'landscape') {
-            pInnerContent.style.columnCount = "2";
-            pInnerContent.style.columnGap = "15mm";
-            pInnerContent.style.columnFill = "auto"; 
-            pInnerContent.style.height = `${maxContentHeightMm}mm`;
-          } else {
-            pInnerContent.style.columnCount = "auto";
-            pInnerContent.style.columnGap = "normal";
-            pInnerContent.style.columnFill = "balance";
-            pInnerContent.style.height = "auto";
-          }
-
-          const htmlParagraphs = [];
-          let currentParaText = "";
-          let isContinuedPara = false;
-          let currentParaId = null;
-
-          pageData.segments.forEach(seg => {
-            if (seg.isBlankLine) {
-              if (currentParaText !== "") {
-                htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
-                currentParaText = "";
-                currentParaId = null;
-              }
-              htmlParagraphs.push({ isBlank: true });
-            } else {
-              if (currentParaText === "") {
-                isContinuedPara = seg.isContinued;
-                currentParaText = seg.text;
-                currentParaId = seg.pIdx;
-              } else if (currentParaId !== seg.pIdx) {
-                htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
-                isContinuedPara = seg.isContinued;
-                currentParaText = seg.text;
-                currentParaId = seg.pIdx;
-              } else {
-                currentParaText += " " + seg.text;
-              }
-            }
-          });
-          if (currentParaText !== "") {
-            htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
-          }
-
-          htmlParagraphs.forEach(p => {
-            if (p.isBlank) {
-              const emptySpacer = document.createElement('p');
-              emptySpacer.className = "mb-0 text-justify";
-              emptySpacer.innerHTML = "&nbsp;"; 
-              pInnerContent.appendChild(emptySpacer);
-            } else {
-              const paraEl = document.createElement('p');
-              paraEl.className = "mb-0 text-justify"; 
-              paraEl.style.textIndent = p.isContinued ? "0" : "1.5em";
-              paraEl.style.wordBreak = "keep-all";
-              paraEl.style.textJustify = "inter-character";
-              paraEl.textContent = p.text;
-              pInnerContent.appendChild(paraEl);
-            }
-          });
-
-          frameDiv.appendChild(pInnerContent);
-          pageOneBody.appendChild(frameDiv);
-          innerDiv.appendChild(pageOneBody);
-
-          if (!hidePageNumbers) {
-            const pageOneFooter = document.createElement('div');
-            pageOneFooter.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
-            
-            const displaySourceFooter = customFooterSourceText !== null ? customFooterSourceText : footerSourceText;
-            
-            pageOneFooter.innerHTML = `
-              <span class="tracking-wide text-slate-400"><span class="footer-label-source" contenteditable="true">${displaySourceFooter}</span></span>
-              <span class="bg-emerald-50 text-emerald-800 px-3.5 py-1 rounded-full border border-emerald-100">${sIdx + 1} / ${totalSourcePages}</span>
-            `;
-            innerDiv.appendChild(pageOneFooter);
-          }
-
-          pageOneDiv.appendChild(innerDiv);
-          
-          const scaleWrapper = document.createElement('div');
-          scaleWrapper.className = "page-scale-wrapper mb-10";
-          scaleWrapper.appendChild(pageOneDiv);
-          fragment.appendChild(scaleWrapper);
-        });
-      }
-
-      let cellsData = [];
-      let linesData = [];
-      let totalGridPages = 1;
-
-      if (isLineNote) {
-        const maxNonSpace = (orientation === 'portrait') ? 25 : 33;
-        linesData = splitTextForLineNote(sourceText, maxNonSpace);
-        totalGridPages = Math.ceil(linesData.length / optRows);
-        if (totalGridPages === 0) totalGridPages = 1;
-      } else {
-        const colsNum = parseInt(gridCols);
-        cellsData = parseTextToManuscriptCells(sourceText, colsNum);
-        totalGridPages = Math.ceil(cellsData.length / cellsPerPage);
-        if (totalGridPages === 0) totalGridPages = 1;
-      }
-
-      const hasGuide = document.getElementById('pattern-guide').checked;
-      const hasEmpty = document.getElementById('pattern-empty').checked;
-
-      let renderingModes = [];
-      if (hasGuide) renderingModes.push('guide');
-      if (hasEmpty) renderingModes.push('empty');
-
-      if (renderingModes.length === 0) {
-        renderingModes.push('empty');
-      }
-
-      renderingModes.forEach(currentMode => {
-        for (let pageIdx = 0; pageIdx < totalGridPages; pageIdx++) {
-          const gridPageDiv = document.createElement('div');
-          gridPageDiv.className = pageClass;
-
-          const innerDiv = document.createElement('div');
-          innerDiv.className = "print-page-inner";
-
-          if (!hideManuscriptHeader) {
-            const gridPageHeader = document.createElement('div');
-            gridPageHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
-            gridPageHeader.innerHTML = headerHTML;
-            innerDiv.appendChild(gridPageHeader);
-
-            const gridPageTitle = document.createElement('div');
-            gridPageTitle.className = "mt-3 mb-1 w-full text-left shrink-0";
-            gridPageTitle.style.marginBottom = "2mm"; 
-            
-            const borderClass = isLineNote ? "" : "border-b custom-grid-border pb-1";
-            gridPageTitle.innerHTML = `
-              <div class="${borderClass}">
-                <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${articleTitle ? articleTitle : ''}</h2>
-              </div>
-            `;
-            innerDiv.appendChild(gridPageTitle);
-          } else {
-            if (!isLineNote) {
-              const singleLine = document.createElement('div');
-              singleLine.className = "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
-              innerDiv.appendChild(singleLine);
-            }
-          }
-
-          const gridWrapper = document.createElement('div');
-          if (hideManuscriptHeader) {
-            gridWrapper.className = "w-full flex items-center justify-center"; 
-          } else {
-            gridWrapper.className = "w-full my-0 flex items-center justify-center"; 
-          }
-
-          if (isLineNote) {
-            const usableWidthMm = (orientation === 'portrait') ? 162 : 249;
-            const relativeContainer = document.createElement('div');
-            relativeContainer.className = "relative mx-auto";
-            relativeContainer.style.width = `${usableWidthMm}mm`;
-            relativeContainer.style.height = `${optRows * 10}mm`;
-
-            const noteContainer = document.createElement('div');
-            noteContainer.className = "w-full h-full border-t-2 manuscript-grid-border flex flex-col justify-start relative";
-            
-            const startLineIdx = pageIdx * optRows;
-
-            for (let r = 0; r < optRows; r++) {
-              const lineIdx = startLineIdx + r;
-              const lineObj = linesData[lineIdx] || { text: "", isFirstLine: false, isLastLineOfPara: true };
-              const lineText = lineObj.text;
-
-              const rowDiv = document.createElement('div');
-              
-              const isLastRow = (r === optRows - 1);
-              const borderThicknessClass = isLastRow ? "border-b-[3px]" : "border-b";
-              rowDiv.className = `${borderThicknessClass} manuscript-grid-border w-full shrink-0 relative`;
-              rowDiv.style.height = "10mm";
-
-              if (currentMode === 'guide' && lineText) {
-                const textSpan = document.createElement('div');
-                textSpan.textContent = lineText;
-                
-                // 가속화 가이드라인 클래스 바인딩 보존
-                textSpan.className = "font-serif-fixed text-slate-300 font-medium select-none absolute left-[2mm] right-[2mm] bottom-[1.8mm] leading-none pb-0 whitespace-pre line-note-text-span";
-                textSpan.style.textAlign = "justify";
-                textSpan.style.textJustify = "inter-character";
-
-                if (lineObj.isLastLineOfPara) {
-                  textSpan.style.textAlignLast = "left";
-                } else {
-                  textSpan.style.textAlignLast = "justify";
-                }
-
-                textSpan.style.textIndent = lineObj.isFirstLine ? "1.2em" : "0"; 
-
-                const baseFontSizeMm = (orientation === 'portrait') ? 5.2 : 6.2;
-                const fontSizeNum = 12; 
-                const adjustedFontSizeMm = baseFontSizeMm * (fontSizeNum / 12);
-                textSpan.style.fontSize = `${adjustedFontSizeMm}mm`;
-                rowDiv.appendChild(textSpan);
-              }
-
-              noteContainer.appendChild(rowDiv);
-            }
-
-            relativeContainer.appendChild(noteContainer);
-            gridWrapper.appendChild(relativeContainer);
-
-          } else {
-            const colsNum = parseInt(gridCols);
-
-            const usableWidthMm = (orientation === 'portrait') ? 170 : 257;
-            const cellWidthMm = usableWidthMm / colsNum;
-            const relativeContainer = document.createElement('div');
-            relativeContainer.className = "relative mx-auto block";
-            relativeContainer.style.width = `${usableWidthMm}mm`;
-            relativeContainer.style.height = `${optRows * cellWidthMm}mm`;
-
-            const gridBody = document.createElement('div');
-            gridBody.className = "grid gap-0 border-2 manuscript-grid-border w-full h-full";
-            gridBody.style.gridTemplateColumns = `repeat(${colsNum}, minmax(0, 1fr))`;
-            gridBody.style.gridTemplateRows = `repeat(${optRows}, minmax(0, 1fr))`;
-
-            const startIdx = pageIdx * cellsPerPage;
-
-            for (let r = 0; r < optRows; r++) {
-              for (let c = 0; c < colsNum; c++) {
-                const cellIdx = startIdx + (r * colsNum + c);
-                const cellData = cellsData[cellIdx] || { char: "" };
-
-                const cell = document.createElement('div');
-                cell.className = "grid-cell-guide border-b border-r manuscript-grid-border flex items-center justify-center relative aspect-square";
-                
-                if (c === colsNum - 1) cell.classList.remove('border-r');
-                if (r === optRows - 1) cell.classList.remove('border-b');
-
-                if (currentMode === 'guide' && cellData.char && cellData.char !== " ") {
-                  let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none" style="z-index: 10;">`;
-                  svgHtml += `<g class="trace-text-node">`; // [고정] 글씨 투명도 고정 규칙 0.35 바인딩 클래스 적용
-
-                  if (cellData.isSqueezed) {
-                    const mainChar = cellData.char;
-                    svgHtml += `<text x="38" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-medium">${mainChar}</text>`;
-
-                    const puncts = Array.from(cellData.squeezedPunct || "");
-                    if (puncts.length === 1) {
-                      const p = puncts[0];
-                      if (p === '.' || p === ',') {
-                        svgHtml += `<text x="78" y="49" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-400 font-bold">${p}</text>`;
-                      } else if (p === '!' || p === '?') {
-                        svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-400 font-medium">${p}</text>`;
-                      } else if (p === '"' || p === "'" || p === '”' || p === '’') {
-                        svgHtml += `<text x="76" y="41" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-400 font-medium">${p}</text>`;
-                      } else {
-                        svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="54" class="font-serif-fixed fill-current text-slate-400 font-medium">${p}</text>`;
-                      }
-                    } else if (puncts.length === 2) {
-                      const p1 = puncts[0];
-                      const p2 = puncts[1];
-
-                      let y1 = 50, y2 = 50;
-                      let fontSize = 46;
-                      
-                      if (p1 === '.' || p1 === ',') y1 = 49; 
-                      if (p2 === '.' || p2 === ',') y2 = 49; 
-                      if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 41; 
-                      if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 41; 
-
-                      svgHtml += `<text x="68" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-400 font-medium">${p1}</text>`;
-                      svgHtml += `<text x="86" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-400 font-medium">${p2}</text>`;
-                    } else {
-                      puncts.forEach((p, idx) => {
-                        const x = 64 + idx * 12;
-                        let y = 50;
-                        if (p === '.' || p === ',') y = 49; 
-                        if (p === '"' || p === "'" || p === '”' || p === '’') y = 41; 
-                        svgHtml += `<text x="${x}" y="${y}" dominant-baseline="central" text-anchor="middle" font-size="38" class="font-serif-fixed fill-current text-slate-400 font-medium">${p}</text>`;
-                      });
-                    }
-                  } else if (cellData.isPeriodQuoteCombo) {
-                    const p1 = cellData.char;
-                    const p2 = cellData.squeezedPunct;
-                    svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-bold">${p1}</text>`;
-                    svgHtml += `<text x="78" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-medium">${p2}</text>`;
-                  } else if (cellData.isPeriodOpeningQuoteCombo) {
-                    const p1 = cellData.char;
-                    const p2 = cellData.squeezedPunct;
-                    svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-bold">${p1}</text>`;
-                    svgHtml += `<text x="64" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-medium">${p2}</text>`;
-                  } else if (cellData.isSymbolFirstCombo) {
-                    const p1 = cellData.char;
-                    const p2 = cellData.squeezedPunct;
-                    svgHtml += `<text x="30" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-400 font-medium">${p1}</text>`;
-                    svgHtml += `<text x="74" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-medium">${p2}</text>`;
-                  } else if (cellData.isQuoteFirstCombo) {
-                    const p1 = cellData.char;
-                    const p2 = cellData.squeezedPunct;
-                    svgHtml += `<text x="28" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-medium">${p1}</text>`;
-                    svgHtml += `<text x="68" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-400 font-medium">${p2}</text>`;
-                  } else if (cellData.isDoublePunct) {
-                    const p1 = cellData.char;
-                    const p2 = cellData.squeezedPunct;
-                    let y1 = 50, y2 = 50;
-                    let fontSize = 46;
-                    
-                    if (p1 === '.' || p1 === ',') y1 = 54; 
-                    if (p2 === '.' || p2 === ',') y2 = 54; 
-                    if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 45; 
-                    if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 45; 
-                    if (p1 === '“' || p1 === '‘') y1 = 45;
-                    if (p2 === '“' || p2 === '‘') y2 = 45;
-
-                    svgHtml += `<text x="32" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-400 font-medium">${p1}</text>`;
-                    svgHtml += `<text x="68" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-400 font-medium">${p2}</text>`;
-                  } else {
-                    const char = cellData.char;
-                    if (char === '.' || char === ',') {
-                      svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-bold">${char}</text>`;
-                    } else if (char === '“' || char === '‘') {
-                      svgHtml += `<text x="75" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-medium">${char}</text>`;
-                    } else if (char === '”' || char === '’') {
-                      svgHtml += `<text x="25" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-medium">${char}</text>`;
-                    } else {
-                      svgHtml += `<text x="50" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-400 font-medium">${char}</text>`;
-                    }
-                  }
-
-                  svgHtml += `</g></svg>`; 
-                  cell.innerHTML = svgHtml;
-                }
-
-                gridBody.appendChild(cell);
-              }
-            }
-            relativeContainer.appendChild(gridBody);
-
-            // 우측 누적 글자 수 인디케이터 라벨링 처리
-            if (!hideCharCount) {
-              const pageOffset = pageIdx * cellsPerPage;
-              for (let r = 0; r < optRows; r++) {
-                const rowStartCell = pageOffset + r * colsNum;
-                const rowEndCell = pageOffset + (r + 1) * colsNum;
-                
-                const currentMaxMultiplesCount = Math.floor(rowEndCell / 100);
-                
-                for (let k = 1; k <= currentMaxMultiplesCount; k++) {
-                  const targetBaseValue = 100 * k;
-                  
-                  if (targetBaseValue > rowStartCell && targetBaseValue <= rowEndCell) {
-                    const labelVal = rowEndCell; 
-                    
-                    const label = document.createElement('div');
-                    label.className = "absolute text-[10px] custom-grid-text font-mono font-bold opacity-75 flex items-center justify-start pointer-events-none";
-                    label.style.right = "-32px";
-                    label.style.width = "25px";
-                    label.style.height = `${100 / optRows}%`;
-                    label.style.top = `${(r * 100) / optRows}%`;
-                    label.textContent = labelVal;
-                    relativeContainer.appendChild(label);
-                    break; 
-                  }
-                }
-              }
-            }
-
-            gridWrapper.appendChild(relativeContainer);
-          }
-
-          innerDiv.appendChild(gridWrapper);
-
-          if (!isLineNote) {
-            if (hideManuscriptHeader) {
-              const singleBottomLine = document.createElement('div');
-              singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[3mm] shrink-0";
-              innerDiv.appendChild(singleBottomLine);
-            } else {
-              const singleBottomLine = document.createElement('div');
-              singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[2mm] shrink-0";
-              innerDiv.appendChild(singleBottomLine);
-            }
-          }
-
-          if (!hidePageNumbers) {
-            const footerDiv = document.createElement('div');
-            footerDiv.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
-            
-            let currentFooterLabel = "";
-            let currentFooterClass = "";
-            
-            if (isLineNote) {
-              if (currentMode === 'guide') {
-                currentFooterLabel = customFooterGuideText !== null ? customFooterGuideText : (footerGuideText + " - 줄 노트");
-                currentFooterClass = "footer-label-guide";
-              } else {
-                currentFooterLabel = customFooterEmptyText !== null ? customFooterEmptyText : (footerEmptyText + " - 줄 노트");
-                currentFooterClass = "footer-label-empty";
-              }
-            } else {
-              if (currentMode === 'guide') {
-                currentFooterLabel = customFooterGuideText !== null ? customFooterGuideText : (footerGuideText + " - 가로 " + gridCols + "칸");
-                currentFooterClass = "footer-label-guide";
-              } else {
-                currentFooterLabel = customFooterEmptyText !== null ? customFooterEmptyText : (footerEmptyText + " - 가로 " + gridCols + "칸");
-                currentFooterClass = "footer-label-empty";
-              }
-            }
-
-            footerDiv.innerHTML = `
-              <span class="tracking-wide text-slate-400"><span class="${currentFooterClass}" contenteditable="true">${currentFooterLabel}</span></span>
-              <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">- ${pageIdx + 1} / ${totalGridPages} -</span>
-            `;
-            innerDiv.appendChild(footerDiv);
-          }
-
-          gridPageDiv.appendChild(innerDiv);
-          
-          const scaleWrapper = document.createElement('div');
-          scaleWrapper.className = "page-scale-wrapper mb-10";
-          scaleWrapper.appendChild(gridPageDiv);
-          fragment.appendChild(scaleWrapper);
-        }
-      });
-      container.replaceChildren(fragment);
+      // 단계 D: 실시간 메타 데이터 동기화 및 부속 상태 갱신
       updateHeaderAndTitle();
 
       const totalPages = container.querySelectorAll('.page-scale-wrapper').length;
@@ -2356,7 +2035,437 @@
       debouncedSave();
     }
 
-    // 고성능 비동기 IntersectionObserver 추적 모듈 (Layouth Thrashing 100% 차단)
+    // 2. [책임 분리] 페이지 스펙 모델링 생성부
+    function buildPageSpecs() {
+      const pageSpecs = [];
+
+      // A4 원문 읽기 지면
+      if (!AppState.excludeFirstPage) {
+        const paragraphs = AppState.sourceText.split('\n');
+        const sourcePages = paginateSourceText(paragraphs);
+        sourcePages.forEach((pageData, sIdx) => {
+          pageSpecs.push({
+            type: 'source',
+            sIdx: sIdx,
+            totalSourcePages: sourcePages.length,
+            pageData: pageData
+          });
+        });
+      }
+
+      // 원고지 및 줄노트 지면 계산
+      const optRows = calculateOptimalRows(AppState.gridCols);
+      const isLineNote = (AppState.gridCols === 'line');
+      const cellsPerPage = isLineNote ? optRows : (parseInt(AppState.gridCols) * optRows);
+      
+      let totalGridPages = 1;
+      if (isLineNote) {
+        const maxNonSpace = (AppState.orientation === 'portrait') ? 25 : 33;
+        const linesData = splitTextForLineNote(AppState.sourceText, maxNonSpace);
+        totalGridPages = Math.ceil(linesData.length / optRows) || 1;
+      } else {
+        const colsNum = parseInt(AppState.gridCols);
+        const cellsData = parseTextToManuscriptCells(AppState.sourceText, colsNum);
+        totalGridPages = Math.ceil(cellsData.length / cellsPerPage) || 1;
+      }
+
+      const renderingModes = [];
+      if (AppState.patternGuide) renderingModes.push('guide');
+      if (AppState.patternEmpty) renderingModes.push('empty');
+      if (renderingModes.length === 0) renderingModes.push('empty');
+
+      renderingModes.forEach(currentMode => {
+        for (let pageIdx = 0; pageIdx < totalGridPages; pageIdx++) {
+          pageSpecs.push({
+            type: isLineNote ? 'line' : 'grid',
+            pageIdx: pageIdx,
+            totalGridPages: totalGridPages,
+            currentMode: currentMode
+          });
+        }
+      });
+
+      return pageSpecs;
+    }
+
+    // 3. [책임 분리] 고성능 Flyweight 엘리먼트 풀 유지보수기
+    function adjustDOMWrappersPool(container, pageSpecs, currentLayoutSignature) {
+      const existingWrappers = Array.from(container.querySelectorAll('.page-scale-wrapper'));
+      
+      // 넘치는 기존 래퍼 엘리먼트 메모리 해제
+      while (existingWrappers.length > pageSpecs.length) {
+        const popped = existingWrappers.pop();
+        container.removeChild(popped);
+      }
+
+      const pageClass = AppState.orientation === 'portrait' ? 'a4-page print-page portrait-page' : 'a4-page print-page landscape-page';
+      const placeholders = getBlankPlaceholders();
+      const headerHTML = buildHeaderHTML(placeholders);
+      const optRows = calculateOptimalRows(AppState.gridCols);
+      const isLineNote = (AppState.gridCols === 'line');
+      const cellsPerPage = isLineNote ? optRows : (parseInt(AppState.gridCols) * optRows);
+
+      // 부족한 분량만 최소 가상 객체 주입
+      while (existingWrappers.length < pageSpecs.length) {
+        const newSpec = pageSpecs[existingWrappers.length];
+        const newWrapper = buildSkeletonPage(newSpec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage);
+        container.appendChild(newWrapper);
+        existingWrappers.push(newWrapper);
+      }
+    }
+
+    // 4. [책임 분리] 지면 데이터 동기화 분기 제어부
+    function renderPageContents(pageSpecs, currentLayoutSignature) {
+      const container = document.getElementById('pages-container');
+      const wrappers = Array.from(container.querySelectorAll('.page-scale-wrapper'));
+      const pageClass = AppState.orientation === 'portrait' ? 'a4-page print-page portrait-page' : 'a4-page print-page landscape-page';
+      const placeholders = getBlankPlaceholders();
+      const headerHTML = buildHeaderHTML(placeholders);
+      const optRows = calculateOptimalRows(AppState.gridCols);
+      const isLineNote = (AppState.gridCols === 'line');
+      const cellsPerPage = isLineNote ? optRows : (parseInt(AppState.gridCols) * optRows);
+
+      let cellsData = [];
+      let linesData = [];
+
+      if (isLineNote) {
+        const maxNonSpace = (AppState.orientation === 'portrait') ? 25 : 33;
+        linesData = splitTextForLineNote(AppState.sourceText, maxNonSpace);
+      } else {
+        const colsNum = parseInt(AppState.gridCols);
+        cellsData = parseTextToManuscriptCells(AppState.sourceText, colsNum);
+      }
+
+      for (let i = 0; i < pageSpecs.length; i++) {
+        const spec = pageSpecs[i];
+        const wrapper = wrappers[i];
+
+        // 레이아웃 비틀림 감지 시 해당 단일 지면만 뼈대 복원
+        if (wrapper.dataset.pageType !== spec.type || 
+            wrapper.dataset.pageMode !== (spec.currentMode || 'none') || 
+            wrapper.dataset.layoutSignature !== currentLayoutSignature) {
+          
+          const rebuiltWrapper = buildSkeletonPage(spec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage);
+          wrapper.innerHTML = rebuiltWrapper.innerHTML;
+          wrapper.dataset.pageType = spec.type;
+          wrapper.dataset.pageMode = spec.currentMode || 'none';
+          wrapper.dataset.layoutSignature = currentLayoutSignature;
+          delete wrapper.dataset.stateKey; 
+          delete wrapper.dataset.pageContentState; 
+        }
+
+        // 각 서브 전용 렌더러에게 세부 그리기 작업 양도
+        if (spec.type === 'source') {
+          renderSourcePageContent(wrapper, spec);
+        } else if (spec.type === 'grid') {
+          renderGridPageContent(wrapper, spec, cellsData, cellsPerPage);
+        } else if (spec.type === 'line') {
+          renderLinePageContent(wrapper, spec, linesData, optRows);
+        }
+      }
+    }
+
+    // 5. [책임 분리] 원문 읽기 전용 렌더러
+    function renderSourcePageContent(wrapper, spec) {
+      let nextState = spec.pageData.fontSize + "_" + calculateSourcePageHash(spec.pageData.segments);
+      if (wrapper.dataset.stateKey !== nextState) {
+        const pInnerContent = wrapper.querySelector('.p-inner-content');
+        pInnerContent.innerHTML = "";
+        const htmlParagraphs = [];
+        let currentParaText = "";
+        let isContinuedPara = false;
+        let currentParaId = null;
+
+        spec.pageData.segments.forEach(seg => {
+          if (seg.isBlankLine) {
+            if (currentParaText !== "") {
+              htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
+              currentParaText = "";
+              currentParaId = null;
+            }
+            htmlParagraphs.push({ isBlank: true });
+          } else {
+            if (currentParaText === "") {
+              isContinuedPara = seg.isContinued;
+              currentParaText = seg.text;
+              currentParaId = seg.pIdx;
+            } else if (currentParaId !== seg.pIdx) {
+              htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
+              isContinuedPara = seg.isContinued;
+              currentParaText = seg.text;
+              currentParaId = seg.pIdx;
+            } else {
+              currentParaText += " " + seg.text;
+            }
+          }
+        });
+        if (currentParaText !== "") {
+          htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
+        }
+
+        htmlParagraphs.forEach(p => {
+          if (p.isBlank) {
+            const emptySpacer = document.createElement('p');
+            emptySpacer.className = "mb-0 text-justify";
+            emptySpacer.innerHTML = "&nbsp;"; 
+            pInnerContent.appendChild(emptySpacer);
+          } else {
+            const paraEl = document.createElement('p');
+            paraEl.className = "mb-0 text-justify"; 
+            paraEl.style.textIndent = p.isContinued ? "0" : "1.5em";
+            paraEl.style.wordBreak = "keep-all";
+            paraEl.style.textJustify = "inter-character";
+            paraEl.textContent = p.text; 
+            pInnerContent.appendChild(paraEl);
+          }
+        });
+        wrapper.dataset.stateKey = nextState;
+      }
+    }
+
+    function calculateSourcePageHash(segments) {
+      let hash = 0;
+      segments.forEach(seg => {
+        const text = seg.text || "";
+        for (let i = 0; i < text.length; i++) {
+          hash = (hash * 31 + text.charCodeAt(i)) | 0;
+        }
+      });
+      return hash;
+    }
+
+    // [성능 극대화] 6. 비할당형 롤링 해시 기반 원고지 렌더러
+    function renderGridPageContent(wrapper, spec, cellsData, cellsPerPage) {
+      const pageOffset = spec.pageIdx * cellsPerPage;
+      const pageCells = cellsData.slice(pageOffset, pageOffset + cellsPerPage);
+      
+      // 문자열 결합(map.join)을 통한 GC 유발을 차단하는 32비트 고속 롤링 해시 알고리즘 적용
+      const pageContentHash = calculatePageHash(pageCells, spec.currentMode);
+      
+      if (wrapper.dataset.pageContentState === pageContentHash) {
+        return; // 가상 diff 연산에 의한 CPU 스키핑 실행!
+      }
+      wrapper.dataset.pageContentState = pageContentHash;
+
+      const cells = wrapper.querySelectorAll('.grid-cell-guide');
+      const colsNum = parseInt(AppState.gridCols);
+
+      for (let c = 0; c < cellsPerPage; c++) {
+        const cellIdx = pageOffset + c;
+        const cellData = pageCells[c] || { char: "" };
+        const cell = cells[c];
+        if (!cell) continue;
+
+        let nextState = "EMPTY";
+        if (spec.currentMode === 'guide' && cellData.char && cellData.char !== " ") {
+          const isSpecialPunct = cellData.isSqueezed || 
+                                 cellData.isPeriodQuoteCombo || 
+                                 cellData.isPeriodOpeningQuoteCombo || 
+                                 cellData.isSymbolFirstCombo || 
+                                 cellData.isQuoteFirstCombo || 
+                                 cellData.isDoublePunct ||
+                                 /[.,!?'"“‘”’]/.test(cellData.char);
+          nextState = cellData.char + "_" + (isSpecialPunct ? "S" : "N") + "_" + (cellData.squeezedPunct || "");
+        }
+
+        if (cell.dataset.charState === nextState) continue;
+
+        if (nextState === "EMPTY") {
+          cell.innerHTML = "";
+        } else {
+          drawCellContent(cell, cellData, nextState, colsNum);
+        }
+        cell.dataset.charState = nextState;
+      }
+    }
+
+    function calculatePageHash(pageCells, mode) {
+      let hash = 0;
+      for (let i = 0; i < pageCells.length; i++) {
+        const char = pageCells[i].char || "";
+        const squeezed = pageCells[i].squeezedPunct || "";
+        for (let j = 0; j < char.length; j++) {
+          hash = (hash * 31 + char.charCodeAt(j)) | 0;
+        }
+        for (let j = 0; j < squeezed.length; j++) {
+          hash = (hash * 31 + squeezed.charCodeAt(j)) | 0;
+        }
+      }
+      return mode + "_" + hash;
+    }
+
+    function drawCellContent(cell, cellData, nextState, colsNum) {
+      const isSpecialPunct = nextState.includes("_S_");
+      if (isSpecialPunct) {
+        let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none" style="z-index: 10;">`;
+        svgHtml += `<g class="trace-text-node">`;
+
+        if (cellData.isSqueezed) {
+          const mainChar = escapeHTML(cellData.char);
+          svgHtml += `<text x="38" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${mainChar}</text>`;
+
+          const puncts = Array.from(cellData.squeezedPunct || "");
+          if (puncts.length === 1) {
+            const p = escapeHTML(puncts[0]);
+            if (p === '.' || p === ',') {
+              svgHtml += `<text x="78" y="49" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-800 font-bold">${p}</text>`;
+            } else if (p === '!' || p === '?') {
+              svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-800 font-medium">${p}</text>`;
+            } else if (p === '"' || p === "'" || p === '”' || p === '’') {
+              svgHtml += `<text x="76" y="41" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-800 font-medium">${p}</text>`;
+            } else {
+              svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="54" class="font-serif-fixed fill-current text-slate-800 font-medium">${p}</text>`;
+            }
+          } else if (puncts.length === 2) {
+            const p1 = escapeHTML(puncts[0]);
+            const p2 = escapeHTML(puncts[1]);
+
+            let y1 = 50, y2 = 50;
+            let fontSize = 46;
+            
+            if (p1 === '.' || p1 === ',') y1 = 49; 
+            if (p2 === '.' || p2 === ',') y2 = 49; 
+            if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 41; 
+            if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 41; 
+
+            svgHtml += `<text x="68" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
+            svgHtml += `<text x="86" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+          } else {
+            puncts.forEach((p, idx) => {
+              const x = 64 + idx * 12;
+              let y = 50;
+              const ep = escapeHTML(p);
+              if (ep === '.' || ep === ',') y = 49; 
+              if (ep === '"' || ep === "'" || ep === '”' || ep === '’') y = 41; 
+              svgHtml += `<text x="${x}" y="${y}" dominant-baseline="central" text-anchor="middle" font-size="38" class="font-serif-fixed fill-current text-slate-800 font-medium">${ep}</text>`;
+            });
+          }
+        } else if (cellData.isPeriodQuoteCombo) {
+          const p1 = escapeHTML(cellData.char);
+          const p2 = escapeHTML(cellData.squeezedPunct);
+          svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-bold">${p1}</text>`;
+          svgHtml += `<text x="78" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+        } else if (cellData.isPeriodOpeningQuoteCombo) {
+          const p1 = escapeHTML(cellData.char);
+          const p2 = escapeHTML(cellData.squeezedPunct);
+          svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-bold">${p1}</text>`;
+          svgHtml += `<text x="64" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+        } else if (cellData.isSymbolFirstCombo) {
+          const p1 = escapeHTML(cellData.char);
+          const p2 = escapeHTML(cellData.squeezedPunct);
+          svgHtml += `<text x="30" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
+          svgHtml += `<text x="74" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+        } else if (cellData.isQuoteFirstCombo) {
+          const p1 = escapeHTML(cellData.char);
+          const p2 = escapeHTML(cellData.squeezedPunct);
+          svgHtml += `<text x="28" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
+          svgHtml += `<text x="68" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+        } else if (cellData.isDoublePunct) {
+          const p1 = escapeHTML(cellData.char);
+          const p2 = escapeHTML(cellData.squeezedPunct);
+          let y1 = 50, y2 = 50;
+          let fontSize = 46;
+          
+          if (p1 === '.' || p1 === ',') y1 = 54; 
+          if (p2 === '.' || p2 === ',') y2 = 54; 
+          if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 45; 
+          if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 45; 
+          if (p1 === '“' || p1 === '‘') y1 = 45;
+          if (p2 === '“' || p2 === '‘') y2 = 45;
+
+          svgHtml += `<text x="32" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
+          svgHtml += `<text x="68" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+        } else {
+          const char = escapeHTML(cellData.char);
+          if (char === '.' || char === ',') {
+            svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-bold">${char}</text>`;
+          } else if (char === '“' || char === '‘') {
+            svgHtml += `<text x="75" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
+          } else if (char === '”' || char === '’') {
+            svgHtml += `<text x="25" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
+          } else {
+            svgHtml += `<text x="50" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
+          }
+        }
+
+        svgHtml += `</g></svg>`; 
+        cell.innerHTML = svgHtml;
+      } else {
+        const cellWidthMm = (AppState.orientation === 'portrait' ? 170 : 257) / colsNum;
+        const charSpan = document.createElement('span');
+        charSpan.className = "font-serif-fixed text-slate-800 trace-text-node select-none absolute inset-0 flex items-center justify-center w-full h-full pointer-events-none cell-char-span";
+        charSpan.style.fontSize = `${cellWidthMm * 0.62}mm`;
+        charSpan.style.lineHeight = "1";
+        charSpan.textContent = cellData.char;
+        cell.replaceChildren(charSpan);
+      }
+    }
+
+    // 7. [책임 분리] 줄 노트 전용 렌더러
+    function renderLinePageContent(wrapper, spec, linesData, optRows) {
+      const startLineIdx = spec.pageIdx * optRows;
+      const pageLines = linesData.slice(startLineIdx, startLineIdx + optRows);
+      
+      let hash = 0;
+      pageLines.forEach(l => {
+        const text = l.text || "";
+        for (let i = 0; i < text.length; i++) {
+          hash = (hash * 31 + text.charCodeAt(i)) | 0;
+        }
+        hash = (hash * 31 + (l.isFirstLine ? 1 : 0)) | 0;
+        hash = (hash * 31 + (l.isLastLineOfPara ? 1 : 0)) | 0;
+      });
+      const pageContentHash = spec.currentMode + "_" + hash;
+      
+      if (wrapper.dataset.pageContentState === pageContentHash) {
+        return; 
+      }
+      wrapper.dataset.pageContentState = pageContentHash;
+
+      const rowDivs = wrapper.querySelectorAll('.manuscript-grid-border > div');
+
+      for (let r = 0; r < optRows; r++) {
+        const lineIdx = startLineIdx + r;
+        const lineObj = linesData[lineIdx] || { text: "", isFirstLine: false, isLastLineOfPara: true };
+        const lineText = lineObj.text;
+        const rowDiv = rowDivs[r];
+        if (!rowDiv) continue;
+
+        let nextState = "EMPTY";
+        if (spec.currentMode === 'guide' && lineText) {
+          nextState = lineText + "_" + lineObj.isFirstLine + "_" + lineObj.isLastLineOfPara;
+        }
+
+        if (rowDiv.dataset.lineState === nextState) continue;
+
+        if (nextState === "EMPTY") {
+          rowDiv.replaceChildren();
+        } else {
+          const textSpan = document.createElement('div');
+          textSpan.textContent = lineText; 
+          textSpan.className = "font-serif-fixed text-slate-300 font-medium select-none absolute left-[2mm] right-[2mm] bottom-[1.8mm] leading-none pb-0 whitespace-pre line-note-text-span";
+          textSpan.style.textAlign = "justify";
+          textSpan.style.textJustify = "inter-character";
+
+          if (lineObj.isLastLineOfPara) {
+            textSpan.style.textAlignLast = "left";
+          } else {
+            textSpan.style.textAlignLast = "justify";
+          }
+
+          textSpan.style.textIndent = lineObj.isFirstLine ? "1.2em" : "0"; 
+
+          const baseFontSizeMm = (AppState.orientation === 'portrait') ? 5.2 : 6.2;
+          const fontSizeNum = 12; 
+          const adjustedFontSizeMm = baseFontSizeMm * (fontSizeNum / 12);
+          textSpan.style.fontSize = `${adjustedFontSizeMm}mm`;
+          rowDiv.replaceChildren(textSpan);
+        }
+        rowDiv.dataset.lineState = nextState;
+      }
+    }
+
+    // IntersectionObserver를 통한 쪽 감지 스캐너
     let pageObserver = null;
     function setupIntersectionObserver() {
       if (pageObserver) {
@@ -2406,7 +2515,6 @@
       }
     }
 
-    // 치수 전역 메모리 캐싱 모듈
     function cachePageDimensions() {
       const firstPage = document.querySelector('.print-page');
       if (firstPage) {
@@ -2415,7 +2523,6 @@
       }
     }
 
-    // 땜질 최적화: 줌 스케일 및 배율 버튼 상태 결합
     let scaleRequestPending = false;
     function adjustPreviewScale() {
       if (scaleRequestPending) return;
@@ -2445,19 +2552,21 @@
         
         let scale = 1;
 
-        if (previewZoomMode === 'width') {
+        if (AppState.previewZoomMode === 'width') {
           if (availableWidth > 0 && pageNaturalWidth > 0) {
             scale = availableWidth / pageNaturalWidth;
           }
-        } else if (previewZoomMode === 'page') {
+        } else if (AppState.previewZoomMode === 'page') {
           if (availableWidth > 0 && availableHeight > 0 && pageNaturalWidth > 0 && pageNaturalHeight > 0) {
             const scaleW = availableWidth / pageNaturalWidth;
             const scaleH = availableHeight / pageNaturalHeight;
             scale = Math.min(scaleW, scaleH);
           }
         } else {
-          scale = previewZoomValue / 100;
+          scale = AppState.previewZoomValue / 100;
         }
+
+        AppState.lastComputedScale = scale;
 
         wrappers.forEach(wrapper => {
           const page = wrapper.querySelector('.print-page');
@@ -2466,19 +2575,18 @@
           page.style.transformOrigin = 'top center';
           wrapper.style.height = `${pageNaturalHeight * scale}px`;
         });
-
+        // wrappers.forEach(wrapper => { ... }); 의 끝 지점 아래
         const indicator = document.getElementById('zoom-indicator-text');
         if (indicator) {
-          if (previewZoomMode === 'width') {
+          if (AppState.previewZoomMode === 'width') {
             indicator.textContent = '폭 맞춤';
-          } else if (previewZoomMode === 'page') {
+          } else if (AppState.previewZoomMode === 'page') {
             indicator.textContent = '쪽 맞춤';
           } else {
-            indicator.textContent = `${previewZoomValue}%`;
+            indicator.textContent = `${AppState.previewZoomValue}%`;
           }
         }
 
-        // 중복 계산을 방지하기 위해 계산된 scale 값을 인자로 전달
         updateZoomButtonsState(scale);
         updateZoomModeUI();
       });
@@ -2489,8 +2597,8 @@
       const btnIn = document.getElementById('btn-zoom-in');
       if (!btnOut || !btnIn) return;
 
-      let currentVal = previewZoomValue;
-      if (previewZoomMode !== 'manual' && calculatedScale) {
+      let currentVal = AppState.previewZoomValue;
+      if (AppState.previewZoomMode !== 'manual' && calculatedScale) {
         currentVal = Math.round(calculatedScale * 100);
       }
 
@@ -2512,43 +2620,33 @@
     }
 
     function zoomIn() {
-      if (previewZoomMode !== 'manual') {
-        const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0) {
-          const availableWidth = mainArea.offsetWidth - 48;
-          const autoScale = availableWidth / cachedPageWidth;
-          previewZoomValue = Math.min(200, Math.ceil((autoScale * 100) / 10) * 10);
-        } else {
-          previewZoomValue = 100;
-        }
-        previewZoomMode = 'manual';
+      if (AppState.previewZoomMode !== 'manual') {
+        const currentVal = Math.round((AppState.lastComputedScale || 1.0) * 100);
+        const nextVal = Math.floor(currentVal / 10) * 10 + 10;
+        AppState.previewZoomValue = Math.min(200, nextVal);
+        AppState.previewZoomMode = 'manual';
       } else {
-        previewZoomValue = Math.min(200, previewZoomValue + 10);
+        AppState.previewZoomValue = Math.min(200, AppState.previewZoomValue + 10);
       }
       updateZoomModeUI();
       adjustPreviewScale();
     }
 
     function zoomOut() {
-      if (previewZoomMode !== 'manual') {
-        const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0) {
-          const availableWidth = mainArea.offsetWidth - 48;
-          const autoScale = availableWidth / cachedPageWidth;
-          previewZoomValue = Math.max(30, Math.floor((autoScale * 100) / 10) * 10);
-        } else {
-          previewZoomValue = 100;
-        }
-        previewZoomMode = 'manual';
+      if (AppState.previewZoomMode !== 'manual') {
+        const currentVal = Math.round((AppState.lastComputedScale || 1.0) * 100);
+        const nextVal = Math.ceil(currentVal / 10) * 10 - 10;
+        AppState.previewZoomValue = Math.max(30, nextVal);
+        AppState.previewZoomMode = 'manual';
       } else {
-        previewZoomValue = Math.max(30, previewZoomValue - 10);
+        AppState.previewZoomValue = Math.max(30, AppState.previewZoomValue - 10);
       }
       updateZoomModeUI();
       adjustPreviewScale();
     }
 
     function setZoomMode(mode) {
-      previewZoomMode = mode;
+      AppState.previewZoomMode = mode;
       updateZoomModeUI();
       adjustPreviewScale();
     }
@@ -2558,20 +2656,24 @@
       const btnPage = document.getElementById('btn-zoom-page');
       if (!btnWidth || !btnPage) return;
 
-      const activeClass = "bg-emerald-600 hover:bg-emerald-500 text-white";
-      const inactiveClass = "bg-slate-700 hover:bg-slate-600 text-slate-300";
+      const litClass = "bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer";
+      const unlitClass = "bg-slate-800 text-slate-500 pointer-events-none cursor-default";
+      const baseBtnClass = "text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
 
-      if (previewZoomMode === 'width') {
-        btnWidth.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
-        btnPage.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+      if (AppState.previewZoomMode === 'width') {
+        // 폭 맞춤 상태이므로, 폭 맞춤 버튼은 불이 꺼지고(동작 불필요), 쪽 맞춤 버튼은 켜짐(실행 가능)
+        btnWidth.className = `${baseBtnClass} ${unlitClass}`;
+        btnPage.className = `${baseBtnClass} ${litClass}`;
       } 
-      else if (previewZoomMode === 'page') {
-        btnWidth.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
-        btnPage.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+      else if (AppState.previewZoomMode === 'page') {
+        // 쪽 맞춤 상태이므로, 폭 맞춤 버튼은 켜지고(실행 가능), 쪽 맞춤 버튼은 불이 꺼짐(동작 불필요)
+        btnWidth.className = `${baseBtnClass} ${litClass}`;
+        btnPage.className = `${baseBtnClass} ${unlitClass}`;
       } 
       else {
-        btnWidth.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
-        btnPage.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+        // 수동 조절 상태이므로, 폭 맞춤과 쪽 맞춤 둘 다 실행 가능(둘 다 불 켜짐)
+        btnWidth.className = `${baseBtnClass} ${litClass}`;
+        btnPage.className = `${baseBtnClass} ${litClass}`;
       }
     }
 
@@ -2580,14 +2682,9 @@
       const inputField = document.getElementById('zoom-input-field');
       if (!textSpan || !inputField) return;
 
-      let currentVal = previewZoomValue;
-      if (previewZoomMode !== 'manual') {
-        const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0) {
-          const availableWidth = mainArea.offsetWidth - 48;
-          const autoScale = availableWidth / cachedPageWidth;
-          currentVal = Math.round(autoScale * 100);
-        }
+      let currentVal = AppState.previewZoomValue;
+      if (AppState.previewZoomMode !== 'manual') {
+        currentVal = Math.round((AppState.lastComputedScale || 1.0) * 100);
       }
 
       inputField.value = currentVal;
@@ -2604,13 +2701,13 @@
 
       let num = parseInt(val);
       if (isNaN(num)) {
-        num = previewZoomValue;
+        num = AppState.previewZoomValue;
       }
       
       num = Math.max(30, Math.min(200, num));
       
-      previewZoomValue = num;
-      previewZoomMode = 'manual';
+      AppState.previewZoomValue = num;
+      AppState.previewZoomMode = 'manual';
 
       inputField.classList.add('hidden');
       textSpan.classList.remove('hidden');
@@ -2623,8 +2720,8 @@
       let num = parseInt(e.target.value);
       if (!isNaN(num)) {
         num = Math.max(30, Math.min(200, num));
-        previewZoomValue = num;
-        previewZoomMode = 'manual';
+        AppState.previewZoomValue = num;
+        AppState.previewZoomMode = 'manual';
         updateZoomModeUI();
         adjustPreviewScale();
       }
@@ -2676,7 +2773,7 @@
       textSpan.classList.remove('hidden');
     }
 
-    // 표준 Iframe 환경 대응 단축키 리스너 (Ctrl+P / Cmd+P)
+    // Ctrl+P / Cmd+P 바인딩
     window.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
         e.preventDefault();
@@ -2684,34 +2781,29 @@
       }
     });
 
-    // 고성능 단일 초기화 제어 흐름 (땜질 중복 렌더링을 완전히 박멸)
+    // 시스템 이니셜라이저
     function initApp() {
-      // 1. 로컬 스토리지 상태 로드
       loadFromLocalStorage();
-      
-      // 2. 동적 UI 엘리먼트 동기화
       applyLoadedDataToUI();
 
-      // 3. CSS 전역 변수 일괄 바인딩 (저장 트리거 및 렌더링 호출 없이 독립 변형)
-      document.documentElement.style.setProperty('--grid-color', currentGridColor);
-      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(currentGridColor, gridOpacity));
-      document.documentElement.style.setProperty('--guide-color', hexToRgba(currentGuideColor, guideOpacity));
-      document.documentElement.style.setProperty('--guide-display', window.savedHideGridGuides ? 'none' : 'block');
-      document.documentElement.style.setProperty('--char-y-offset', window.savedCharYOffset + '%');
+      // 전역 CSS 속성 바인딩
+      document.documentElement.style.setProperty('--grid-color', AppState.currentGridColor);
+      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(AppState.currentGridColor, AppState.gridOpacity));
+      document.documentElement.style.setProperty('--guide-color', hexToRgba(AppState.currentGuideColor, AppState.guideOpacity));
+      document.documentElement.style.setProperty('--guide-display', AppState.hideGridGuides ? 'none' : 'block');
+      document.documentElement.style.setProperty('--char-y-offset', AppState.charYOffset + '%');
 
-      // 4. 슬라이더 미세 조정 값 적용
-      document.getElementById('gridOpacitySlider').value = gridOpacity * 100;
-      document.getElementById('gridOpacityVal').innerText = (gridOpacity * 100) + '%';
-      document.getElementById('guideOpacitySlider').value = guideOpacity * 100;
-      document.getElementById('guideOpacityVal').innerText = (guideOpacity * 100) + '%';
-      document.getElementById('charYOffsetSlider').value = window.savedCharYOffset;
-      document.getElementById('charYOffsetVal').innerText = (window.savedCharYOffset > 0 ? '+' : '') + window.savedCharYOffset + '%';
+      // 개별 슬라이더 수치 복원
+      document.getElementById('gridOpacitySlider').value = AppState.gridOpacity * 100;
+      document.getElementById('gridOpacityVal').innerText = (AppState.gridOpacity * 100) + '%';
+      document.getElementById('guideOpacitySlider').value = AppState.guideOpacity * 100;
+      document.getElementById('guideOpacityVal').innerText = (AppState.guideOpacity * 100) + '%';
+      document.getElementById('charYOffsetSlider').value = AppState.charYOffset;
+      document.getElementById('charYOffsetVal').innerText = (AppState.charYOffset > 0 ? '+' : '') + AppState.charYOffset + '%';
 
-      // 5. 기본 스타일 시트 세팅 및 최초 1회 통합 조판 그리기
       updatePageStyleSheet();
       renderPages();
 
-      // 6. 구글 웹폰트 준비 직후 최종 정산
       if (document.fonts) {
         document.fonts.ready.then(() => {
           cachePageDimensions();
@@ -2720,7 +2812,6 @@
       }
     }
 
-    // 앱 이니셜라이저 실행
     initApp();
 
     let resizeTimeout = null;
