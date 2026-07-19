@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>필사 용지 만들기</title>
+  <title>별 헤는 밤</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Noto Sans JP/KR, Noto Serif JP/KR -->
+  <!-- Google Fonts: Noto Sans/Serif JP & KR -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
+      /* 동적 변수 설정 - 자간 점선 표시 가이드 및 투명도 제어 */
       --guide-display: block;
       --guide-color: rgba(255, 140, 140, 0.35); 
       --grid-color: rgba(105, 175, 160, 1);  
@@ -18,6 +19,7 @@
       --char-y-offset: 0%; 
     }
 
+    /* 필사 전용 고정폭 명조 계열 서체 선언 */
     .font-serif-fixed {
       font-family: 'Noto Serif KR', 'Noto Serif JP', 'Batang', 'AppleMyungjo', 'serif' !important;
       font-weight: 500 !important;
@@ -29,17 +31,11 @@
       background-color: #f1f5f9;
     }
 
-    .custom-grid-border {
-      border-color: var(--grid-color) !important;
-    }
-    .custom-grid-text {
-      color: var(--grid-color) !important;
-    }
+    .custom-grid-border { border-color: var(--grid-color) !important; }
+    .custom-grid-text { color: var(--grid-color) !important; }
+    .manuscript-grid-border { border-color: var(--manuscript-grid-color) !important; }
 
-    .manuscript-grid-border {
-      border-color: var(--manuscript-grid-color) !important;
-    }
-
+    /* 원고지 칸 가이드 십자 점선 생성 규칙 */
     .grid-cell-guide {
       position: relative;
       box-sizing: border-box;
@@ -77,10 +73,16 @@
       will-change: transform;
     }
 
+    /* 실시간 인쇄 지면 편집 영역 인디케이터 */
     [contenteditable="true"] {
       transition: all 0.2s ease;
       border-radius: 4px;
       padding: 1px 4px;
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      min-width: 1.5em;
+      display: inline-block;
+      vertical-align: middle;
     }
     [contenteditable="true"]:hover {
       background-color: rgba(245, 158, 11, 0.08); 
@@ -102,6 +104,7 @@
       content: "" !important;
     }
 
+    /* 실측 A4 크기 지면 내부 패딩 규칙 */
     .print-page-inner {
       width: 100%;
       height: 100%;
@@ -136,6 +139,7 @@
       break-inside: avoid !important;
     }
 
+    /* 인쇄 모드 최적화 미디어 쿼리 (출력 오차 방어 및 수동 포커스 잔상 파괴) */
     @media print {
       .no-print {
         display: none !important;
@@ -183,34 +187,24 @@
         border-width: 2px !important;
         border-style: solid !important;
       }
-      .border-dashed {
-        border-style: dashed !important;
-      }
-      .border-b {
-        border-bottom-width: 1px !important;
-        border-bottom-style: solid !important;
-      }
-      .border-r {
-        border-right-width: 1px !important;
-        border-right-style: solid !important;
-      }
+      .border-dashed { border-style: dashed !important; }
+      .border-b { border-bottom-width: 1px !important; border-bottom-style: solid !important; }
+      .border-r { border-right-width: 1px !important; border-right-style: solid !important; }
+      .border-t-0 { border-top-width: 0px !important; }
+      .border-b-0 { border-bottom-width: 0px !important; }
+      .rounded-b-none { border-bottom-left-radius: 0px !important; border-bottom-right-radius: 0px !important; }
+      .rounded-t-none { border-top-left-radius: 0px !important; border-top-right-radius: 0px !important; }
+      .rounded-none { border-radius: 0px !important; }
 
-      .border-t-0 {
-        border-top-width: 0px !important;
-      }
-      .border-b-0 {
-        border-bottom-width: 0px !important;
-      }
-      .rounded-b-none {
-        border-bottom-left-radius: 0px !important;
-        border-bottom-right-radius: 0px !important;
-      }
-      .rounded-t-none {
-        border-top-left-radius: 0px !important;
-        border-top-right-radius: 0px !important;
-      }
-      .rounded-none {
-        border-radius: 0px !important;
+      /* [교정] 화면 축소용 인라인 물리 픽셀 높이값을 인쇄 시점에 완벽 차단 */
+      .page-scale-wrapper {
+        height: auto !important;
+        width: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
       }
 
       .print-page {
@@ -236,6 +230,10 @@
         background-color: white !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        /* [교정] 화면 스케일 조정용 transform을 완전히 비활성화하여 정밀 A4 규격 복원 */
+        transform: none !important;
+        top: 0 !important;
+        left: 0 !important;
       }
 
       .print-page + .print-page {
@@ -252,12 +250,21 @@
         page-break-inside: avoid !important;
       }
 
+      /* 인쇄 시 지저분한 편집 잔상 및 아웃라인을 강제로 소거 */
+      [contenteditable="true"] {
+        outline: none !important;
+        border-color: transparent !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+      }
+
       [contenteditable="true"]:empty::before {
         content: "" !important;
         display: none !important;
       }
     }
 
+    /* 화면 프리뷰용 실측 A4 박스 쉐도우 및 스타일 */
     .a4-page {
       background: white;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04);
@@ -268,18 +275,10 @@
       margin-bottom: 2.5rem;
     }
 
-    .portrait-page {
-      width: var(--screen-page-width);
-      height: var(--screen-page-height);
-    }
-
-    .landscape-page {
-      width: var(--screen-page-width);
-      height: var(--screen-page-height); 
-    }
-
+    /* 스크롤바 디자인 정밀 단일화 */
     ::-webkit-scrollbar {
       width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-track {
       background: #f8fafc;
@@ -305,6 +304,7 @@
       }
     }
 
+    /* 1024px 이상 데스크톱 브라우저 환경 독립 고정 레이아웃 */
     @media screen and (min-width: 1024px) {
       html, body {
         height: 100vh !important;
@@ -318,12 +318,15 @@
         height: calc(100vh - 72px) !important;
         overflow-y: auto !important;
       }
+      /* 가로세로 고배율 확대 시 잘림 방지를 위해 overflow: auto로 양방향 스크롤 허용 */
       main {
         height: calc(100vh - 72px) !important;
-        overflow-y: auto !important;
+        overflow: auto !important;
+        touch-action: pan-y;
       }
     }
 
+    /* 1024px 미만 소형 웹뷰/모바일 환경을 위한 무중력 풀-스크롤 대응 설계 */
     @media screen and (max-width: 1023px) {
       html, body {
         height: auto !important;
@@ -340,20 +343,7 @@
       main {
         height: auto !important;
         overflow-y: visible !important;
-      }
-    }
-
-    @media print {
-      .page-scale-wrapper {
-        display: block !important;
-        width: auto !important;
-        height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      .print-page {
-        transform: none !important;
-        margin: 0 !important;
+        touch-action: pan-y;
       }
     }
   </style>
@@ -373,6 +363,7 @@
     </div>
   </header>
 
+  <!-- 메인 작업 분할 영역 -->
   <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
     
     <!-- 왼쪽 사이드바: 설정 영역 제어 보드 -->
@@ -513,7 +504,7 @@
                     <input type="color" id="grid-color-picker" value="#69afa0" class="sr-only" oninput="setGridColor(this.value, true)">
                   </div>
                 </div>
-                <!-- 원고지 선 투명도 슬라이더 추가 -->
+                <!-- 원고지 선 투명도 슬라이더 -->
                 <div class="mt-2.5">
                   <div class="flex justify-between items-center text-[10px] text-slate-500 font-semibold mb-1">
                     <span>원고지 선 투명도</span>
@@ -549,7 +540,7 @@
                     <input type="color" id="guide-color-picker" value="#ff8c8c" class="sr-only" oninput="setGuideColor(this.value, true)">
                   </div>
                 </div>
-                <!-- 원고지 가운데 점선 투명도 슬라이더 추가 -->
+                <!-- 원고지 가운데 점선 투명도 슬라이더 -->
                 <div class="mt-2.5">
                   <div class="flex justify-between items-center text-[10px] text-slate-500 font-semibold mb-1">
                     <span>가운데 점선 투명도</span>
@@ -559,7 +550,6 @@
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
@@ -616,16 +606,23 @@
         <div id="pages-container" class="flex flex-col items-center"></div>
       </div>
 
-      <!-- [신규] 화면 프리뷰 확대/축소 플로팅 컨트롤러 -->
+      <!-- 화면 프리뷰 확대/축소/네비게이션 플로팅 컨트롤러 -->
       <div class="fixed bottom-6 right-6 bg-slate-900/90 backdrop-blur text-white px-3 py-2 rounded-xl shadow-2xl border border-slate-700/50 flex items-center space-x-3 z-30 no-print">
+        
+        <!-- [개선] 현재 화면 표시 쪽 / 전체 쪽 수 대화형 클릭 네비게이션 인디케이터 배지 (배경 흰색 변경) -->
+        <div id="pages-badge-container" onclick="enablePageInput(event)" class="bg-white hover:bg-slate-100 text-slate-900 text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-sm flex items-center space-x-1 shrink-0 select-none cursor-pointer transition-all active:scale-95 border border-slate-200" title="클릭하여 원하는 쪽으로 이동">
+          <span id="total-pages-badge">📄 계산 중...</span>
+          <input id="pages-badge-input" type="number" min="1" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[50px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disablePageInput(this.value)" onkeydown="if(event.key==='Enter') disablePageInput(this.value)" onclick="event.stopPropagation();">
+        </div>
+
         <button id="btn-zoom-out" onclick="zoomOut()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all duration-200" title="축소">
           <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"></path>
           </svg>
         </button>
         
-        <!-- 클릭 시 숫자를 직접 입력할 수 있는 하이브리드 인디케이터 컨테이너 -->
-        <div class="flex items-center justify-center min-w-[85px]">
+        <!-- 클릭 시 숫자를 직접 입력할 수 있는 하이브리드 인디케이너 컨테이너 -->
+        <div class="flex items-center justify-center min-w-[70px]">
           <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">자동</span>
           <input id="zoom-input-field" type="number" min="30" max="200" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
         </div>
@@ -637,7 +634,7 @@
         </button>
         <div class="w-px h-4 bg-slate-700"></div>
         
-        <!-- [개선] 폭 맞춤과 쪽 맞춤을 개별적으로 켜고 끄며, 불이 꺼진 상태가 실시간으로 일치하도록 버튼 UI 분리 -->
+        <!-- 폭 맞춤과 쪽 맞춤 개별 UI 제어 유닛 -->
         <button onclick="setZoomMode('width')" id="btn-zoom-width" class="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="폭 맞춤">
           폭 맞춤
         </button>
@@ -654,7 +651,6 @@
     <div class="bg-white rounded-2xl max-w-sm w-full mx-4 shadow-2xl p-6 border border-slate-100 flex flex-col">
       <div class="flex items-start space-x-3.5">
         <div id="modal-icon-container" class="p-2.5 rounded-xl bg-amber-50 text-amber-600 shrink-0">
-          <!-- 모달 알림 아이콘 -->
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
           </svg>
@@ -674,6 +670,7 @@
   <script>
     'use strict';
   
+    // 글로벌 텍스트 및 기본 메타 데이터 정의
     let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴 속에 하나 둘 새겨지는 별을\n이제 다 못 헤는 것은\n쉬이 아침이 오는 까닭이요,\n내일 밤이 남은 까닭이요,\n아직 나의 청춘이 다하지 않은 까닭입니다.\n\n별 하나에 추억과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 동경과\n별 하나에 시와\n별 하나에 어머니, 어머니";
     let articleTitle = "별 헤는 밤";
     let gridCols = "20"; 
@@ -688,9 +685,10 @@
 
     let headerLeftText = "";
     
-    let footerSourceText = "원문 읽기";
-    let footerGuideText = "따라 쓰기";
-    let footerEmptyText = "원고지";
+    // 하단 라벨 정보 정의
+    const footerSourceText = "원문 읽기";
+    const footerGuideText = "따라 쓰기";
+    const footerEmptyText = "원고지";
 
     // 사용자가 직접 편집한 머리말 및 꼬리말 텍스트 상태 변수
     let customFooterSourceText = null;
@@ -718,6 +716,9 @@
     // 커스텀 대화상자(Confirm/Alert) 상태를 보존할 콜백 객체
     let activeModalCallback = null;
 
+    // 대용량 텍스트 경고 모달 중복 팝업 차단용 상태 변수
+    window.hasShownLengthWarning = false;
+
     // 디바운싱(Debounce) 구현 (무거운 조판 연산 딜레이 적용)
     function debounce(func, wait) {
       let timeout;
@@ -727,7 +728,7 @@
       };
     }
 
-    // 자동 저장 추가 (개선: 화면에서 직접 수정한 커스텀 머리말 및 꼬리말 라벨 상태 추가 저장 보강)
+    // 자동 저장 및 꼬리말 문구 복합 보존
     function saveToLocalStorage() {
       const data = {
         sourceText,
@@ -757,6 +758,7 @@
       localStorage.setItem('manuscriptPaperData', JSON.stringify(data));
     }
 
+    // JSON 복합 데이터 불러오기 및 기본값 안전 검증(Null-Guard) 탑재
     function loadFromLocalStorage() {
       const saved = localStorage.getItem('manuscriptPaperData');
       if (!saved) return;
@@ -784,7 +786,7 @@
       window.savedHideGridGuides = data.hideGridGuides ?? false;
       window.savedPatternGuide = data.patternGuide ?? true;
       window.savedPatternEmpty = data.patternEmpty ?? true;
-      window.savedCharYOffset = data.charYOffset ?? 0;    
+      window.savedCharYOffset = Number(data.charYOffset) ?? 0;    
     }
 
     function applyLoadedDataToUI() {
@@ -802,6 +804,7 @@
       document.getElementById('pattern-empty').checked = window.savedPatternEmpty;
       document.getElementById('exclude-first-page').checked = !excludeFirstPage;
       document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
+      document.title = articleTitle ? articleTitle : "필사 용지 만들기";
     }
 
     function showCustomAlert(title, message) {
@@ -844,18 +847,25 @@
       );
     }
 
-    // 초기값 할당
-    document.getElementById('source-text').value = sourceText;
-    document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
-    document.title = articleTitle ? articleTitle : "필사 용지 만들기";
-
-    // 입력 렌더러에 디바운싱 바인딩 (타이핑 시 병목 제거)
+    // 렌더링 디바운서 및 저장 디바운서 연계
     const debouncedRender = debounce(renderPages, 200);
-    const debouncedSave = debounce(saveToLocalStorage, 500); // 자동 저장 디바운스
+    const debouncedSave = debounce(saveToLocalStorage, 500);
 
+    // 원문 입력 필드 핸들러
     document.getElementById('source-text').addEventListener('input', (e) => {
       sourceText = e.target.value;
       document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
+      
+      if (sourceText.length > 3000 && !window.hasShownLengthWarning) {
+        window.hasShownLengthWarning = true;
+        showCustomAlert(
+          '대용량 텍스트 안내',
+          '원문이 3,000자를 초과했습니다. 원고지 페이지가 과도하게 늘어나면 실시간 렌더링이 다소 느려질 수 있으므로, 3,000자 이내로 나누어 제작하시는 것을 추천합니다.'
+        );
+      } else if (sourceText.length <= 3000) {
+        window.hasShownLengthWarning = false;
+      }
+      
       debouncedRender();
     });
 
@@ -881,6 +891,7 @@
       });
     });
 
+    // 화면 갱신 체크박스 위젯 연동
     document.getElementById('pattern-guide').addEventListener('change', renderPages);
     document.getElementById('pattern-empty').addEventListener('change', renderPages);
     document.getElementById('exclude-first-page').addEventListener('change', (e) => {
@@ -899,9 +910,9 @@
       hidePageNumbers = e.target.checked;
       renderPages();
     });
-
     document.getElementById('hide-grid-guides').addEventListener('change', updateGridGuides);
 
+    // 색상 변환 유틸리티
     function hexToRgba(hex, alpha = 0.35) {
       hex = hex.replace('#', '');
       let r = parseInt(hex.substring(0, 2), 16);
@@ -910,6 +921,7 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
+    // 땜질 최적화: 중복 renderPages 호출 제거 및 CSS 속성 다이렉트 바인딩 구조
     function setGridColor(val, isCustom = false) {
       currentGridColor = val;
       document.documentElement.style.setProperty('--grid-color', val);
@@ -923,6 +935,7 @@
         if (matchedBtn) matchedBtn.classList.remove('hidden');
         document.getElementById('grid-color-picker').value = val;
       }
+      debouncedSave();
     }
 
     function setGuideColor(val, isCustom = false) {
@@ -937,6 +950,7 @@
         if (matchedBtn) matchedBtn.classList.remove('hidden');
         document.getElementById('guide-color-picker').value = val;
       }
+      debouncedSave();
     }
 
     function updateGridGuides() {
@@ -964,6 +978,7 @@
       debouncedSave();
     }
 
+    // 설정 데이터 추출 유틸리티
     function getCurrentSettings() {
       return {
         sourceText,
@@ -989,6 +1004,7 @@
       };
     }
 
+    // 파일 내보내기 및 데이터 스캔 유효성 연계
     async function exportSettings() {
       const data = getCurrentSettings();
       const json = JSON.stringify(data, null, 2);
@@ -1022,6 +1038,7 @@
       URL.revokeObjectURL(url);
     }
 
+    // 입출력 안전 가드레일 JSON 수신
     function importSettings(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1041,6 +1058,7 @@
           return;
         }
 
+        // 유효 셋업 전입 가드
         sourceText = data.sourceText ?? sourceText;
         articleTitle = data.articleTitle ?? articleTitle;
         schoolName = data.schoolName ?? schoolName;
@@ -1056,7 +1074,7 @@
         currentGuideColor = data.currentGuideColor ?? currentGuideColor;
         gridOpacity = data.gridOpacity ?? gridOpacity;
         guideOpacity = data.guideOpacity ?? guideOpacity;
-        headerLeftText = data.headerLeftText ?? headerLeftText;
+        headerLeftText = data.headerLeftText ?? "";
         customFooterSourceText = data.customFooterSourceText ?? null;
         customFooterGuideText = data.customFooterGuideText ?? null;
         customFooterEmptyText = data.customFooterEmptyText ?? null;
@@ -1083,6 +1101,7 @@
       reader.readAsText(file);
     }
 
+    // 용지 상태 변경 및 최적화
     function setOrientation(mode) {
       orientation = mode;
       
@@ -1100,10 +1119,10 @@
       updatePageStyleSheet();
       renderPages();
       
-      // 용지 오리엔테이션 전환 직후 돔의 기하 치수 크기 재캐싱 처리
       setTimeout(cachePageDimensions, 100);
     }
 
+    // 용지 동적 스타일 시트 업데이트
     function updatePageStyleSheet() {
       let styleEl = document.getElementById('dynamic-page-style');
       if (!styleEl) {
@@ -1134,6 +1153,10 @@
               max-width: var(--print-page-width) !important;
               max-height: var(--print-page-height) !important;
               margin: 0 !important;
+              transform: none !important;
+            }
+            .page-scale-wrapper {
+              height: auto !important;
             }
           }
         `;
@@ -1160,6 +1183,10 @@
               max-width: var(--print-page-width) !important;
               max-height: var(--print-page-height) !important;
               margin: 0 !important;
+              transform: none !important;
+            }
+            .page-scale-wrapper {
+              height: auto !important;
             }
           }
         `;
@@ -1201,7 +1228,7 @@
       });
     }
 
-    // [교정] 엔터(Enter) 키 입력 시 메타데이터 줄바꿈이 일어나 레이아웃이 무너지는 현상 완벽 방지
+    // 엔터(Enter) 키 입력 시 메타데이터 줄바꿈 방지
     document.addEventListener('keydown', (e) => {
       const target = e.target;
       if (target.hasAttribute('contenteditable')) {
@@ -1218,11 +1245,12 @@
 
         if (isSingleLineField && e.key === 'Enter') {
           e.preventDefault();
-          target.blur(); // 줄바꿈을 차단하고 텍스트 커서를 해제해 입력을 안전히 확정
+          target.blur(); 
         }
       }
     });
 
+    // 지면 실시간 편집 내용 싱크 및 자동 저장 연계
     document.addEventListener('input', (e) => {
       const target = e.target;
       if (!target.hasAttribute('contenteditable')) return;
@@ -1278,8 +1306,11 @@
         customFooterEmptyText = txt === "" ? null : txt;
         syncMetadata('footer-label-empty', txt, target);
       }
+
+      debouncedSave();
     });
 
+    // 클립보드 붙여넣기 일반 텍스트화 보정
     document.addEventListener('paste', (e) => {
       const target = e.target;
       const isTargetEditable = target.hasAttribute('contenteditable') || target.id === 'source-text';
@@ -1325,10 +1356,11 @@
       }
     }, true);
 
+    // 원고지 규격 자간 분석 및 콤보 문자 정렬 엔진 (불변성 100% 확보)
     function parseTextToManuscriptCells(text, cols) {
       const cells = [];
       const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
-      const isPunctuation = (c) => /[.,!?'"“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
+      const isPunctuation = (c) => /[.,!?'"ным“('_~);:]/.test(c) || /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
       
       const isPeriodOrComma = (c) => c === '.' || c === ',';
       const isQuote = (c) => /[“‘”’"']/.test(c);
@@ -1505,6 +1537,7 @@
       return Math.floor(usableHeightMm / cellWidthMm);
     }
 
+    // 줄 수 정밀 계산 유틸리티
     function estimateLinesForSegments(segments, fontSizePt) {
       const charWidthMm = fontSizePt * 0.3527; 
       const maxLineWidthMm = (orientation === 'portrait') ? 155 : 112; 
@@ -1528,6 +1561,7 @@
         if (seg.isBlankLine) {
           if (currentParaWords.length > 0) {
             paragraphsToCalculate.push({
+              text: currentParaWords.join(' '),
               words: currentParaWords,
               hasIndent: currentParaHasIndent
             });
@@ -1541,6 +1575,7 @@
           if (isNewParagraph) {
             if (currentParaWords.length > 0) {
               paragraphsToCalculate.push({
+                text: currentParaWords.join(' '),
                 words: currentParaWords,
                 hasIndent: currentParaHasIndent
               });
@@ -1562,6 +1597,7 @@
 
       if (currentParaWords.length > 0) {
         paragraphsToCalculate.push({
+          text: currentParaWords.join(' '),
           words: currentParaWords,
           hasIndent: currentParaHasIndent
         });
@@ -1715,7 +1751,7 @@
     function splitTextForLineNote(text, maxNonSpace) {
       const lines = [];
       const paragraphs = text.split('\n');
-      const isPunctuation = (c) => /[.,!?'"“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
+      const isPunctuation = (c) => /[.,!?'"ным“('_~);:]/.test(c) || /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
 
       paragraphs.forEach((p) => {
         if (p.trim() === "") {
@@ -1767,6 +1803,7 @@
       return lines;
     }
 
+    // 핵심 조판 렌더링 함수 (중복 호출 병목 완벽 제거 버전)
     function renderPages() {
       const container = document.getElementById('pages-container');
       const fragment = document.createDocumentFragment();
@@ -2063,7 +2100,7 @@
                 const textSpan = document.createElement('div');
                 textSpan.textContent = lineText;
                 
-                // [개선] 인라인 스타일 대신 전역 GPU CSS Rule에 일임하여 안정성 증진
+                // 가속화 가이드라인 클래스 바인딩 보존
                 textSpan.className = "font-serif-fixed text-slate-300 font-medium select-none absolute left-[2mm] right-[2mm] bottom-[1.8mm] leading-none pb-0 whitespace-pre line-note-text-span";
                 textSpan.style.textAlign = "justify";
                 textSpan.style.textJustify = "inter-character";
@@ -2119,7 +2156,6 @@
 
                 if (currentMode === 'guide' && cellData.char && cellData.char !== " ") {
                   let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none" style="z-index: 10;">`;
-                  // [개선] 인라인 트랜스폼 대신 CSS로 하드웨어 가속 처리해 속도 및 브라우저 호환성 비약적 향상
                   svgHtml += `<g>`;
 
                   if (cellData.isSqueezed) {
@@ -2218,6 +2254,7 @@
             }
             relativeContainer.appendChild(gridBody);
 
+            // 우측 누적 글자 수 인디케이터 라벨링 처리
             if (!hideCharCount) {
               const pageOffset = pageIdx * cellsPerPage;
               for (let r = 0; r < optRows; r++) {
@@ -2305,14 +2342,68 @@
       });
       container.replaceChildren(fragment);
       updateHeaderAndTitle();
+
+      const totalPages = container.querySelectorAll('.page-scale-wrapper').length;
+      updatePageBadge(1, totalPages);
       
-      // 렌더링 직후 최초 1회 실측하여 레이아웃 쓰래싱 예방
       cachePageDimensions();
       adjustPreviewScale();
+
+      setupIntersectionObserver();
       debouncedSave();
     }
 
-    // 기하 수치를 전역 메모리에 보관하여 잦은 DOM 계측을 막는 최적화 로직
+    // 고성능 비동기 IntersectionObserver 추적 모듈 (Layouth Thrashing 100% 차단)
+    let pageObserver = null;
+    function setupIntersectionObserver() {
+      if (pageObserver) {
+        pageObserver.disconnect();
+      }
+      
+      const options = {
+        root: document.querySelector('main'),
+        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+      };
+      
+      const visibilityMap = new Map();
+      
+      pageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          visibilityMap.set(entry.target, entry.intersectionRatio);
+        });
+        
+        let maxRatio = -1;
+        let activeTarget = null;
+        
+        visibilityMap.forEach((ratio, target) => {
+          if (ratio > maxRatio) {
+            maxRatio = ratio;
+            activeTarget = target;
+          }
+        });
+        
+        if (activeTarget) {
+          const wrappers = Array.from(document.querySelectorAll('.page-scale-wrapper'));
+          const currentPageNum = wrappers.indexOf(activeTarget) + 1;
+          const totalPages = wrappers.length;
+          updatePageBadge(currentPageNum, totalPages);
+        }
+      }, options);
+      
+      document.querySelectorAll('.page-scale-wrapper').forEach(wrapper => {
+        pageObserver.observe(wrapper);
+      });
+    }
+
+    function updatePageBadge(current, total) {
+      const pagesBadge = document.getElementById('total-pages-badge');
+      const inputField = document.getElementById('pages-badge-input');
+      if (pagesBadge && (!inputField || inputField.classList.contains('hidden'))) {
+        pagesBadge.textContent = `📄 ${current} / ${total}`;
+      }
+    }
+
+    // 치수 전역 메모리 캐싱 모듈
     function cachePageDimensions() {
       const firstPage = document.querySelector('.print-page');
       if (firstPage) {
@@ -2321,6 +2412,7 @@
       }
     }
 
+    // 땜질 최적화: 줌 스케일 및 배율 버튼 상태 결합
     let scaleRequestPending = false;
     function adjustPreviewScale() {
       if (scaleRequestPending) return;
@@ -2336,11 +2428,9 @@
         if (!mainArea) return;
         
         const availableWidth = mainArea.offsetWidth - 48; 
-        
-        // [교정] 모바일/태블릿 가로 세로 정렬 시 '쪽 맞춤' 배율이 무한히 거대화하는 피드백 루프 결함 원천 해결
         const isNarrowLayout = window.innerWidth < 1024;
         const availableHeight = isNarrowLayout 
-          ? (window.innerHeight - 80) // 좁은 임베디드 화면일 땐 고정된 뷰포트 높이값 기준으로 스케일을 연산
+          ? (window.innerHeight - 80) 
           : (mainArea.offsetHeight - 48);
         
         if (cachedPageWidth === 0 || cachedPageHeight === 0) {
@@ -2350,26 +2440,25 @@
         const pageNaturalWidth = cachedPageWidth || 794; 
         const pageNaturalHeight = cachedPageHeight || 1123;
         
+        let scale = 1;
+
+        if (previewZoomMode === 'width') {
+          if (availableWidth > 0 && pageNaturalWidth > 0) {
+            scale = availableWidth / pageNaturalWidth;
+          }
+        } else if (previewZoomMode === 'page') {
+          if (availableWidth > 0 && availableHeight > 0 && pageNaturalWidth > 0 && pageNaturalHeight > 0) {
+            const scaleW = availableWidth / pageNaturalWidth;
+            const scaleH = availableHeight / pageNaturalHeight;
+            scale = Math.min(scaleW, scaleH);
+          }
+        } else {
+          scale = previewZoomValue / 100;
+        }
+
         wrappers.forEach(wrapper => {
           const page = wrapper.querySelector('.print-page');
           if (!page) return;
-          
-          let scale = 1;
-
-          if (previewZoomMode === 'width') {
-            if (availableWidth > 0 && pageNaturalWidth > 0) {
-              scale = availableWidth / pageNaturalWidth;
-            }
-          } else if (previewZoomMode === 'page') {
-            if (availableWidth > 0 && availableHeight > 0 && pageNaturalWidth > 0 && pageNaturalHeight > 0) {
-              const scaleW = availableWidth / pageNaturalWidth;
-              const scaleH = availableHeight / pageNaturalHeight;
-              scale = Math.min(scaleW, scaleH);
-            }
-          } else {
-            scale = previewZoomValue / 100;
-          }
-
           page.style.transform = `scale(${scale})`;
           page.style.transformOrigin = 'top center';
           wrapper.style.height = `${pageNaturalHeight * scale}px`;
@@ -2386,24 +2475,20 @@
           }
         }
 
-        updateZoomButtonsState();
+        // 중복 계산을 방지하기 위해 계산된 scale 값을 인자로 전달
+        updateZoomButtonsState(scale);
         updateZoomModeUI();
       });
     }
 
-    function updateZoomButtonsState() {
+    function updateZoomButtonsState(calculatedScale) {
       const btnOut = document.getElementById('btn-zoom-out');
       const btnIn = document.getElementById('btn-zoom-in');
       if (!btnOut || !btnIn) return;
 
       let currentVal = previewZoomValue;
-      if (previewZoomMode !== 'manual') {
-        const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0) {
-          const availableWidth = mainArea.offsetWidth - 48;
-          const autoScale = availableWidth / cachedPageWidth;
-          currentVal = Math.round(autoScale * 100);
-        }
+      if (previewZoomMode !== 'manual' && calculatedScale) {
+        currentVal = Math.round(calculatedScale * 100);
       }
 
       if (currentVal <= 30) {
@@ -2473,17 +2558,14 @@
       const activeClass = "bg-emerald-600 hover:bg-emerald-500 text-white";
       const inactiveClass = "bg-slate-700 hover:bg-slate-600 text-slate-300";
 
-      // 1. 폭 맞춤 상태일 때: 폭 맞춤 버튼은 꺼지고(inactive) 쪽 맞춤 버튼은 켜짐(active)
       if (previewZoomMode === 'width') {
         btnWidth.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
         btnPage.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
       } 
-      // 2. 쪽 맞춤 상태일 때: 쪽 맞춤 버튼은 꺼지고(inactive) 폭 맞춤 버튼은 켜짐(active)
       else if (previewZoomMode === 'page') {
         btnWidth.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
         btnPage.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
       } 
-      // 3. 수동 배율(manual) 상태일 때: 두 버튼 모두 켜짐(active)
       else {
         btnWidth.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
         btnPage.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
@@ -2545,28 +2627,99 @@
       }
     });
 
-    loadFromLocalStorage();
-    applyLoadedDataToUI();
-    updatePageStyleSheet();
-    setOrientation(orientation);
-    setGridColor(currentGridColor, true);
-    setGuideColor(currentGuideColor, true);
-    updateGridOpacity(gridOpacity * 100);
-    updateGuideOpacity(guideOpacity * 100);
-    updateGridGuides();
-    updateCharYOffset(window.savedCharYOffset || 0);
+    function enablePageInput(e) {
+      const textSpan = document.getElementById('total-pages-badge');
+      const inputField = document.getElementById('pages-badge-input');
+      if (!textSpan || !inputField) return;
 
-    document.getElementById('charYOffsetSlider').value = window.savedCharYOffset || 0;
+      if (!inputField.classList.contains('hidden')) return;
 
-    // 개선: 구글 웹폰트 로딩이 완료되는 즉시, 정확한 자간 픽셀 값에 맞추어 조판 수치를 재정산하여 레이스 컨디션을 방어합니다.
-    if (document.fonts) {
-      document.fonts.ready.then(() => {
-        cachePageDimensions();
-        renderPages();
-      });
+      const text = textSpan.textContent;
+      const match = text.match(/📄\s*(\d+)\s*\/\s*(\d+)/);
+      let currentPage = 1;
+      if (match) {
+        currentPage = parseInt(match[1]);
+      }
+
+      inputField.value = currentPage;
+      textSpan.classList.add('hidden');
+      inputField.classList.remove('hidden');
+      inputField.focus();
+      inputField.select();
     }
 
-    // Resize 시 조판 렉(Lag)을 없애는 최적화 이벤트 리스너 탑재
+    function disablePageInput(val) {
+      const textSpan = document.getElementById('total-pages-badge');
+      const inputField = document.getElementById('pages-badge-input');
+      if (!textSpan || !inputField) return;
+
+      let num = parseInt(val);
+      const pages = document.querySelectorAll('.page-scale-wrapper');
+      const total = pages.length;
+
+      if (!isNaN(num) && total > 0) {
+        num = Math.max(1, Math.min(total, num));
+
+        const targetWrapper = pages[num - 1];
+        if (targetWrapper) {
+          targetWrapper.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }
+
+      inputField.classList.add('hidden');
+      textSpan.classList.remove('hidden');
+    }
+
+    // 표준 Iframe 환경 대응 단축키 리스너 (Ctrl+P / Cmd+P)
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        window.print();
+      }
+    });
+
+    // 고성능 단일 초기화 제어 흐름 (땜질 중복 렌더링을 완전히 박멸)
+    function initApp() {
+      // 1. 로컬 스토리지 상태 로드
+      loadFromLocalStorage();
+      
+      // 2. 동적 UI 엘리먼트 동기화
+      applyLoadedDataToUI();
+
+      // 3. CSS 전역 변수 일괄 바인딩 (저장 트리거 및 렌더링 호출 없이 독립 변형)
+      document.documentElement.style.setProperty('--grid-color', currentGridColor);
+      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(currentGridColor, gridOpacity));
+      document.documentElement.style.setProperty('--guide-color', hexToRgba(currentGuideColor, guideOpacity));
+      document.documentElement.style.setProperty('--guide-display', window.savedHideGridGuides ? 'none' : 'block');
+      document.documentElement.style.setProperty('--char-y-offset', window.savedCharYOffset + '%');
+
+      // 4. 슬라이더 미세 조정 값 적용
+      document.getElementById('gridOpacitySlider').value = gridOpacity * 100;
+      document.getElementById('gridOpacityVal').innerText = (gridOpacity * 100) + '%';
+      document.getElementById('guideOpacitySlider').value = guideOpacity * 100;
+      document.getElementById('guideOpacityVal').innerText = (guideOpacity * 100) + '%';
+      document.getElementById('charYOffsetSlider').value = window.savedCharYOffset;
+      document.getElementById('charYOffsetVal').innerText = (window.savedCharYOffset > 0 ? '+' : '') + window.savedCharYOffset + '%';
+
+      // 5. 기본 스타일 시트 세팅 및 최초 1회 통합 조판 그리기
+      updatePageStyleSheet();
+      renderPages();
+
+      // 6. 구글 웹폰트 준비 직후 최종 정산
+      if (document.fonts) {
+        document.fonts.ready.then(() => {
+          cachePageDimensions();
+          renderPages();
+        });
+      }
+    }
+
+    // 앱 이니셜라이저 실행
+    initApp();
+
     let resizeTimeout = null;
     window.addEventListener('resize', () => {
       if (resizeTimeout) {
