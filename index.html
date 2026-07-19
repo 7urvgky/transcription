@@ -7,7 +7,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Noto Sans JP/KR, Noto Serif JP/KR -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght=300;400;500;700&family=Noto+Sans+KR:wght=300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
@@ -24,9 +24,52 @@
       font-style: normal !important;
     }
 
+    /* 
+      태블릿, 모바일, 그리고 Gemini Canvas 처럼 좁은 임베디드 미리보기 환경에서는 
+      브라우저 본연의 자연스러운 스크롤이 가능하도록 body 높이를 풀어줍니다.
+    */
     body {
       font-family: 'Noto Sans KR', 'Noto Sans JP', 'Malgun Gothic', sans-serif;
       background-color: #f1f5f9;
+      height: auto !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+
+    #main-layout-container {
+      height: auto !important;
+      overflow: visible !important;
+    }
+    aside {
+      height: auto !important;
+      overflow: visible !important;
+    }
+    main {
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    /* 
+      화면이 넓은 데스크톱 환경(1024px 이상)에서는 
+      좌우 레이아웃을 고정하고 독립된 이중 스크롤바 메커니즘을 구동합니다.
+    */
+    @media (min-width: 1024px) {
+      body {
+        height: 100vh !important;
+        overflow: hidden !important;
+      }
+      #main-layout-container {
+        height: calc(100vh - 72px) !important;
+        overflow: hidden !important;
+      }
+      aside {
+        height: 100% !important;
+        overflow-y: auto !important;
+      }
+      main {
+        height: 100% !important;
+        overflow: auto !important;
+      }
     }
 
     .custom-grid-border {
@@ -310,7 +353,7 @@
     }
   </style>
 </head>
-<body class="h-screen overflow-hidden flex flex-col">
+<body class="flex flex-col">
 
   <header class="bg-slate-900 text-white shadow-md no-print py-4 px-6 flex justify-between items-center z-10 shrink-0">
     <div class="flex items-center space-x-3">
@@ -325,10 +368,10 @@
     </div>
   </header>
 
-  <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+  <div id="main-layout-container" class="flex-grow flex flex-col lg:flex-row min-h-0">
     
     <!-- 왼쪽 사이드바: 설정 영역 제어 보드 -->
-    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:h-full flex flex-col overflow-hidden">
+    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 flex flex-col">
       
       <!-- [고정] 인쇄 및 PDF 저장 버튼 패널 -->
       <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
@@ -350,7 +393,7 @@
       </div>
 
       <!-- [스크롤 영역] 셋팅 및 구성 필드 패널 -->
-      <div class="flex-1 overflow-y-auto p-6 pt-4 space-y-6">
+      <div class="flex-grow p-6 pt-4 space-y-6">
         
         <!-- 1. 용지 방향 -->
         <div>
@@ -554,6 +597,7 @@
             </label>
           </div>
         </div>
+        
         <button onclick="resetSavedData()" class="w-full mt-2 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
           설정 초기화
         </button>
@@ -562,8 +606,8 @@
     </aside>
 
     <!-- [교정] 가로/세로 오버플로우가 모두 원활하도록 overflow-y-auto를 overflow-auto로 변경 -->
-    <main class="flex-1 bg-slate-100 overflow-auto p-4 md:p-8 flex flex-col items-center relative">
-      <div id="print-area-wrapper" class="w-full flex flex-col items-center">
+    <main class="flex-grow bg-slate-100 p-4 md:p-8 flex flex-col items-center relative">
+      <div id="print-area-wrapper" class="w-full flex flex-col items-center font-serif-fixed">
         <!-- 동적으로 페이지들이 얹어질 프리뷰 컨테이너 -->
         <div id="pages-container" class="flex flex-col items-center"></div>
       </div>
@@ -635,7 +679,7 @@
     let gridOpacity = 1.0;
     let guideOpacity = 0.35;
 
-    // [신규] 화면 프리뷰 배율 제어 상태 변수 ('width', 'page', 'manual')
+    // 화면 프리뷰 배율 제어 상태 변수 ('width', 'page', 'manual')
     let previewZoomMode = 'width'; 
     let previewZoomValue = 100;   
     window.savedPatternGuide = true;
@@ -643,11 +687,11 @@
     window.savedHideGridGuides = false;
     window.savedCharYOffset = 0;
 
-    // [성능 개선 2] Layout Thrashing 최적화용 캐싱 수치 변수 선언
+    // Layout Thrashing 최적화용 캐싱 수치 변수 선언
     let cachedPageWidth = 0;
     let cachedPageHeight = 0;
 
-    // [성능 개선 1] 디바운싱(Debounce) 구현 (무거운 조판 연산 딜레이 적용)
+    // 디바운싱(Debounce) 구현 (무거운 조판 연산 딜레이 적용)
     function debounce(func, wait) {
       let timeout;
       return function(...args) {
@@ -734,7 +778,7 @@
 
     // 입력 렌더러에 디바운싱 바인딩 (타이핑 시 병목 제거)
     const debouncedRender = debounce(renderPages, 200);
-    const debouncedSave = debounce(saveToLocalStorage, 500); // 자동 저장 디바운스 추가
+    const debouncedSave = debounce(saveToLocalStorage, 500); 
 
     document.getElementById('source-text').addEventListener('input', (e) => {
       sourceText = e.target.value;
@@ -2189,9 +2233,13 @@
       const mainArea = document.querySelector('main');
       if (!mainArea) return;
       
-      // 스크롤바가 없는 상태인 메인의 내부 높이를 가져옵니다. (h-screen 기반으로 정밀 측정됨)
       const availableWidth = mainArea.clientWidth - 48; 
-      const availableHeight = mainArea.clientHeight - 48; 
+      let availableHeight = mainArea.clientHeight - 48; 
+      
+      // 화면 너비가 1024px 미만인 경우(모바일/세로 스택) 뷰포트 전체 높이를 기준으로 정밀 연산
+      if (window.innerWidth < 1024) {
+        availableHeight = window.innerHeight - 120; 
+      }
       
       if (cachedPageWidth === 0 || cachedPageHeight === 0) {
         cachePageDimensions();
@@ -2211,7 +2259,6 @@
             scale = availableWidth / pageNaturalWidth;
           }
         } else if (previewZoomMode === 'page') {
-          // 너비 한계 배율과 높이 한계 배율 중 더 작은 쪽을 스케일로 선택하여 전체 용지가 화면에 쏙 들어가도록 제어
           if (availableWidth > 0 && availableHeight > 0 && pageNaturalWidth > 0 && pageNaturalHeight > 0) {
             const scaleW = availableWidth / pageNaturalWidth;
             const scaleH = availableHeight / pageNaturalHeight;
@@ -2251,7 +2298,10 @@
         const mainArea = document.querySelector('main');
         if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
           const availableWidth = mainArea.clientWidth - 48;
-          const availableHeight = mainArea.clientHeight - 48;
+          let availableHeight = mainArea.clientHeight - 48;
+          if (window.innerWidth < 1024) {
+            availableHeight = window.innerHeight - 120;
+          }
           if (previewZoomMode === 'width') {
             currentVal = Math.round((availableWidth / cachedPageWidth) * 100);
           } else {
@@ -2284,7 +2334,10 @@
         const mainArea = document.querySelector('main');
         if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
           const availableWidth = mainArea.clientWidth - 48;
-          const availableHeight = mainArea.clientHeight - 48;
+          let availableHeight = mainArea.clientHeight - 48;
+          if (window.innerWidth < 1024) {
+            availableHeight = window.innerHeight - 120;
+          }
           let autoScale = 1;
           if (previewZoomMode === 'width') {
             autoScale = availableWidth / cachedPageWidth;
@@ -2308,7 +2361,10 @@
         const mainArea = document.querySelector('main');
         if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
           const availableWidth = mainArea.clientWidth - 48;
-          const availableHeight = mainArea.clientHeight - 48;
+          let availableHeight = mainArea.clientHeight - 48;
+          if (window.innerWidth < 1024) {
+            availableHeight = window.innerHeight - 120;
+          }
           let autoScale = 1;
           if (previewZoomMode === 'width') {
             autoScale = availableWidth / cachedPageWidth;
@@ -2344,7 +2400,6 @@
       const activeClass = "bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
       const inactiveClass = "bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
 
-      // 현재 화면 상태에 맞추어 활성화된 모드의 버튼 불만 끄고(비활성화), 전환 가능한 상태의 버튼은 불을 켭니다(활성화).
       if (btnWidth) {
         btnWidth.className = (previewZoomMode === 'width') ? inactiveClass : activeClass;
       }
@@ -2363,7 +2418,10 @@
         const mainArea = document.querySelector('main');
         if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
           const availableWidth = mainArea.clientWidth - 48;
-          const availableHeight = mainArea.clientHeight - 48;
+          let availableHeight = mainArea.clientHeight - 48;
+          if (window.innerWidth < 1024) {
+            availableHeight = window.innerHeight - 120;
+          }
           if (previewZoomMode === 'width') {
             currentVal = Math.round((availableWidth / cachedPageWidth) * 100);
           } else {
