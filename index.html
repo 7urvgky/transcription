@@ -17,7 +17,6 @@
       --grid-color: rgba(105, 175, 160, 1);  
       --manuscript-grid-color: rgba(105, 175, 160, 1); 
       --char-y-offset: 0%; 
-      --trace-opacity: 0.35;
     }
 
     /* 필사 전용 고정폭 명조 계열 서체 선언 */
@@ -74,12 +73,12 @@
       will-change: transform;
     }
 
-    /* 따라 쓰기 연한 글씨 투명도 (고정값 0.35로 복원) */
+    /* 따라 쓰기 연한 글씨 투명도 고정 수치 반영 */
     .trace-text-node {
       opacity: 0.35 !important;
     }
 
-    /* 실시간 인쇄 지면 편집 영역 인디케이터 */
+    /* 실시간 인쇄 지면 편집 영역 인디케이터 및 영역 유지 장치 */
     [contenteditable="true"] {
       transition: all 0.2s ease;
       border-radius: 4px;
@@ -145,7 +144,7 @@
       break-inside: avoid !important;
     }
 
-    /* 인쇄 모드 최적화 미디어 쿼리 (출력 오차 방어 및 수동 포커스 잔상 파괴) */
+    /* 인쇄 모드 최적화 미디어 쿼리 (출력 오차 방어 및 수동 포커스 잔상 제거) */
     @media print {
       .no-print {
         display: none !important;
@@ -609,7 +608,7 @@
       <!-- 화면 프리뷰 확대/축소/네비게이션 플로팅 컨트롤러 -->
       <div class="fixed bottom-6 right-6 bg-slate-900/90 backdrop-blur text-white px-3 py-2 rounded-xl shadow-2xl border border-slate-700/50 flex items-center space-x-3 z-30 no-print">
         
-        <!-- [개선] 현재 화면 표시 쪽 / 전체 쪽 수 대화형 클릭 네비게이션 인디케이터 배지 (배경 흰색 변경) -->
+        <!-- [개선] 현재 화면 표시 쪽 / 전체 쪽 수 대화형 클릭 네비게이션 인디케이터 배지 (배경 흰색 지정) -->
         <div id="pages-badge-container" onclick="enablePageInput(event)" class="bg-white hover:bg-slate-100 text-slate-900 text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-sm flex items-center space-x-1 shrink-0 select-none cursor-pointer transition-all active:scale-95 border border-slate-200" title="클릭하여 원하는 쪽으로 이동">
           <span id="total-pages-badge">📄 계산 중...</span>
           <input id="pages-badge-input" type="number" min="1" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[50px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disablePageInput(this.value)" onkeydown="if(event.key==='Enter') disablePageInput(this.value)" onclick="event.stopPropagation();">
@@ -621,7 +620,7 @@
           </svg>
         </button>
         
-        <!-- 클릭 시 숫자를 직접 입력할 수 있는 하이브리드 인디케이너 컨테이너 -->
+        <!-- 클릭 시 숫자를 직접 입력할 수 있는 하이브리드 인디케이터 컨테이너 -->
         <div class="flex items-center justify-center min-w-[70px]">
           <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">자동</span>
           <input id="zoom-input-field" type="number" min="30" max="200" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
@@ -1154,6 +1153,8 @@
               max-height: var(--print-page-height) !important;
               margin: 0 !important;
               transform: none !important;
+              top: 0 !important;
+              left: 0 !important;
             }
             .page-scale-wrapper {
               height: auto !important;
@@ -1184,6 +1185,8 @@
               max-height: var(--print-page-height) !important;
               margin: 0 !important;
               transform: none !important;
+              top: 0 !important;
+              left: 0 !important;
             }
             .page-scale-wrapper {
               height: auto !important;
@@ -2156,7 +2159,7 @@
 
                 if (currentMode === 'guide' && cellData.char && cellData.char !== " ") {
                   let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none" style="z-index: 10;">`;
-                  svgHtml += `<g class="trace-text-node">`; // [개선] 글씨 선명도 투명도 변수 연동 클래스 바인딩
+                  svgHtml += `<g class="trace-text-node">`; // [고정] 글씨 투명도 고정 규칙 0.35 바인딩 클래스 적용
 
                   if (cellData.isSqueezed) {
                     const mainChar = cellData.char;
