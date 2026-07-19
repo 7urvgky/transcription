@@ -373,11 +373,11 @@
           <span class="text-base tracking-wide">인쇄 및 PDF로 저장</span>
         </button>
         <div class="flex gap-2 mt-2">
-          <button onclick="exportSettings()" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold py-1.5 rounded-lg border border-blue-200 transition-all active:scale-[0.98]">
-            내용/설정 저장하기
+          <button onclick="exportSettings()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold py-1.5 rounded-lg border border-slate-200 transition-all active:scale-[0.98]">
+            내용/설정 저장
           </button>
-          <button onclick="document.getElementById('import-settings-file').click()" class="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold py-1.5 rounded-lg border border-emerald-200 transition-all active:scale-[0.98]">
-            불러오기
+          <button onclick="document.getElementById('import-settings-file').click()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold py-1.5 rounded-lg border border-slate-200 transition-all active:scale-[0.98]">
+            설정 불러오기
           </button>
         </div>
         <input type="file" id="import-settings-file" accept=".json" onchange="importSettings(event)" class="hidden">
