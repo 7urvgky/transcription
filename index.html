@@ -118,6 +118,9 @@
       break-before: auto !important;
       page-break-inside: auto !important;
       break-inside: auto !important;
+      /* GPU 가속 레이어 강제 할당으로 모바일 및 데스크톱 렌더링 속도 개선 */
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
     }
     .print-page:last-child, .print-page:last-of-type {
       page-break-after: auto !important;
@@ -226,6 +229,7 @@
         background-color: white !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        transform: none !important;
       }
 
       .print-page + .print-page {
@@ -282,38 +286,6 @@
       background: #94a3b8;
     }
 
-    @media screen and (min-width: 1024px) {
-      html, body {
-        height: 100vh !important;
-        height: 100dvh !important;
-        overflow: hidden !important;
-      }
-      /* Flexbox layout constraints to allow safe nested scrolls */
-      #main-layout-container {
-        height: 0;
-        flex-grow: 1;
-        min-height: 0;
-      }
-      main {
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-      }
-    }
-
-    @media screen and (max-width: 1023px) {
-      html, body {
-        height: auto !important;
-        overflow: auto !important;
-      }
-      #main-layout-container {
-        height: auto !important;
-        min-height: 0;
-      }
-      main {
-        overflow: visible !important;
-      }
-    }
-
     @media screen {
       .page-scale-wrapper {
         width: 100%;
@@ -340,6 +312,37 @@
         margin: 0 !important;
       }
     }
+
+    @media screen and (min-width: 1024px) {
+      html, body {
+        height: 100vh !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
+      }
+      #main-layout-container {
+        height: 0;
+        flex-grow: 1;
+        min-height: 0;
+      }
+      main {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+    }
+
+    @media screen and (max-width: 1023px) {
+      html, body {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      #main-layout-container {
+        height: auto !important;
+        min-height: 0;
+      }
+      main {
+        overflow: visible !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -359,7 +362,6 @@
 
   <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
     
-    <!-- 왼쪽 사이드바: 설정 영역 제어 보드 -->
     <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:sticky lg:top-0 lg:h-[calc(100vh-72px)] flex flex-col">
       
       <!-- [고정] 인쇄 및 PDF 저장 버튼 패널 -->
@@ -594,13 +596,13 @@
     </aside>
 
     <!-- [교정] 가로/세로 오버플로우가 모두 원활하도록 overflow-y-auto를 overflow-auto로 변경 -->
-    <main class="flex-1 bg-slate-100 p-4 md:p-8 flex flex-col items-center relative">
+    <main class="flex-1 bg-slate-100 overflow-auto p-4 md:p-8 flex flex-col items-center relative">
       <div id="print-area-wrapper" class="w-full flex flex-col items-center">
         <!-- 동적으로 페이지들이 얹어질 프리뷰 컨테이너 -->
         <div id="pages-container" class="flex flex-col items-center"></div>
       </div>
 
-      <!-- [신규] 화면 프리뷰 확대/축소 플로팅 컨트롤러 (폭 맞춤 & 쪽 맞춤 지원형) -->
+      <!-- [신규] 화면 프리뷰 확대/축소 플로팅 컨트롤러 -->
       <div class="fixed bottom-6 right-6 bg-slate-900/90 backdrop-blur text-white px-3 py-2 rounded-xl shadow-2xl border border-slate-700/50 flex items-center space-x-3 z-30 no-print">
         <button id="btn-zoom-out" onclick="zoomOut()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all duration-200" title="축소">
           <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -620,8 +622,7 @@
           </svg>
         </button>
         <div class="w-px h-4 bg-slate-700"></div>
-        
-        <!-- 폭 맞춤 및 쪽 맞춤 버튼 세트 -->
+        <!-- 폭 맞춤 & 쪽 맞춤 개별 버튼 세트 -->
         <button onclick="setZoomMode('auto')" id="btn-zoom-width" class="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="폭 맞춤">
           폭 맞춤
         </button>
@@ -665,7 +666,7 @@
     let gridOpacity = 1.0;
     let guideOpacity = 0.35;
 
-    // [신규] 화면 프리뷰 배율 제어 상태 변수 (auto: 폭 맞춤, page: 쪽 맞춤, manual: 수동 줌)
+    // 화면 프리뷰 배율 제어 상태 변수 (auto: 폭 맞춤, page: 쪽 맞춤, manual: 수동 줌)
     let previewZoomMode = 'auto'; 
     let previewZoomValue = 100;   
     window.savedPatternGuide = true;
@@ -673,11 +674,11 @@
     window.savedHideGridGuides = false;
     window.savedCharYOffset = 0;
 
-    // [성능 개선 2] Layout Thrashing 최적화용 캐싱 수치 변수 선언
+    // Layout Thrashing 최적화용 캐싱 수치 변수 선언
     let cachedPageWidth = 0;
     let cachedPageHeight = 0;
 
-    // [성능 개선 1] 디바운싱(Debounce) 구현 (무거운 조판 연산 딜레이 적용)
+    // 디바운싱(Debounce) 구현 (무거운 조판 연산 딜레이 적용)
     function debounce(func, wait) {
       let timeout;
       return function(...args) {
@@ -686,6 +687,7 @@
       };
     }
 
+    // 자동 저장 추가
     function saveToLocalStorage() {
       const data = {
         sourceText,
@@ -708,7 +710,6 @@
         patternEmpty: document.getElementById('pattern-empty').checked,
         charYOffset: document.getElementById('charYOffsetSlider').value
       };
-
       localStorage.setItem('manuscriptPaperData', JSON.stringify(data));
     }
 
@@ -717,7 +718,6 @@
       if (!saved) return;
 
       const data = JSON.parse(saved);
-
       sourceText = data.sourceText ?? sourceText;
       articleTitle = data.articleTitle ?? articleTitle;
       schoolName = data.schoolName ?? schoolName;
@@ -762,8 +762,8 @@
     document.title = articleTitle ? articleTitle : "필사 용지 만들기";
 
     // 입력 렌더러에 디바운싱 바인딩 (타이핑 시 병목 제거)
-    const debouncedRender = debounce(renderPages, 200);
-    const debouncedSave = debounce(saveToLocalStorage, 500); // 자동 저장 디바운스 추가
+    const debouncedRender = debounce(renderPages, 180);
+    const debouncedSave = debounce(saveToLocalStorage, 400); // 자동 저장 디바운스 추가
 
     document.getElementById('source-text').addEventListener('input', (e) => {
       sourceText = e.target.value;
@@ -1016,6 +1016,7 @@
       updatePageStyleSheet();
       renderPages();
       
+      // 용지 오리엔테이션 전환 직후 돔의 기하 치수 크기 재캐싱 처리
       setTimeout(cachePageDimensions, 100);
     }
 
@@ -2198,11 +2199,13 @@
       container.replaceChildren(fragment);
       updateHeaderAndTitle();
       
+      // 렌더링 직후 최초 1회 실측하여 레이아웃 쓰래싱 예방
       cachePageDimensions();
       adjustPreviewScale();
       debouncedSave();
     }
 
+    // 기하 수치를 전역 메모리에 보관하여 잦은 DOM 계측을 막는 최적화 로직
     function cachePageDimensions() {
       const firstPage = document.querySelector('.print-page');
       if (firstPage) {
@@ -2218,11 +2221,12 @@
       const mainArea = document.querySelector('main');
       if (!mainArea) return;
       
-      const availableWidth = (mainArea.offsetWidth || mainArea.clientWidth) - 48; 
+      // 스크롤바 유무에 영향을 받지 않는 상수적 가로 넓이 offsetWidth 활용
+      const availableWidth = mainArea.offsetWidth - 48; 
       
       let availableHeight = 0;
       if (window.innerWidth >= 1024) {
-        availableHeight = (mainArea.offsetHeight || mainArea.clientHeight) - 48;
+        availableHeight = mainArea.offsetHeight - 48;
       } else {
         availableHeight = window.innerHeight - 48;
       }
@@ -2234,42 +2238,45 @@
       const pageNaturalWidth = cachedPageWidth || 794; 
       const pageNaturalHeight = cachedPageHeight || 1123;
       
-      wrappers.forEach(wrapper => {
-        const page = wrapper.querySelector('.print-page');
-        if (!page) return;
-        
-        let scale = 1;
+      // 가상 스케줄러(requestAnimationFrame)를 사용해 스크롤바 흔들림 및 연산 병목 해결
+      requestAnimationFrame(() => {
+        wrappers.forEach(wrapper => {
+          const page = wrapper.querySelector('.print-page');
+          if (!page) return;
+          
+          let scale = 1;
 
-        if (previewZoomMode === 'auto') {
-          if (availableWidth > 0 && pageNaturalWidth > 0) {
-            scale = availableWidth / pageNaturalWidth;
+          if (previewZoomMode === 'auto') {
+            if (availableWidth > 0 && pageNaturalWidth > 0) {
+              scale = availableWidth / pageNaturalWidth;
+            }
+          } else if (previewZoomMode === 'page') {
+            if (availableHeight > 0 && pageNaturalHeight > 0) {
+              scale = availableHeight / pageNaturalHeight;
+            }
+          } else {
+            scale = previewZoomValue / 100;
           }
-        } else if (previewZoomMode === 'page') {
-          if (availableHeight > 0 && pageNaturalHeight > 0) {
-            scale = availableHeight / pageNaturalHeight;
+
+          page.style.transform = `scale(${scale})`;
+          page.style.transformOrigin = 'top center';
+          wrapper.style.height = `${pageNaturalHeight * scale}px`;
+        });
+
+        const indicator = document.getElementById('zoom-indicator-text');
+        if (indicator) {
+          if (previewZoomMode === 'auto') {
+            indicator.textContent = '폭 맞춤';
+          } else if (previewZoomMode === 'page') {
+            indicator.textContent = '쪽 맞춤';
+          } else {
+            indicator.textContent = `${previewZoomValue}%`;
           }
-        } else {
-          scale = previewZoomValue / 100;
         }
 
-        page.style.transform = `scale(${scale})`;
-        page.style.transformOrigin = 'top center';
-        wrapper.style.height = `${pageNaturalHeight * scale}px`;
+        updateZoomButtonsState();
+        updateZoomModeUI();
       });
-
-      const indicator = document.getElementById('zoom-indicator-text');
-      if (indicator) {
-        if (previewZoomMode === 'auto') {
-          indicator.textContent = '폭 맞춤';
-        } else if (previewZoomMode === 'page') {
-          indicator.textContent = '쪽 맞춤';
-        } else {
-          indicator.textContent = `${previewZoomValue}%`;
-        }
-      }
-
-      updateZoomButtonsState();
-      updateZoomModeUI();
     }
 
     function updateZoomButtonsState() {
@@ -2278,11 +2285,18 @@
       if (!btnOut || !btnIn) return;
 
       let currentVal = previewZoomValue;
-      if (previewZoomMode === 'auto' || previewZoomMode === 'page') {
+      if (previewZoomMode === 'auto') {
         const mainArea = document.querySelector('main');
         if (mainArea && cachedPageWidth > 0) {
           const availableWidth = mainArea.offsetWidth - 48;
           const autoScale = availableWidth / cachedPageWidth;
+          currentVal = Math.round(autoScale * 100);
+        }
+      } else if (previewZoomMode === 'page') {
+        const mainArea = document.querySelector('main');
+        if (mainArea && cachedPageHeight > 0) {
+          let availableHeight = (window.innerWidth >= 1024) ? mainArea.offsetHeight - 48 : window.innerHeight - 48;
+          const autoScale = availableHeight / cachedPageHeight;
           currentVal = Math.round(autoScale * 100);
         }
       }
@@ -2348,18 +2362,18 @@
       const btnPage = document.getElementById('btn-zoom-page');
       if (!btnWidth || !btnPage) return;
 
-      const activeClass = "bg-emerald-600 hover:bg-emerald-500 text-white font-bold";
-      const inactiveClass = "bg-slate-700 hover:bg-slate-600 text-slate-300";
+      const activeClass = "bg-slate-700 hover:bg-slate-600 text-slate-300";
+      const inactiveClass = "bg-emerald-600 hover:bg-emerald-500 text-white font-bold";
 
       if (previewZoomMode === 'auto') {
-        btnWidth.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
-        btnPage.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
-      } else if (previewZoomMode === 'page') {
         btnWidth.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
         btnPage.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
-      } else {
-        btnWidth.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+      } else if (previewZoomMode === 'page') {
+        btnWidth.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
         btnPage.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+      } else {
+        btnWidth.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+        btnPage.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
       }
     }
 
@@ -2428,7 +2442,14 @@
     updateCharYOffset(window.savedCharYOffset || 0);
 
     document.getElementById('charYOffsetSlider').value = window.savedCharYOffset || 0;
-    window.addEventListener('resize', adjustPreviewScale);
+
+    // Resize 이벤트 스로틀러 탑재
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      if (resizeTimer) cancelAnimationFrame(resizeTimer);
+      resizeTimer = requestAnimationFrame(adjustPreviewScale);
+    });
+
     window.addEventListener('load', () => {
       cachePageDimensions();
       adjustPreviewScale();
