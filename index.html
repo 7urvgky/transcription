@@ -310,7 +310,7 @@
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="h-screen overflow-hidden flex flex-col">
 
   <header class="bg-slate-900 text-white shadow-md no-print py-4 px-6 flex justify-between items-center z-10 shrink-0">
     <div class="flex items-center space-x-3">
@@ -325,10 +325,10 @@
     </div>
   </header>
 
-  <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
+  <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
     
     <!-- 왼쪽 사이드바: 설정 영역 제어 보드 -->
-    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:sticky lg:top-0 lg:h-[calc(100vh-72px)] flex flex-col">
+    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:h-full flex flex-col overflow-hidden">
       
       <!-- [고정] 인쇄 및 PDF 저장 버튼 패널 -->
       <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
@@ -338,33 +338,15 @@
           </svg>
           <span class="text-base tracking-wide">인쇄 및 PDF로 저장</span>
         </button>
-      <div class="flex gap-2 mt-2">
-
-  <button
-    onclick="exportSettings()"
-    class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold py-1.5 rounded-lg border border-blue-200 transition-all active:scale-[0.98]">
-
-    내용/설정 저장하기
-
-  </button>
-
-  <button
-    onclick="document.getElementById('import-settings-file').click()"
-    class="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold py-1.5 rounded-lg border border-emerald-200 transition-all active:scale-[0.98]">
-
-    불러오기
-
-  </button>
-
-</div>
-
-<input
-  type="file"
-  id="import-settings-file"
-  accept=".json"
-  onchange="importSettings(event)"
-  class="hidden">
-      
+        <div class="flex gap-2 mt-2">
+          <button onclick="exportSettings()" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold py-1.5 rounded-lg border border-blue-200 transition-all active:scale-[0.98]">
+            내용/설정 저장하기
+          </button>
+          <button onclick="document.getElementById('import-settings-file').click()" class="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold py-1.5 rounded-lg border border-emerald-200 transition-all active:scale-[0.98]">
+            불러오기
+          </button>
+        </div>
+        <input type="file" id="import-settings-file" accept=".json" onchange="importSettings(event)" class="hidden">
       </div>
 
       <!-- [스크롤 영역] 셋팅 및 구성 필드 패널 -->
@@ -572,13 +554,9 @@
             </label>
           </div>
         </div>
- <button
-  onclick="resetSavedData()"
-  class="w-full mt-2 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
-
-  설정 초기화
-
-</button>
+        <button onclick="resetSavedData()" class="w-full mt-2 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
+          설정 초기화
+        </button>
 
       </div>
     </aside>
@@ -600,7 +578,7 @@
         
         <!-- 클릭 시 숫자를 직접 입력할 수 있는 하이브리드 인디케이터 컨테이너 -->
         <div class="flex items-center justify-center min-w-[85px]">
-          <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">자동</span>
+          <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">폭 맞춤</span>
           <input id="zoom-input-field" type="number" min="30" max="200" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
         </div>
 
@@ -610,9 +588,16 @@
           </svg>
         </button>
         <div class="w-px h-4 bg-slate-700"></div>
-        <button onclick="toggleZoomMode()" id="btn-zoom-mode" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="폭 맞춤 전환">
-          폭 맞춤
-        </button>
+        
+        <!-- 폭 맞춤 및 쪽 맞춤 버튼 세트 -->
+        <div class="flex items-center space-x-1">
+          <button onclick="setZoomMode('width')" id="btn-zoom-width" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="화면 너비에 맞춤">
+            폭 맞춤
+          </button>
+          <button onclick="setZoomMode('page')" id="btn-zoom-page" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="한 쪽이 화면에 모두 보이게 맞춤">
+            쪽 맞춤
+          </button>
+        </div>
       </div>
     </main>
 
@@ -650,13 +635,13 @@
     let gridOpacity = 1.0;
     let guideOpacity = 0.35;
 
-    // [신규] 화면 프리뷰 배율 제어 상태 변수
-    let previewZoomMode = 'auto'; 
+    // [신규] 화면 프리뷰 배율 제어 상태 변수 ('width', 'page', 'manual')
+    let previewZoomMode = 'width'; 
     let previewZoomValue = 100;   
     window.savedPatternGuide = true;
-window.savedPatternEmpty = true;
-window.savedHideGridGuides = false;
-window.savedCharYOffset = 0;
+    window.savedPatternEmpty = true;
+    window.savedHideGridGuides = false;
+    window.savedCharYOffset = 0;
 
     // [성능 개선 2] Layout Thrashing 최적화용 캐싱 수치 변수 선언
     let cachedPageWidth = 0;
@@ -671,175 +656,76 @@ window.savedCharYOffset = 0;
       };
     }
 
-// 자동 저장 추가
-function saveToLocalStorage() {
+    // 자동 저장 추가
+    function saveToLocalStorage() {
+      const data = {
+        sourceText,
+        articleTitle,
+        schoolName,
+        gradeInfo,
+        studentName,
+        gridCols,
+        excludeFirstPage,
+        hideManuscriptHeader,
+        hideCharCount,
+        hidePageNumbers,
+        orientation,
+        currentGridColor,
+        currentGuideColor,
+        gridOpacity,
+        guideOpacity,
+        hideGridGuides: document.getElementById('hide-grid-guides').checked,
+        patternGuide: document.getElementById('pattern-guide').checked,
+        patternEmpty: document.getElementById('pattern-empty').checked,
+        charYOffset: document.getElementById('charYOffsetSlider').value
+      };
 
-  const data = {
+      localStorage.setItem('manuscriptPaperData', JSON.stringify(data));
+    }
 
-    sourceText,
-    articleTitle,
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem('manuscriptPaperData');
+      if (!saved) return;
 
-    schoolName,
-    gradeInfo,
-    studentName,
+      const data = JSON.parse(saved);
 
-    gridCols,
+      sourceText = data.sourceText ?? sourceText;
+      articleTitle = data.articleTitle ?? articleTitle;
+      schoolName = data.schoolName ?? schoolName;
+      gradeInfo = data.gradeInfo ?? gradeInfo;
+      studentName = data.studentName ?? studentName;
+      gridCols = data.gridCols ?? gridCols;
+      excludeFirstPage = data.excludeFirstPage ?? excludeFirstPage;
+      hideManuscriptHeader = data.hideManuscriptHeader ?? hideManuscriptHeader;
+      hideCharCount = data.hideCharCount ?? hideCharCount;
+      hidePageNumbers = data.hidePageNumbers ?? hidePageNumbers;
+      orientation = data.orientation ?? orientation;
+      currentGridColor = data.currentGridColor ?? currentGridColor;
+      currentGuideColor = data.currentGuideColor ?? currentGuideColor;
+      gridOpacity = data.gridOpacity ?? gridOpacity;
+      guideOpacity = data.guideOpacity ?? guideOpacity;
+      window.savedHideGridGuides = data.hideGridGuides ?? false;
+      window.savedPatternGuide = data.patternGuide ?? true;
+      window.savedPatternEmpty = data.patternEmpty ?? true;
+      window.savedCharYOffset = data.charYOffset ?? 0;    
+    }
 
-    excludeFirstPage,
-    hideManuscriptHeader,
-    hideCharCount,
-    hidePageNumbers,
-
-    orientation,
-
-    currentGridColor,
-    currentGuideColor,
-
-    gridOpacity,
-guideOpacity,
-
-hideGridGuides:
-    document.getElementById(
-      'hide-grid-guides'
-    ).checked,
-
-patternGuide:
-    document.getElementById(
-      'pattern-guide'
-    ).checked,
-
-patternEmpty:
-    document.getElementById(
-      'pattern-empty'
-    ).checked,
-
-charYOffset:
-    document.getElementById(
-      'charYOffsetSlider'
-    ).value
-  };
-
-  localStorage.setItem(
-    'manuscriptPaperData',
-    JSON.stringify(data)
-  );
-}
-function loadFromLocalStorage() {
-
-  const saved =
-    localStorage.getItem('manuscriptPaperData');
-
-  if (!saved)
-    return;
-
-  const data = JSON.parse(saved);
-
-  sourceText =
-    data.sourceText ?? sourceText;
-
-  articleTitle =
-    data.articleTitle ?? articleTitle;
-
-  schoolName =
-    data.schoolName ?? schoolName;
-
-  gradeInfo =
-    data.gradeInfo ?? gradeInfo;
-
-  studentName =
-    data.studentName ?? studentName;
-
-  gridCols =
-    data.gridCols ?? gridCols;
-
-  excludeFirstPage =
-    data.excludeFirstPage ?? excludeFirstPage;
-
-  hideManuscriptHeader =
-    data.hideManuscriptHeader ?? hideManuscriptHeader;
-
-  hideCharCount =
-    data.hideCharCount ?? hideCharCount;
-
-  hidePageNumbers =
-    data.hidePageNumbers ?? hidePageNumbers;
-
-  orientation =
-    data.orientation ?? orientation;
-
-  currentGridColor =
-    data.currentGridColor ?? currentGridColor;
-
-  currentGuideColor =
-    data.currentGuideColor ?? currentGuideColor;
-
-  gridOpacity =
-    data.gridOpacity ?? gridOpacity;
-
-  guideOpacity =
-    data.guideOpacity ?? guideOpacity;
-
-window.savedHideGridGuides =
-    data.hideGridGuides ?? false;
-
-window.savedPatternGuide =
-    data.patternGuide ?? true;
-
-window.savedPatternEmpty =
-    data.patternEmpty ?? true;
-
-window.savedCharYOffset =
-    data.charYOffset ?? 0;    
-}
-function applyLoadedDataToUI() {
-
-  document.getElementById('source-text').value =
-    sourceText;
-
-  document.getElementById('input-title').value =
-    articleTitle;
-
-  document.getElementById('input-school').value =
-    schoolName;
-
-  document.getElementById('input-grade').value =
-    gradeInfo;
-
-  document.getElementById('input-name').value =
-    studentName;
-
-  document.getElementById('grid-cols-select').value =
-    gridCols;
-
-  document.getElementById('hide-manuscript-header').checked =
-    hideManuscriptHeader;
-
-  document.getElementById('hide-char-count').checked =
-    hideCharCount;
-
-  document.getElementById('hide-page-numbers').checked =
-    hidePageNumbers;
-document.getElementById(
-    'hide-grid-guides'
-).checked =
-    window.savedHideGridGuides;
-
-document.getElementById(
-    'pattern-guide'
-).checked =
-    window.savedPatternGuide;
-
-document.getElementById(
-    'pattern-empty'
-).checked =
-    window.savedPatternEmpty;
-  document.getElementById('exclude-first-page').checked =
-    !excludeFirstPage;
-
-  document.getElementById('char-counter').textContent =
-    `${sourceText.length}자 입력됨`;
-}
-// 자동 저장 추가 끝.
+    function applyLoadedDataToUI() {
+      document.getElementById('source-text').value = sourceText;
+      document.getElementById('input-title').value = articleTitle;
+      document.getElementById('input-school').value = schoolName;
+      document.getElementById('input-grade').value = gradeInfo;
+      document.getElementById('input-name').value = studentName;
+      document.getElementById('grid-cols-select').value = gridCols;
+      document.getElementById('hide-manuscript-header').checked = hideManuscriptHeader;
+      document.getElementById('hide-char-count').checked = hideCharCount;
+      document.getElementById('hide-page-numbers').checked = hidePageNumbers;
+      document.getElementById('hide-grid-guides').checked = window.savedHideGridGuides;
+      document.getElementById('pattern-guide').checked = window.savedPatternGuide;
+      document.getElementById('pattern-empty').checked = window.savedPatternEmpty;
+      document.getElementById('exclude-first-page').checked = !excludeFirstPage;
+      document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
+    }
 
     // 초기값 할당
     document.getElementById('source-text').value = sourceText;
@@ -848,8 +734,7 @@ document.getElementById(
 
     // 입력 렌더러에 디바운싱 바인딩 (타이핑 시 병목 제거)
     const debouncedRender = debounce(renderPages, 200);
-    const debouncedSave =
-  debounce(saveToLocalStorage, 500);// 자동 저장 디바운스 추가
+    const debouncedSave = debounce(saveToLocalStorage, 500); // 자동 저장 디바운스 추가
 
     document.getElementById('source-text').addEventListener('input', (e) => {
       sourceText = e.target.value;
@@ -857,19 +742,12 @@ document.getElementById(
       debouncedRender();
     });
 
-document.getElementById('input-title')
-.addEventListener('input', (e) => {
+    document.getElementById('input-title').addEventListener('input', (e) => {
+      articleTitle = e.target.value;
+      document.title = articleTitle ? articleTitle : "필사 용지 만들기";
+      updateHeaderAndTitle();
+    });
 
-  articleTitle = e.target.value;
-
-  document.title =
-      articleTitle
-      ? articleTitle
-      : "필사 용지 만들기";
-
-  updateHeaderAndTitle();
-
-});
     document.getElementById('grid-cols-select').addEventListener('change', (e) => {
       gridCols = e.target.value;
       renderPages();
@@ -963,309 +841,134 @@ document.getElementById('input-title')
     }
 
     function updateCharYOffset(val) {
-
-  const displayVal =
-      (val > 0 ? '+' : '') + val + '%';
-
-  document.getElementById('charYOffsetVal')
-      .innerText = displayVal;
-
-  document.documentElement.style
-      .setProperty('--char-y-offset', val + '%');
-
-  debouncedSave();
-}
-function resetSavedData() {
-
-  if (
-    !confirm(
-      '입력된 내용과 설정을 초기화 할까요?'
-    )
-  ) {
-    return;
-  }
-
-  localStorage.removeItem(
-    'manuscriptPaperData'
-  );
-
-  location.reload();
-
-}
-
-function getCurrentSettings() {
-
-  return {
-
-    sourceText,
-    articleTitle,
-
-    schoolName,
-    gradeInfo,
-    studentName,
-
-    gridCols,
-
-    excludeFirstPage,
-    hideManuscriptHeader,
-    hideCharCount,
-    hidePageNumbers,
-
-    orientation,
-
-    currentGridColor,
-    currentGuideColor,
-
-    gridOpacity,
-    guideOpacity,
-
-    charYOffset:
-      document.getElementById(
-        'charYOffsetSlider'
-      ).value
-
-  };
-
-}
-async function exportSettings() {
-
-  const data =
-    getCurrentSettings();
-
-  const json =
-    JSON.stringify(
-      data,
-      null,
-      2
-    );
-
-  // Edge / Chrome
-  if (window.showSaveFilePicker) {
-
-    try {
-
-      const fileHandle =
-        await window.showSaveFilePicker({
-
-          suggestedName:
-            '필사용지설정.json',
-
-          types: [
-            {
-              description: 'JSON 파일',
-              accept: {
-                'application/json': ['.json']
-              }
-            }
-          ]
-
-        });
-
-      const writable =
-        await fileHandle.createWritable();
-
-      await writable.write(json);
-
-      await writable.close();
-
-    } catch (err) {
-
-      console.log('저장 취소');
-
+      const displayVal = (val > 0 ? '+' : '') + val + '%';
+      document.getElementById('charYOffsetVal').innerText = displayVal;
+      document.documentElement.style.setProperty('--char-y-offset', val + '%');
+      debouncedSave();
     }
 
-    return;
-
-  }
-
-  // Safari fallback
-
-  const blob =
-    new Blob(
-      [json],
-      {
-        type: 'application/json'
+    function resetSavedData() {
+      if (!confirm('입력된 내용과 설정을 초기화 할까요?')) {
+        return;
       }
-    );
-
-  const url =
-    URL.createObjectURL(blob);
-
-  const a =
-    document.createElement('a');
-
-  a.href = url;
-
-  a.download =
-    '필사용지설정.json';
-
-  document.body.appendChild(a);
-
-  a.click();
-
-  document.body.removeChild(a);
-
-  URL.revokeObjectURL(url);
-
-}
-
-function importSettings(event) {
-
-  const file =
-    event.target.files[0];
-
-  if (!file)
-    return;
-
-  const reader =
-    new FileReader();
-
-reader.onload =
-  function(e) {
-
-    let data;
-
-    try {
-
-      data =
-        JSON.parse(
-          e.target.result
-        );
-
-    } catch(error) {
-
-      alert(
-        '올바른 설정 파일(JSON)이 아닙니다.'
-      );
-
-      return;
-
+      localStorage.removeItem('manuscriptPaperData');
+      location.reload();
     }
-if (
-  typeof data !== 'object' ||
-  data === null ||
-  !('sourceText' in data)
-) {
 
-  alert(
-    '필사용지 설정 파일이 아닙니다.'
-  );
-
-  return;
-
-}
-    sourceText =
-      data.sourceText ?? sourceText;
-
-      articleTitle =
-        data.articleTitle ?? articleTitle;
-
-      schoolName =
-        data.schoolName ?? schoolName;
-
-      gradeInfo =
-        data.gradeInfo ?? gradeInfo;
-
-      studentName =
-        data.studentName ?? studentName;
-
-      gridCols =
-        data.gridCols ?? gridCols;
-
-      excludeFirstPage =
-        data.excludeFirstPage ?? excludeFirstPage;
-
-      hideManuscriptHeader =
-        data.hideManuscriptHeader ?? hideManuscriptHeader;
-
-      hideCharCount =
-        data.hideCharCount ?? hideCharCount;
-
-      hidePageNumbers =
-        data.hidePageNumbers ?? hidePageNumbers;
-
-      orientation =
-        data.orientation ?? orientation;
-
-      currentGridColor =
-        data.currentGridColor ?? currentGridColor;
-
-      currentGuideColor =
-        data.currentGuideColor ?? currentGuideColor;
-
-      gridOpacity =
-        data.gridOpacity ?? gridOpacity;
-
-      guideOpacity =
-    data.guideOpacity ?? guideOpacity;
-
-window.savedHideGridGuides =
-    data.hideGridGuides ?? false;
-
-window.savedPatternGuide =
-    data.patternGuide ?? true;
-
-window.savedPatternEmpty =
-    data.patternEmpty ?? true;
-
-
-      applyLoadedDataToUI();
-document.getElementById(
-  'hide-grid-guides'
-).checked =
-  window.savedHideGridGuides;
-
-document.getElementById(
-  'pattern-guide'
-).checked =
-  window.savedPatternGuide;
-
-document.getElementById(
-  'pattern-empty'
-).checked =
-  window.savedPatternEmpty;
-  
-      updatePageStyleSheet();
-
-      setOrientation(
-        orientation
-      );
-
-      setGridColor(
+    function getCurrentSettings() {
+      return {
+        sourceText,
+        articleTitle,
+        schoolName,
+        gradeInfo,
+        studentName,
+        gridCols,
+        excludeFirstPage,
+        hideManuscriptHeader,
+        hideCharCount,
+        hidePageNumbers,
+        orientation,
         currentGridColor,
-        true
-      );
-
-      setGuideColor(
         currentGuideColor,
-        true
-      );
+        gridOpacity,
+        guideOpacity,
+        charYOffset: document.getElementById('charYOffsetSlider').value
+      };
+    }
 
-      updateGridOpacity(
-        gridOpacity * 100
-      );
+    async function exportSettings() {
+      const data = getCurrentSettings();
+      const json = JSON.stringify(data, null, 2);
 
-      updateGuideOpacity(
-        guideOpacity * 100
-      );
+      if (window.showSaveFilePicker) {
+        try {
+          const fileHandle = await window.showSaveFilePicker({
+            suggestedName: '필사용지설정.json',
+            types: [
+              {
+                description: 'JSON 파일',
+                accept: {
+                  'application/json': ['.json']
+                }
+              }
+            ]
+          });
+          const writable = await fileHandle.createWritable();
+          await writable.write(json);
+          await writable.close();
+        } catch (err) {
+          console.log('저장 취소');
+        }
+        return;
+      }
 
-      updateCharYOffset(
-        data.charYOffset || 0
-      );
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '필사용지설정.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
 
-      document.getElementById(
-        'charYOffsetSlider'
-      ).value =
-        data.charYOffset || 0;
+    function importSettings(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-      saveToLocalStorage();
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        let data;
+        try {
+          data = JSON.parse(e.target.result);
+        } catch(error) {
+          alert('올바른 설정 파일(JSON)이 아닙니다.');
+          return;
+        }
 
-    };
+        if (typeof data !== 'object' || data === null || !('sourceText' in data)) {
+          alert('필사용지 설정 파일이 아닙니다.');
+          return;
+        }
 
-  reader.readAsText(file);
+        sourceText = data.sourceText ?? sourceText;
+        articleTitle = data.articleTitle ?? articleTitle;
+        schoolName = data.schoolName ?? schoolName;
+        gradeInfo = data.gradeInfo ?? gradeInfo;
+        studentName = data.studentName ?? studentName;
+        gridCols = data.gridCols ?? gridCols;
+        excludeFirstPage = data.excludeFirstPage ?? excludeFirstPage;
+        hideManuscriptHeader = data.hideManuscriptHeader ?? hideManuscriptHeader;
+        hideCharCount = data.hideCharCount ?? hideCharCount;
+        hidePageNumbers = data.hidePageNumbers ?? hidePageNumbers;
+        orientation = data.orientation ?? orientation;
+        currentGridColor = data.currentGridColor ?? currentGridColor;
+        currentGuideColor = data.currentGuideColor ?? currentGuideColor;
+        gridOpacity = data.gridOpacity ?? gridOpacity;
+        guideOpacity = data.guideOpacity ?? guideOpacity;
+        window.savedHideGridGuides = data.hideGridGuides ?? false;
+        window.savedPatternGuide = data.patternGuide ?? true;
+        window.savedPatternEmpty = data.patternEmpty ?? true;
 
-}
+        applyLoadedDataToUI();
+        document.getElementById('hide-grid-guides').checked = window.savedHideGridGuides;
+        document.getElementById('pattern-guide').checked = window.savedPatternGuide;
+        document.getElementById('pattern-empty').checked = window.savedPatternEmpty;
+        
+        updatePageStyleSheet();
+        setOrientation(orientation);
+        setGridColor(currentGridColor, true);
+        setGuideColor(currentGuideColor, true);
+        updateGridOpacity(gridOpacity * 100);
+        updateGuideOpacity(guideOpacity * 100);
+        updateCharYOffset(data.charYOffset || 0);
 
+        document.getElementById('charYOffsetSlider').value = data.charYOffset || 0;
+        saveToLocalStorage();
+      };
+      reader.readAsText(file);
+    }
 
     function setOrientation(mode) {
       orientation = mode;
@@ -1284,7 +987,6 @@ document.getElementById(
       updatePageStyleSheet();
       renderPages();
       
-      // 용지 오리엔테이션 전환 직후 돔의 기하 치수 크기 재캐싱 처리
       setTimeout(cachePageDimensions, 100);
     }
 
@@ -1400,14 +1102,11 @@ document.getElementById(
         document.getElementById('input-school').value = schoolName === " " ? "" : schoolName;
         syncMetadata('school-placeholder', schoolName, target);
       }
-else if (target.classList.contains('grade-placeholder')) {
-    gradeInfo = txt === "" ? " " : txt;
-
-    document.getElementById('input-grade').value =
-        gradeInfo === " " ? "" : gradeInfo;
-
-    syncMetadata('grade-placeholder', gradeInfo, target);
-}
+      else if (target.classList.contains('grade-placeholder')) {
+        gradeInfo = txt === "" ? " " : txt;
+        document.getElementById('input-grade').value = gradeInfo === " " ? "" : gradeInfo;
+        syncMetadata('grade-placeholder', gradeInfo, target);
+      }
       else if (target.classList.contains('name-placeholder')) {
         studentName = txt;
         document.getElementById('input-name').value = studentName;
@@ -1464,7 +1163,6 @@ else if (target.classList.contains('grade-placeholder')) {
         target.dispatchEvent(new Event('input', { bubbles: true }));
       } else {
         text = text.replace(/\n/g, ' ');
-        // execCommand 보안 완화 처리
         if (document.queryCommandSupported('insertText')) {
           document.execCommand('insertText', false, text);
         } else {
@@ -1479,27 +1177,17 @@ else if (target.classList.contains('grade-placeholder')) {
     });
 
     document.addEventListener('blur', (e) => {
+      const target = e.target;
+      if (!target.hasAttribute('contenteditable')) return;
 
-  const target = e.target;
+      if (target.textContent.trim() === "") {
+        target.innerHTML = "";
+      }
 
-  if (!target.hasAttribute('contenteditable'))
-      return;
-
-  if (target.textContent.trim() === "") {
-      target.innerHTML = "";
-  }
-
-  if (
-      target.classList.contains('title-placeholder')
-      ||
-      target.classList.contains('mini-header-center')
-  ) {
-
-      updateHeaderAndTitle();
-
-  }
-
-}, true);
+      if (target.classList.contains('title-placeholder') || target.classList.contains('mini-header-center')) {
+        updateHeaderAndTitle();
+      }
+    }, true);
 
     function parseTextToManuscriptCells(text, cols) {
       const cells = [];
@@ -1657,7 +1345,6 @@ else if (target.classList.contains('grade-placeholder')) {
       return cells;
     }
 
-
     function calculateOptimalRows(cols) {
       if (cols === "line") {
         if (orientation === 'portrait') {
@@ -1806,7 +1493,6 @@ else if (target.classList.contains('grade-placeholder')) {
       return lines <= maxLines;
     }
 
-
     function paginateSourceText(paragraphs) {
       let globalFontSize = '12pt';
       
@@ -1946,18 +1632,14 @@ else if (target.classList.contains('grade-placeholder')) {
     }
 
     function renderPages() {
-      const container =
-    document.getElementById('pages-container');
-
-const fragment =
-    document.createDocumentFragment();
+      const container = document.getElementById('pages-container');
+      const fragment = document.createDocumentFragment();
 
       const isLineNote = (gridCols === 'line');
       const optRows = calculateOptimalRows(gridCols);
       const cellsPerPage = isLineNote ? optRows : (parseInt(gridCols) * optRows);
 
       const placeholders = getBlankPlaceholders();
-
       const pageClass = orientation === 'portrait' ? 'a4-page print-page portrait-page' : 'a4-page print-page landscape-page';
 
       const headerHTML = `
@@ -2484,16 +2166,14 @@ const fragment =
           fragment.appendChild(scaleWrapper);
         }
       });
-container.replaceChildren(fragment);
+      container.replaceChildren(fragment);
       updateHeaderAndTitle();
       
-      // [성능 개선 2] 렌더링 직후 최초 1회 실측하여 레이아웃 쓰래싱 예방
       cachePageDimensions();
       adjustPreviewScale();
       debouncedSave();
     }
 
-    // [성능 개선 2] 기하 수치를 전역 메모리에 보관하여 잦은 DOM 계측을 막는 최적화 로직
     function cachePageDimensions() {
       const firstPage = document.querySelector('.print-page');
       if (firstPage) {
@@ -2509,9 +2189,10 @@ container.replaceChildren(fragment);
       const mainArea = document.querySelector('main');
       if (!mainArea) return;
       
+      // 스크롤바가 없는 상태인 메인의 내부 높이를 가져옵니다. (h-screen 기반으로 정밀 측정됨)
       const availableWidth = mainArea.clientWidth - 48; 
+      const availableHeight = mainArea.clientHeight - 48; 
       
-      // 캐시 데이터 부재 시 예외 계측
       if (cachedPageWidth === 0 || cachedPageHeight === 0) {
         cachePageDimensions();
       }
@@ -2525,9 +2206,16 @@ container.replaceChildren(fragment);
         
         let scale = 1;
 
-        if (previewZoomMode === 'auto') {
+        if (previewZoomMode === 'width') {
           if (availableWidth > 0 && pageNaturalWidth > 0) {
             scale = availableWidth / pageNaturalWidth;
+          }
+        } else if (previewZoomMode === 'page') {
+          // 너비 한계 배율과 높이 한계 배율 중 더 작은 쪽을 스케일로 선택하여 전체 용지가 화면에 쏙 들어가도록 제어
+          if (availableWidth > 0 && availableHeight > 0 && pageNaturalWidth > 0 && pageNaturalHeight > 0) {
+            const scaleW = availableWidth / pageNaturalWidth;
+            const scaleH = availableHeight / pageNaturalHeight;
+            scale = Math.min(scaleW, scaleH);
           }
         } else {
           scale = previewZoomValue / 100;
@@ -2540,8 +2228,10 @@ container.replaceChildren(fragment);
 
       const indicator = document.getElementById('zoom-indicator-text');
       if (indicator) {
-        if (previewZoomMode === 'auto') {
-          indicator.textContent = '자동';
+        if (previewZoomMode === 'width') {
+          indicator.textContent = '폭 맞춤';
+        } else if (previewZoomMode === 'page') {
+          indicator.textContent = '쪽 맞춤';
         } else {
           indicator.textContent = `${previewZoomValue}%`;
         }
@@ -2557,12 +2247,18 @@ container.replaceChildren(fragment);
       if (!btnOut || !btnIn) return;
 
       let currentVal = previewZoomValue;
-      if (previewZoomMode === 'auto') {
+      if (previewZoomMode === 'width' || previewZoomMode === 'page') {
         const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0) {
+        if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
           const availableWidth = mainArea.clientWidth - 48;
-          const autoScale = availableWidth / cachedPageWidth;
-          currentVal = Math.round(autoScale * 100);
+          const availableHeight = mainArea.clientHeight - 48;
+          if (previewZoomMode === 'width') {
+            currentVal = Math.round((availableWidth / cachedPageWidth) * 100);
+          } else {
+            const scaleW = availableWidth / cachedPageWidth;
+            const scaleH = availableHeight / cachedPageHeight;
+            currentVal = Math.round(Math.min(scaleW, scaleH) * 100);
+          }
         }
       }
 
@@ -2584,11 +2280,17 @@ container.replaceChildren(fragment);
     }
 
     function zoomIn() {
-      if (previewZoomMode === 'auto') {
+      if (previewZoomMode === 'width' || previewZoomMode === 'page') {
         const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0) {
+        if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
           const availableWidth = mainArea.clientWidth - 48;
-          const autoScale = availableWidth / cachedPageWidth;
+          const availableHeight = mainArea.clientHeight - 48;
+          let autoScale = 1;
+          if (previewZoomMode === 'width') {
+            autoScale = availableWidth / cachedPageWidth;
+          } else {
+            autoScale = Math.min(availableWidth / cachedPageWidth, availableHeight / cachedPageHeight);
+          }
           previewZoomValue = Math.min(200, Math.ceil((autoScale * 100) / 10) * 10);
         } else {
           previewZoomValue = 100;
@@ -2602,11 +2304,17 @@ container.replaceChildren(fragment);
     }
 
     function zoomOut() {
-      if (previewZoomMode === 'auto') {
+      if (previewZoomMode === 'width' || previewZoomMode === 'page') {
         const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0) {
+        if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
           const availableWidth = mainArea.clientWidth - 48;
-          const autoScale = availableWidth / cachedPageWidth;
+          const availableHeight = mainArea.clientHeight - 48;
+          let autoScale = 1;
+          if (previewZoomMode === 'width') {
+            autoScale = availableWidth / cachedPageWidth;
+          } else {
+            autoScale = Math.min(availableWidth / cachedPageWidth, availableHeight / cachedPageHeight);
+          }
           previewZoomValue = Math.max(30, Math.floor((autoScale * 100) / 10) * 10);
         } else {
           previewZoomValue = 100;
@@ -2619,25 +2327,29 @@ container.replaceChildren(fragment);
       adjustPreviewScale();
     }
 
-    function toggleZoomMode() {
-      if (previewZoomMode === 'manual') {
-        previewZoomMode = 'auto'; 
-      } else {
+    function setZoomMode(mode) {
+      if (previewZoomMode === mode) {
         previewZoomMode = 'manual';
-        previewZoomValue = 100;   
+        previewZoomValue = 100;
+      } else {
+        previewZoomMode = mode;
       }
       updateZoomModeUI();
       adjustPreviewScale();
     }
 
     function updateZoomModeUI() {
-      const btn = document.getElementById('btn-zoom-mode');
-      if (btn) {
-        if (previewZoomMode === 'manual') {
-          btn.className = "bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
-        } else {
-          btn.className = "bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
-        }
+      const btnWidth = document.getElementById('btn-zoom-width');
+      const btnPage = document.getElementById('btn-zoom-page');
+      const activeClass = "bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
+      const inactiveClass = "bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
+
+      // 현재 화면 상태에 맞추어 활성화된 모드의 버튼 불만 끄고(비활성화), 전환 가능한 상태의 버튼은 불을 켭니다(활성화).
+      if (btnWidth) {
+        btnWidth.className = (previewZoomMode === 'width') ? inactiveClass : activeClass;
+      }
+      if (btnPage) {
+        btnPage.className = (previewZoomMode === 'page') ? inactiveClass : activeClass;
       }
     }
 
@@ -2647,12 +2359,16 @@ container.replaceChildren(fragment);
       if (!textSpan || !inputField) return;
 
       let currentVal = previewZoomValue;
-      if (previewZoomMode === 'auto') {
+      if (previewZoomMode === 'width' || previewZoomMode === 'page') {
         const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0) {
+        if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
           const availableWidth = mainArea.clientWidth - 48;
-          const autoScale = availableWidth / cachedPageWidth;
-          currentVal = Math.round(autoScale * 100);
+          const availableHeight = mainArea.clientHeight - 48;
+          if (previewZoomMode === 'width') {
+            currentVal = Math.round((availableWidth / cachedPageWidth) * 100);
+          } else {
+            currentVal = Math.round(Math.min(availableWidth / cachedPageWidth, availableHeight / cachedPageHeight) * 100);
+          }
         }
       }
 
@@ -2697,33 +2413,18 @@ container.replaceChildren(fragment);
     });
 
     loadFromLocalStorage();
+    applyLoadedDataToUI();
+    updatePageStyleSheet();
+    setOrientation(orientation);
+    setGridColor(currentGridColor, true);
+    setGuideColor(currentGuideColor, true);
+    updateGridOpacity(gridOpacity * 100);
+    updateGuideOpacity(guideOpacity * 100);
+    updateGridGuides();
+    updateCharYOffset(window.savedCharYOffset || 0);
 
-applyLoadedDataToUI();
-
-updatePageStyleSheet();
-
-setOrientation(orientation);
-
-setGridColor(currentGridColor, true);
-
-setGuideColor(currentGuideColor, true);
-
-updateGridOpacity(gridOpacity * 100);
-
-updateGuideOpacity(
-  guideOpacity * 100
-);
-
-updateGridGuides();
-
-updateCharYOffset(
-  window.savedCharYOffset || 0
-);
-
-document.getElementById(
-    'charYOffsetSlider'
-).value =
-    window.savedCharYOffset || 0;
+    document.getElementById('charYOffsetSlider').value = window.savedCharYOffset || 0;
+    
     window.addEventListener('resize', adjustPreviewScale);
     window.addEventListener('load', () => {
       cachePageDimensions();
