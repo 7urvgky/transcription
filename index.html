@@ -69,6 +69,14 @@
       z-index: 1;
     }
 
+    /* GPU 가속을 이용한 글자 상하 미세정렬 규칙 일괄 적용 */
+    .grid-cell-guide svg g, 
+    .line-note-text-span {
+      transform: translate3d(0, var(--char-y-offset, 0%), 0) !important;
+      transform-origin: center !important;
+      will-change: transform;
+    }
+
     [contenteditable="true"] {
       transition: all 0.2s ease;
       border-radius: 4px;
@@ -116,10 +124,8 @@
       break-after: auto !important;
       page-break-before: auto !important;
       break-before: auto !important;
-      /* 미세한 픽셀 반올림 오차로 인한 원고지 쪼개짐 및 인쇄 시 빈 백지 생성 원천 방지 */
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      /* GPU 가속 레이어 할당으로 미리보기 드래그 및 스케일 가속 */
       will-change: transform;
       transform: translate3d(0, 0, 0);
     }
@@ -219,7 +225,6 @@
         page-break-after: auto !important;
         break-before: auto !important;
         page-break-before: auto !important;
-        /* 인쇄 시 단면 내부 분할 분리 방지 */
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         box-sizing: border-box !important;
@@ -799,7 +804,6 @@
       document.getElementById('char-counter').textContent = `${sourceText.length}자 입력됨`;
     }
 
-    // [커스텀 대화상자 컨트롤 유틸]
     function showCustomAlert(title, message) {
       document.getElementById('modal-title').textContent = title;
       document.getElementById('modal-message').textContent = message;
@@ -1196,6 +1200,28 @@
         }
       });
     }
+
+    // [교정] 엔터(Enter) 키 입력 시 메타데이터 줄바꿈이 일어나 레이아웃이 무너지는 현상 완벽 방지
+    document.addEventListener('keydown', (e) => {
+      const target = e.target;
+      if (target.hasAttribute('contenteditable')) {
+        const isSingleLineField = 
+          target.classList.contains('school-placeholder') ||
+          target.classList.contains('grade-placeholder') ||
+          target.classList.contains('name-placeholder') ||
+          target.classList.contains('title-placeholder') ||
+          target.classList.contains('mini-header-left') ||
+          target.classList.contains('mini-header-center') ||
+          target.classList.contains('footer-label-source') ||
+          target.classList.contains('footer-label-guide') ||
+          target.classList.contains('footer-label-empty');
+
+        if (isSingleLineField && e.key === 'Enter') {
+          e.preventDefault();
+          target.blur(); // 줄바꿈을 차단하고 텍스트 커서를 해제해 입력을 안전히 확정
+        }
+      }
+    });
 
     document.addEventListener('input', (e) => {
       const target = e.target;
@@ -2037,7 +2063,8 @@
                 const textSpan = document.createElement('div');
                 textSpan.textContent = lineText;
                 
-                textSpan.className = "font-serif-fixed text-slate-300 font-medium select-none absolute left-[2mm] right-[2mm] bottom-[1.8mm] leading-none pb-0 whitespace-pre";
+                // [개선] 인라인 스타일 대신 전역 GPU CSS Rule에 일임하여 안정성 증진
+                textSpan.className = "font-serif-fixed text-slate-300 font-medium select-none absolute left-[2mm] right-[2mm] bottom-[1.8mm] leading-none pb-0 whitespace-pre line-note-text-span";
                 textSpan.style.textAlign = "justify";
                 textSpan.style.textJustify = "inter-character";
 
@@ -2053,7 +2080,6 @@
                 const fontSizeNum = 12; 
                 const adjustedFontSizeMm = baseFontSizeMm * (fontSizeNum / 12);
                 textSpan.style.fontSize = `${adjustedFontSizeMm}mm`;
-                textSpan.style.transform = "translateY(var(--char-y-offset, 0%))"; 
                 rowDiv.appendChild(textSpan);
               }
 
@@ -2093,7 +2119,8 @@
 
                 if (currentMode === 'guide' && cellData.char && cellData.char !== " ") {
                   let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none" style="z-index: 10;">`;
-                  svgHtml += `<g style="transform: translateY(var(--char-y-offset, 0%));">`;
+                  // [개선] 인라인 트랜스폼 대신 CSS로 하드웨어 가속 처리해 속도 및 브라우저 호환성 비약적 향상
+                  svgHtml += `<g>`;
 
                   if (cellData.isSqueezed) {
                     const mainChar = cellData.char;
@@ -2294,7 +2321,6 @@
       }
     }
 
-    // 애니메이션 프레임을 이용해 연속 호출 부하를 완화하는 배율 적용 유틸
     let scaleRequestPending = false;
     function adjustPreviewScale() {
       if (scaleRequestPending) return;
@@ -2309,9 +2335,13 @@
         const mainArea = document.querySelector('main');
         if (!mainArea) return;
         
-        // 아이프레임 스크롤 유동성에 따른 scrollbar 간섭을 배제하기 위해 clientWidth 대신 외부 크기 offsetWidth 채택
         const availableWidth = mainArea.offsetWidth - 48; 
-        const availableHeight = mainArea.offsetHeight - 48;
+        
+        // [교정] 모바일/태블릿 가로 세로 정렬 시 '쪽 맞춤' 배율이 무한히 거대화하는 피드백 루프 결함 원천 해결
+        const isNarrowLayout = window.innerWidth < 1024;
+        const availableHeight = isNarrowLayout 
+          ? (window.innerHeight - 80) // 좁은 임베디드 화면일 땐 고정된 뷰포트 높이값 기준으로 스케일을 연산
+          : (mainArea.offsetHeight - 48);
         
         if (cachedPageWidth === 0 || cachedPageHeight === 0) {
           cachePageDimensions();
@@ -2429,7 +2459,6 @@
       adjustPreviewScale();
     }
 
-    // [개선] 현재 화면 스케일과 완전히 일치하도록 버튼의 불을 켜고 끄는 핵심 로직 연동
     function setZoomMode(mode) {
       previewZoomMode = mode;
       updateZoomModeUI();
