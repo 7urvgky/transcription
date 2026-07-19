@@ -344,7 +344,7 @@
     onclick="exportSettings()"
     class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-semibold py-1.5 rounded-lg border border-blue-200 transition-all active:scale-[0.98]">
 
-    저장하기
+    내용/설정 저장하기
 
   </button>
 
@@ -576,7 +576,7 @@
   onclick="resetSavedData()"
   class="w-full mt-2 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
 
-  초기화
+  설정 초기화
 
 </button>
 
@@ -692,11 +692,27 @@ function saveToLocalStorage() {
     currentGuideColor,
 
     gridOpacity,
-    guideOpacity,
-    
-    charYOffset:
-        document.getElementById('charYOffsetSlider').value
+guideOpacity,
 
+hideGridGuides:
+    document.getElementById(
+      'hide-grid-guides'
+    ).checked,
+
+patternGuide:
+    document.getElementById(
+      'pattern-guide'
+    ).checked,
+
+patternEmpty:
+    document.getElementById(
+      'pattern-empty'
+    ).checked,
+
+charYOffset:
+    document.getElementById(
+      'charYOffsetSlider'
+    ).value
   };
 
   localStorage.setItem(
@@ -705,24 +721,6 @@ function saveToLocalStorage() {
   );
 }
 function loadFromLocalStorage() {
-function resetSavedData() {
-
-  if (
-    !confirm(
-      '저장된 내용을 모두 삭제할까요?'
-    )
-  ) {
-    return;
-  }
-
-  localStorage.removeItem(
-    'manuscriptPaperData'
-  );
-
-  location.reload();
-
-}
-
 
   const saved =
     localStorage.getItem('manuscriptPaperData');
@@ -776,10 +774,18 @@ function resetSavedData() {
 
   guideOpacity =
     data.guideOpacity ?? guideOpacity;
-    
-    window.savedCharYOffset =
-    data.charYOffset ?? 0;
-    
+
+window.savedHideGridGuides =
+    data.hideGridGuides ?? false;
+
+window.savedPatternGuide =
+    data.patternGuide ?? true;
+
+window.savedPatternEmpty =
+    data.patternEmpty ?? true;
+
+window.savedCharYOffset =
+    data.charYOffset ?? 0;    
 }
 function applyLoadedDataToUI() {
 
@@ -809,7 +815,20 @@ function applyLoadedDataToUI() {
 
   document.getElementById('hide-page-numbers').checked =
     hidePageNumbers;
+document.getElementById(
+    'hide-grid-guides'
+).checked =
+    window.savedHideGridGuides;
 
+document.getElementById(
+    'pattern-guide'
+).checked =
+    window.savedPatternGuide;
+
+document.getElementById(
+    'pattern-empty'
+).checked =
+    window.savedPatternEmpty;
   document.getElementById('exclude-first-page').checked =
     !excludeFirstPage;
 
@@ -954,11 +973,20 @@ document.getElementById('input-title')
 }
 function resetSavedData() {
 
+  if (
+    !confirm(
+      '입력된 내용과 설정을 초기화 할까요?'
+    )
+  ) {
+    return;
+  }
+
   localStorage.removeItem(
     'manuscriptPaperData'
   );
 
   location.reload();
+
 }
 
 function getCurrentSettings() {
@@ -1088,16 +1116,42 @@ function importSettings(event) {
   const reader =
     new FileReader();
 
-  reader.onload =
-    function(e) {
+reader.onload =
+  function(e) {
 
-      const data =
+    let data;
+
+    try {
+
+      data =
         JSON.parse(
           e.target.result
         );
 
-      sourceText =
-        data.sourceText ?? sourceText;
+    } catch(error) {
+
+      alert(
+        '올바른 설정 파일(JSON)이 아닙니다.'
+      );
+
+      return;
+
+    }
+if (
+  typeof data !== 'object' ||
+  data === null ||
+  !('sourceText' in data)
+) {
+
+  alert(
+    '필사용지 설정 파일이 아닙니다.'
+  );
+
+  return;
+
+}
+    sourceText =
+      data.sourceText ?? sourceText;
 
       articleTitle =
         data.articleTitle ?? articleTitle;
@@ -1139,10 +1193,34 @@ function importSettings(event) {
         data.gridOpacity ?? gridOpacity;
 
       guideOpacity =
-        data.guideOpacity ?? guideOpacity;
+    data.guideOpacity ?? guideOpacity;
+
+window.savedHideGridGuides =
+    data.hideGridGuides ?? false;
+
+window.savedPatternGuide =
+    data.patternGuide ?? true;
+
+window.savedPatternEmpty =
+    data.patternEmpty ?? true;
+
 
       applyLoadedDataToUI();
+document.getElementById(
+  'hide-grid-guides'
+).checked =
+  window.savedHideGridGuides;
 
+document.getElementById(
+  'pattern-guide'
+).checked =
+  window.savedPatternGuide;
+
+document.getElementById(
+  'pattern-empty'
+).checked =
+  window.savedPatternEmpty;
+  
       updatePageStyleSheet();
 
       setOrientation(
@@ -2628,10 +2706,14 @@ setGuideColor(currentGuideColor, true);
 
 updateGridOpacity(gridOpacity * 100);
 
-updateGuideOpacity(guideOpacity * 100);
+updateGuideOpacity(
+  guideOpacity * 100
+);
+
+updateGridGuides();
 
 updateCharYOffset(
-    window.savedCharYOffset || 0
+  window.savedCharYOffset || 0
 );
 
 document.getElementById(
