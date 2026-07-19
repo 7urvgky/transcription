@@ -282,6 +282,38 @@
       background: #94a3b8;
     }
 
+    @media screen and (min-width: 1024px) {
+      html, body {
+        height: 100vh !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
+      }
+      /* Flexbox layout constraints to allow safe nested scrolls */
+      #main-layout-container {
+        height: 0;
+        flex-grow: 1;
+        min-height: 0;
+      }
+      main {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+    }
+
+    @media screen and (max-width: 1023px) {
+      html, body {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      #main-layout-container {
+        height: auto !important;
+        min-height: 0;
+      }
+      main {
+        overflow: visible !important;
+      }
+    }
+
     @media screen {
       .page-scale-wrapper {
         width: 100%;
@@ -310,7 +342,7 @@
     }
   </style>
 </head>
-<body class="h-screen overflow-hidden flex flex-col">
+<body class="min-h-screen flex flex-col">
 
   <header class="bg-slate-900 text-white shadow-md no-print py-4 px-6 flex justify-between items-center z-10 shrink-0">
     <div class="flex items-center space-x-3">
@@ -325,10 +357,10 @@
     </div>
   </header>
 
-  <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+  <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
     
     <!-- 왼쪽 사이드바: 설정 영역 제어 보드 -->
-    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:h-full flex flex-col overflow-hidden">
+    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:sticky lg:top-0 lg:h-[calc(100vh-72px)] flex flex-col">
       
       <!-- [고정] 인쇄 및 PDF 저장 버튼 패널 -->
       <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
@@ -562,13 +594,13 @@
     </aside>
 
     <!-- [교정] 가로/세로 오버플로우가 모두 원활하도록 overflow-y-auto를 overflow-auto로 변경 -->
-    <main class="flex-1 bg-slate-100 overflow-auto p-4 md:p-8 flex flex-col items-center relative">
+    <main class="flex-1 bg-slate-100 p-4 md:p-8 flex flex-col items-center relative">
       <div id="print-area-wrapper" class="w-full flex flex-col items-center">
         <!-- 동적으로 페이지들이 얹어질 프리뷰 컨테이너 -->
         <div id="pages-container" class="flex flex-col items-center"></div>
       </div>
 
-      <!-- [신규] 화면 프리뷰 확대/축소 플로팅 컨트롤러 -->
+      <!-- [신규] 화면 프리뷰 확대/축소 플로팅 컨트롤러 (폭 맞춤 & 쪽 맞춤 지원형) -->
       <div class="fixed bottom-6 right-6 bg-slate-900/90 backdrop-blur text-white px-3 py-2 rounded-xl shadow-2xl border border-slate-700/50 flex items-center space-x-3 z-30 no-print">
         <button id="btn-zoom-out" onclick="zoomOut()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all duration-200" title="축소">
           <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -578,7 +610,7 @@
         
         <!-- 클릭 시 숫자를 직접 입력할 수 있는 하이브리드 인디케이터 컨테이너 -->
         <div class="flex items-center justify-center min-w-[85px]">
-          <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">폭 맞춤</span>
+          <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">자동</span>
           <input id="zoom-input-field" type="number" min="30" max="200" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
         </div>
 
@@ -590,21 +622,19 @@
         <div class="w-px h-4 bg-slate-700"></div>
         
         <!-- 폭 맞춤 및 쪽 맞춤 버튼 세트 -->
-        <div class="flex items-center space-x-1">
-          <button onclick="setZoomMode('width')" id="btn-zoom-width" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="화면 너비에 맞춤">
-            폭 맞춤
-          </button>
-          <button onclick="setZoomMode('page')" id="btn-zoom-page" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="한 쪽이 화면에 모두 보이게 맞춤">
-            쪽 맞춤
-          </button>
-        </div>
+        <button onclick="setZoomMode('auto')" id="btn-zoom-width" class="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="폭 맞춤">
+          폭 맞춤
+        </button>
+        <button onclick="setZoomMode('page')" id="btn-zoom-page" class="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="쪽 맞춤">
+          쪽 맞춤
+        </button>
       </div>
     </main>
 
   </div>
 
   <script>
-  'use strict';
+    'use strict';
   
     let sourceText = "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴 속에 하나 둘 새겨지는 별을\n이제 다 못 헤는 것은\n쉬이 아침이 오는 까닭이요,\n내일 밤이 남은 까닭이요,\n아직 나의 청춘이 다하지 않은 까닭입니다.\n\n별 하나에 추억과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 동경과\n별 하나에 시와\n별 하나에 어머니, 어머니";
     let articleTitle = "별 헤는 밤";
@@ -635,8 +665,8 @@
     let gridOpacity = 1.0;
     let guideOpacity = 0.35;
 
-    // [신규] 화면 프리뷰 배율 제어 상태 변수 ('width', 'page', 'manual')
-    let previewZoomMode = 'width'; 
+    // [신규] 화면 프리뷰 배율 제어 상태 변수 (auto: 폭 맞춤, page: 쪽 맞춤, manual: 수동 줌)
+    let previewZoomMode = 'auto'; 
     let previewZoomValue = 100;   
     window.savedPatternGuide = true;
     window.savedPatternEmpty = true;
@@ -656,7 +686,6 @@
       };
     }
 
-    // 자동 저장 추가
     function saveToLocalStorage() {
       const data = {
         sourceText,
@@ -2189,9 +2218,14 @@
       const mainArea = document.querySelector('main');
       if (!mainArea) return;
       
-      // 스크롤바가 없는 상태인 메인의 내부 높이를 가져옵니다. (h-screen 기반으로 정밀 측정됨)
-      const availableWidth = mainArea.clientWidth - 48; 
-      const availableHeight = mainArea.clientHeight - 48; 
+      const availableWidth = (mainArea.offsetWidth || mainArea.clientWidth) - 48; 
+      
+      let availableHeight = 0;
+      if (window.innerWidth >= 1024) {
+        availableHeight = (mainArea.offsetHeight || mainArea.clientHeight) - 48;
+      } else {
+        availableHeight = window.innerHeight - 48;
+      }
       
       if (cachedPageWidth === 0 || cachedPageHeight === 0) {
         cachePageDimensions();
@@ -2206,16 +2240,13 @@
         
         let scale = 1;
 
-        if (previewZoomMode === 'width') {
+        if (previewZoomMode === 'auto') {
           if (availableWidth > 0 && pageNaturalWidth > 0) {
             scale = availableWidth / pageNaturalWidth;
           }
         } else if (previewZoomMode === 'page') {
-          // 너비 한계 배율과 높이 한계 배율 중 더 작은 쪽을 스케일로 선택하여 전체 용지가 화면에 쏙 들어가도록 제어
-          if (availableWidth > 0 && availableHeight > 0 && pageNaturalWidth > 0 && pageNaturalHeight > 0) {
-            const scaleW = availableWidth / pageNaturalWidth;
-            const scaleH = availableHeight / pageNaturalHeight;
-            scale = Math.min(scaleW, scaleH);
+          if (availableHeight > 0 && pageNaturalHeight > 0) {
+            scale = availableHeight / pageNaturalHeight;
           }
         } else {
           scale = previewZoomValue / 100;
@@ -2228,7 +2259,7 @@
 
       const indicator = document.getElementById('zoom-indicator-text');
       if (indicator) {
-        if (previewZoomMode === 'width') {
+        if (previewZoomMode === 'auto') {
           indicator.textContent = '폭 맞춤';
         } else if (previewZoomMode === 'page') {
           indicator.textContent = '쪽 맞춤';
@@ -2247,18 +2278,12 @@
       if (!btnOut || !btnIn) return;
 
       let currentVal = previewZoomValue;
-      if (previewZoomMode === 'width' || previewZoomMode === 'page') {
+      if (previewZoomMode === 'auto' || previewZoomMode === 'page') {
         const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
-          const availableWidth = mainArea.clientWidth - 48;
-          const availableHeight = mainArea.clientHeight - 48;
-          if (previewZoomMode === 'width') {
-            currentVal = Math.round((availableWidth / cachedPageWidth) * 100);
-          } else {
-            const scaleW = availableWidth / cachedPageWidth;
-            const scaleH = availableHeight / cachedPageHeight;
-            currentVal = Math.round(Math.min(scaleW, scaleH) * 100);
-          }
+        if (mainArea && cachedPageWidth > 0) {
+          const availableWidth = mainArea.offsetWidth - 48;
+          const autoScale = availableWidth / cachedPageWidth;
+          currentVal = Math.round(autoScale * 100);
         }
       }
 
@@ -2280,17 +2305,11 @@
     }
 
     function zoomIn() {
-      if (previewZoomMode === 'width' || previewZoomMode === 'page') {
+      if (previewZoomMode === 'auto' || previewZoomMode === 'page') {
         const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
-          const availableWidth = mainArea.clientWidth - 48;
-          const availableHeight = mainArea.clientHeight - 48;
-          let autoScale = 1;
-          if (previewZoomMode === 'width') {
-            autoScale = availableWidth / cachedPageWidth;
-          } else {
-            autoScale = Math.min(availableWidth / cachedPageWidth, availableHeight / cachedPageHeight);
-          }
+        if (mainArea && cachedPageWidth > 0) {
+          const availableWidth = mainArea.offsetWidth - 48;
+          const autoScale = availableWidth / cachedPageWidth;
           previewZoomValue = Math.min(200, Math.ceil((autoScale * 100) / 10) * 10);
         } else {
           previewZoomValue = 100;
@@ -2299,22 +2318,15 @@
       } else {
         previewZoomValue = Math.min(200, previewZoomValue + 10);
       }
-      updateZoomModeUI();
       adjustPreviewScale();
     }
 
     function zoomOut() {
-      if (previewZoomMode === 'width' || previewZoomMode === 'page') {
+      if (previewZoomMode === 'auto' || previewZoomMode === 'page') {
         const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
-          const availableWidth = mainArea.clientWidth - 48;
-          const availableHeight = mainArea.clientHeight - 48;
-          let autoScale = 1;
-          if (previewZoomMode === 'width') {
-            autoScale = availableWidth / cachedPageWidth;
-          } else {
-            autoScale = Math.min(availableWidth / cachedPageWidth, availableHeight / cachedPageHeight);
-          }
+        if (mainArea && cachedPageWidth > 0) {
+          const availableWidth = mainArea.offsetWidth - 48;
+          const autoScale = availableWidth / cachedPageWidth;
           previewZoomValue = Math.max(30, Math.floor((autoScale * 100) / 10) * 10);
         } else {
           previewZoomValue = 100;
@@ -2323,33 +2335,31 @@
       } else {
         previewZoomValue = Math.max(30, previewZoomValue - 10);
       }
-      updateZoomModeUI();
       adjustPreviewScale();
     }
 
     function setZoomMode(mode) {
-      if (previewZoomMode === mode) {
-        previewZoomMode = 'manual';
-        previewZoomValue = 100;
-      } else {
-        previewZoomMode = mode;
-      }
-      updateZoomModeUI();
+      previewZoomMode = mode;
       adjustPreviewScale();
     }
 
     function updateZoomModeUI() {
       const btnWidth = document.getElementById('btn-zoom-width');
       const btnPage = document.getElementById('btn-zoom-page');
-      const activeClass = "bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
-      const inactiveClass = "bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
+      if (!btnWidth || !btnPage) return;
 
-      // 현재 화면 상태에 맞추어 활성화된 모드의 버튼 불만 끄고(비활성화), 전환 가능한 상태의 버튼은 불을 켭니다(활성화).
-      if (btnWidth) {
-        btnWidth.className = (previewZoomMode === 'width') ? inactiveClass : activeClass;
-      }
-      if (btnPage) {
-        btnPage.className = (previewZoomMode === 'page') ? inactiveClass : activeClass;
+      const activeClass = "bg-emerald-600 hover:bg-emerald-500 text-white font-bold";
+      const inactiveClass = "bg-slate-700 hover:bg-slate-600 text-slate-300";
+
+      if (previewZoomMode === 'auto') {
+        btnWidth.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+        btnPage.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+      } else if (previewZoomMode === 'page') {
+        btnWidth.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+        btnPage.className = `${inactiveClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+      } else {
+        btnWidth.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
+        btnPage.className = `${activeClass} text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm`;
       }
     }
 
@@ -2359,16 +2369,12 @@
       if (!textSpan || !inputField) return;
 
       let currentVal = previewZoomValue;
-      if (previewZoomMode === 'width' || previewZoomMode === 'page') {
+      if (previewZoomMode === 'auto' || previewZoomMode === 'page') {
         const mainArea = document.querySelector('main');
-        if (mainArea && cachedPageWidth > 0 && cachedPageHeight > 0) {
-          const availableWidth = mainArea.clientWidth - 48;
-          const availableHeight = mainArea.clientHeight - 48;
-          if (previewZoomMode === 'width') {
-            currentVal = Math.round((availableWidth / cachedPageWidth) * 100);
-          } else {
-            currentVal = Math.round(Math.min(availableWidth / cachedPageWidth, availableHeight / cachedPageHeight) * 100);
-          }
+        if (mainArea && cachedPageWidth > 0) {
+          const availableWidth = mainArea.offsetWidth - 48;
+          const autoScale = availableWidth / cachedPageWidth;
+          currentVal = Math.round(autoScale * 100);
         }
       }
 
@@ -2397,7 +2403,6 @@
       inputField.classList.add('hidden');
       textSpan.classList.remove('hidden');
 
-      updateZoomModeUI();
       adjustPreviewScale();
     }
 
@@ -2407,7 +2412,6 @@
         num = Math.max(30, Math.min(200, num));
         previewZoomValue = num;
         previewZoomMode = 'manual';
-        updateZoomModeUI();
         adjustPreviewScale();
       }
     });
@@ -2424,7 +2428,6 @@
     updateCharYOffset(window.savedCharYOffset || 0);
 
     document.getElementById('charYOffsetSlider').value = window.savedCharYOffset || 0;
-    
     window.addEventListener('resize', adjustPreviewScale);
     window.addEventListener('load', () => {
       cachePageDimensions();
