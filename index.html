@@ -496,7 +496,7 @@
                       <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
                       <span>다른 색</span>
                     </button>
-                    <input type="color" id="grid-color-picker" value="#69afa0" class="sr-only" oninput="setGridColor(this.value, true)">
+                    <input type="color" id="grid-color-picker" value="#69afa0" class="sr-only" oninput="setGridColor(this.value, true, false)" onchange="setGridColor(this.value, true, true)">
                   </div>
                 </div>
                 <!-- 원고지 선 투명도 슬라이더 -->
@@ -532,7 +532,7 @@
                       <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
                       <span>다른 색</span>
                     </button>
-                    <input type="color" id="guide-color-picker" value="#ff8c8c" class="sr-only" oninput="setGuideColor(this.value, true)">
+                    <input type="color" id="guide-color-picker" value="#ff8c8c" class="sr-only" oninput="setGuideColor(this.value, true, false)" onchange="setGuideColor(this.value, true, true)">
                   </div>
                 </div>
                 <!-- 원고지 가운데 점선 투명도 슬라이더 -->
@@ -844,6 +844,7 @@
 
     document.getElementById('grid-cols-select').addEventListener('change', (e) => {
       AppState.gridCols = e.target.value;
+      saveToLocalStorage();
       renderPages();
     });
 
@@ -857,29 +858,36 @@
       });
     });
 
-    document.getElementById('pattern-guide').addEventListener('change', (e) => { AppState.patternGuide = e.target.checked; renderPages(); });
-    document.getElementById('pattern-empty').addEventListener('change', (e) => { AppState.patternEmpty = e.target.checked; renderPages(); });
+    document.getElementById('pattern-guide').addEventListener('change', (e) => { AppState.patternGuide = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('pattern-empty').addEventListener('change', (e) => { AppState.patternEmpty = e.target.checked; saveToLocalStorage(); renderPages(); });
     document.getElementById('exclude-first-page').addEventListener('change', (e) => {
       AppState.excludeFirstPage = !e.target.checked;
+      saveToLocalStorage();
       renderPages();
     });
-    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; renderPages(); });
-    document.getElementById('hide-char-count').addEventListener('change', (e) => { AppState.hideCharCount = e.target.checked; renderPages(); });
-    document.getElementById('hide-page-numbers').addEventListener('change', (e) => { AppState.hidePageNumbers = e.target.checked; renderPages(); });
+    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('hide-char-count').addEventListener('change', (e) => { AppState.hideCharCount = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('hide-page-numbers').addEventListener('change', (e) => { AppState.hidePageNumbers = e.target.checked; saveToLocalStorage(); renderPages(); });
     document.getElementById('hide-grid-guides').addEventListener('change', (e) => {
       AppState.hideGridGuides = e.target.checked;
       updateGridGuides();
+      saveToLocalStorage();
     });
 
     function hexToRgba(hex, alpha = 0.35) {
+      if (!hex) return `rgba(0, 0, 0, ${alpha})`;
       hex = hex.replace('#', '');
+      if (hex.length === 3) {
+        hex = hex.split('').map(c => c + c).join('');
+      }
+      if (hex.length !== 6) return `rgba(0, 0, 0, ${alpha})`;
       let r = parseInt(hex.substring(0, 2), 16);
       let g = parseInt(hex.substring(2, 4), 16);
       let b = parseInt(hex.substring(4, 6), 16);
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    function setGridColor(val, isCustom = false) {
+    function setGridColor(val, isCustom = false, shouldSave = true) {
       AppState.currentGridColor = val;
       document.documentElement.style.setProperty('--grid-color', val);
       document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(val, AppState.gridOpacity));
@@ -888,14 +896,32 @@
       buttons.forEach(el => el.classList.add('hidden'));
       
       if (!isCustom) {
-        const matchedBtn = document.querySelector(`button[onclick="setGridColor('${val}')"] .grid-color-check`);
+        const matchedBtn = document.querySelector(`button[onclick^="setGridColor('${val}'"] .grid-color-check`) || 
+                           document.querySelector(`button[onclick*="'${val}'"] .grid-color-check`);
         if (matchedBtn) matchedBtn.classList.remove('hidden');
         document.getElementById('grid-color-picker').value = val;
+      } else {
+        document.getElementById('grid-color-picker').value = val;
       }
-      debouncedSave();
+
+      // '다른 색' 원형 디자인 동적 커스텀 매핑
+      const customBtnSpan = document.querySelector('button[onclick*="grid-color-picker.click()"] span');
+      if (customBtnSpan) {
+        if (isCustom) {
+          customBtnSpan.style.backgroundColor = val;
+          customBtnSpan.style.backgroundImage = 'none';
+        } else {
+          customBtnSpan.style.backgroundColor = '';
+          customBtnSpan.style.backgroundImage = 'linear-gradient(to top right, #6366f1, #a855f7, #ec4899)';
+        }
+      }
+
+      if (shouldSave) {
+        saveToLocalStorage();
+      }
     }
 
-    function setGuideColor(val, isCustom = false) {
+    function setGuideColor(val, isCustom = false, shouldSave = true) {
       AppState.currentGuideColor = val;
       updateGridGuides();
 
@@ -903,11 +929,29 @@
       checks.forEach(el => el.classList.add('hidden'));
 
       if (!isCustom) {
-        const matchedBtn = document.querySelector(`button[onclick="setGuideColor('${val}')"] .guide-color-check`);
+        const matchedBtn = document.querySelector(`button[onclick^="setGuideColor('${val}'"] .guide-color-check`) || 
+                           document.querySelector(`button[onclick*="'${val}'"] .guide-color-check`);
         if (matchedBtn) matchedBtn.classList.remove('hidden');
         document.getElementById('guide-color-picker').value = val;
+      } else {
+        document.getElementById('guide-color-picker').value = val;
       }
-      debouncedSave();
+
+      // '다른 색' 원형 디자인 동적 커스텀 매핑
+      const customBtnSpan = document.querySelector('button[onclick*="guide-color-picker.click()"] span');
+      if (customBtnSpan) {
+        if (isCustom) {
+          customBtnSpan.style.backgroundColor = val;
+          customBtnSpan.style.backgroundImage = 'none';
+        } else {
+          customBtnSpan.style.backgroundColor = '';
+          customBtnSpan.style.backgroundImage = 'linear-gradient(to top right, #6366f1, #a855f7, #ec4899)';
+        }
+      }
+
+      if (shouldSave) {
+        saveToLocalStorage();
+      }
     }
 
     function updateGridGuides() {
@@ -916,23 +960,43 @@
     }
 
     function updateGridOpacity(val) {
-      AppState.gridOpacity = val / 100;
+      AppState.gridOpacity = Number(val) / 100;
       document.getElementById('gridOpacityVal').innerText = val + '%';
+      
+      const slider = document.getElementById('gridOpacitySlider');
+      if (slider && slider.value != val) {
+        slider.value = val;
+      }
+      
       document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(AppState.currentGridColor, AppState.gridOpacity));
+      saveToLocalStorage();
     }
 
     function updateGuideOpacity(val) {
-      AppState.guideOpacity = val / 100;
+      AppState.guideOpacity = Number(val) / 100;
       document.getElementById('guideOpacityVal').innerText = val + '%';
+      
+      const slider = document.getElementById('guideOpacitySlider');
+      if (slider && slider.value != val) {
+        slider.value = val;
+      }
+      
       updateGridGuides();
+      saveToLocalStorage();
     }
 
     function updateCharYOffset(val) {
       AppState.charYOffset = Number(val);
       const displayVal = (val > 0 ? '+' : '') + val + '%';
       document.getElementById('charYOffsetVal').innerText = displayVal;
+      
+      const slider = document.getElementById('charYOffsetSlider');
+      if (slider && slider.value != val) {
+        slider.value = val;
+      }
+      
       document.documentElement.style.setProperty('--char-y-offset', val + '%');
-      debouncedSave();
+      saveToLocalStorage();
     }
 
     // 설정 JSON 파일 추출
@@ -998,14 +1062,19 @@
         
         updatePageStyleSheet();
         setOrientation(AppState.orientation);
-        setGridColor(AppState.currentGridColor, true);
-        setGuideColor(AppState.currentGuideColor, true);
+        
+        const presetGridColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
+        const presetGuideColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
+        
+        setGridColor(AppState.currentGridColor, !presetGridColors.includes(AppState.currentGridColor), false);
+        setGuideColor(AppState.currentGuideColor, !presetGuideColors.includes(AppState.currentGuideColor), false);
+        
         updateGridOpacity(AppState.gridOpacity * 100);
         updateGuideOpacity(AppState.guideOpacity * 100);
         updateCharYOffset(AppState.charYOffset);
-        document.getElementById('charYOffsetSlider').value = AppState.charYOffset;
 
         saveToLocalStorage();
+        renderPages();
       };
       reader.readAsText(file);
     }
@@ -2008,7 +2077,7 @@
       return wrapper;
     }
 
-    // [리팩터링] 1. renderPages() 전체 조판 엔진 책임 분배 실행계획부
+    // 1. renderPages() 전체 조판 엔진 책임 분배 실행계획부
     function renderPages() {
       const container = document.getElementById('pages-container');
       const currentLayoutSignature = AppState.orientation + "_" + AppState.gridCols + "_" + AppState.hideManuscriptHeader + "_" + AppState.hideCharCount + "_" + AppState.hidePageNumbers + "_" + AppState.excludeFirstPage + "_" + AppState.patternGuide + "_" + AppState.patternEmpty;
@@ -2239,11 +2308,10 @@
       const pageOffset = spec.pageIdx * cellsPerPage;
       const pageCells = cellsData.slice(pageOffset, pageOffset + cellsPerPage);
       
-      // 문자열 결합(map.join)을 통한 GC 유발을 차단하는 32비트 고속 롤링 해시 알고리즘 적용
       const pageContentHash = calculatePageHash(pageCells, spec.currentMode);
       
       if (wrapper.dataset.pageContentState === pageContentHash) {
-        return; // 가상 diff 연산에 의한 CPU 스키핑 실행!
+        return; 
       }
       wrapper.dataset.pageContentState = pageContentHash;
 
@@ -2575,7 +2643,7 @@
           page.style.transformOrigin = 'top center';
           wrapper.style.height = `${pageNaturalHeight * scale}px`;
         });
-        // wrappers.forEach(wrapper => { ... }); 의 끝 지점 아래
+        
         const indicator = document.getElementById('zoom-indicator-text');
         if (indicator) {
           if (AppState.previewZoomMode === 'width') {
@@ -2620,27 +2688,27 @@
     }
 
     function zoomIn() {
+      let currentVal = AppState.previewZoomValue;
       if (AppState.previewZoomMode !== 'manual') {
-        const currentVal = Math.round((AppState.lastComputedScale || 1.0) * 100);
-        const nextVal = Math.floor(currentVal / 10) * 10 + 10;
-        AppState.previewZoomValue = Math.min(200, nextVal);
-        AppState.previewZoomMode = 'manual';
-      } else {
-        AppState.previewZoomValue = Math.min(200, AppState.previewZoomValue + 10);
+        currentVal = Math.round((AppState.lastComputedScale || 1.0) * 100);
       }
+      
+      const nextVal = Math.floor(currentVal / 10) * 10 + 10;
+      AppState.previewZoomValue = Math.min(200, nextVal);
+      AppState.previewZoomMode = 'manual';
       updateZoomModeUI();
       adjustPreviewScale();
     }
 
     function zoomOut() {
+      let currentVal = AppState.previewZoomValue;
       if (AppState.previewZoomMode !== 'manual') {
-        const currentVal = Math.round((AppState.lastComputedScale || 1.0) * 100);
-        const nextVal = Math.ceil(currentVal / 10) * 10 - 10;
-        AppState.previewZoomValue = Math.max(30, nextVal);
-        AppState.previewZoomMode = 'manual';
-      } else {
-        AppState.previewZoomValue = Math.max(30, AppState.previewZoomValue - 10);
+        currentVal = Math.round((AppState.lastComputedScale || 1.0) * 100);
       }
+      
+      const nextVal = Math.ceil(currentVal / 10) * 10 - 10;
+      AppState.previewZoomValue = Math.max(30, nextVal);
+      AppState.previewZoomMode = 'manual';
       updateZoomModeUI();
       adjustPreviewScale();
     }
@@ -2656,24 +2724,19 @@
       const btnPage = document.getElementById('btn-zoom-page');
       if (!btnWidth || !btnPage) return;
 
-      const litClass = "bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer";
-      const unlitClass = "bg-slate-800 text-slate-500 pointer-events-none cursor-default";
+      const activeClass = "bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer";
+      const inactiveClass = "bg-slate-800 text-slate-500 pointer-events-none cursor-default";
       const baseBtnClass = "text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
 
       if (AppState.previewZoomMode === 'width') {
-        // 폭 맞춤 상태이므로, 폭 맞춤 버튼은 불이 꺼지고(동작 불필요), 쪽 맞춤 버튼은 켜짐(실행 가능)
-        btnWidth.className = `${baseBtnClass} ${unlitClass}`;
-        btnPage.className = `${baseBtnClass} ${litClass}`;
-      } 
-      else if (AppState.previewZoomMode === 'page') {
-        // 쪽 맞춤 상태이므로, 폭 맞춤 버튼은 켜지고(실행 가능), 쪽 맞춤 버튼은 불이 꺼짐(동작 불필요)
-        btnWidth.className = `${baseBtnClass} ${litClass}`;
-        btnPage.className = `${baseBtnClass} ${unlitClass}`;
-      } 
-      else {
-        // 수동 조절 상태이므로, 폭 맞춤과 쪽 맞춤 둘 다 실행 가능(둘 다 불 켜짐)
-        btnWidth.className = `${baseBtnClass} ${litClass}`;
-        btnPage.className = `${baseBtnClass} ${litClass}`;
+        btnWidth.className = `${baseBtnClass} ${inactiveClass}`;
+        btnPage.className = `${baseBtnClass} ${activeClass}`;
+      } else if (AppState.previewZoomMode === 'page') {
+        btnWidth.className = `${baseBtnClass} ${activeClass}`;
+        btnPage.className = `${baseBtnClass} ${inactiveClass}`;
+      } else {
+        btnWidth.className = `${baseBtnClass} ${activeClass}`;
+        btnPage.className = `${baseBtnClass} ${activeClass}`;
       }
     }
 
@@ -2786,20 +2849,19 @@
       loadFromLocalStorage();
       applyLoadedDataToUI();
 
-      // 전역 CSS 속성 바인딩
-      document.documentElement.style.setProperty('--grid-color', AppState.currentGridColor);
-      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(AppState.currentGridColor, AppState.gridOpacity));
-      document.documentElement.style.setProperty('--guide-color', hexToRgba(AppState.currentGuideColor, AppState.guideOpacity));
-      document.documentElement.style.setProperty('--guide-display', AppState.hideGridGuides ? 'none' : 'block');
-      document.documentElement.style.setProperty('--char-y-offset', AppState.charYOffset + '%');
+      const presetGridColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
+      const presetGuideColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
 
-      // 개별 슬라이더 수치 복원
-      document.getElementById('gridOpacitySlider').value = AppState.gridOpacity * 100;
-      document.getElementById('gridOpacityVal').innerText = (AppState.gridOpacity * 100) + '%';
-      document.getElementById('guideOpacitySlider').value = AppState.guideOpacity * 100;
-      document.getElementById('guideOpacityVal').innerText = (AppState.guideOpacity * 100) + '%';
-      document.getElementById('charYOffsetSlider').value = AppState.charYOffset;
-      document.getElementById('charYOffsetVal').innerText = (AppState.charYOffset > 0 ? '+' : '') + AppState.charYOffset + '%';
+      // 전역 CSS 속성 바인딩, 버튼 체크 표시 활성화 및 커스텀 원형 동적 매핑
+      setGridColor(AppState.currentGridColor, !presetGridColors.includes(AppState.currentGridColor), false);
+      setGuideColor(AppState.currentGuideColor, !presetGuideColors.includes(AppState.currentGuideColor), false);
+
+      document.documentElement.style.setProperty('--guide-display', AppState.hideGridGuides ? 'none' : 'block');
+
+      // 개별 슬라이더 수치 복원 및 DOM 슬라이더 일치 작업
+      updateGridOpacity(AppState.gridOpacity * 100);
+      updateGuideOpacity(AppState.guideOpacity * 100);
+      updateCharYOffset(AppState.charYOffset);
 
       updatePageStyleSheet();
       renderPages();
