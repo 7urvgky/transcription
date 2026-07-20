@@ -345,15 +345,15 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <header class="bg-slate-900 text-white shadow-md no-print py-4 px-6 flex justify-between items-center z-10 shrink-0">
+  <header class="bg-slate-900 text-white shadow-md no-print py-2.5 px-6 flex justify-between items-center z-10 shrink-0">
     <div class="flex items-center space-x-3">
-      <div class="bg-emerald-600 p-2 rounded-lg">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-emerald-600 p-1.5 rounded-lg">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
         </svg>
       </div>
       <div>
-        <h1 class="text-lg font-bold tracking-tight">필사 용지 만들기</h1>
+        <h1 class="text-lg font-medium tracking-tight">필사 용지 만들기</h1>
       </div>
     </div>
   </header>
@@ -587,7 +587,12 @@
             </label>
           </div>
         </div>
-        <button onclick="triggerResetConfirm()" class="w-full mt-2 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
+
+        <!-- 자동저장 표시 안내 문구 (기본적으로 숨김 상태로 렌더링) -->
+        <div id="auto-save-time" class="text-center text-[11px] text-slate-400 mt-0 mb-0.5 hidden">
+          자동저장 되었습니다.
+        </div>
+        <button onclick="triggerResetConfirm()" class="w-full mt-0 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
           설정 초기화
         </button>
 
@@ -698,7 +703,10 @@
       hideGridGuides: false,
       patternGuide: true,
       patternEmpty: true,
-      charYOffset: 0
+      charYOffset: 0,
+      
+      // 자동저장 최종 타임스탬프 필드
+      lastSavedTime: null
     };
 
     // 하단 기본 라벨 상수
@@ -734,9 +742,32 @@
       };
     }
 
-    // 로컬 스토리지 상태 보존
+    // 현재 날짜 시간을 한국어 날짜/시간 포맷으로 변환
+    function getFormattedCurrentTime() {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+    }
+
+    // 로컬 스토리지 상태 보존 및 자동저장 라벨 갱신
     function saveToLocalStorage() {
+      AppState.lastSavedTime = getFormattedCurrentTime();
       localStorage.setItem('manuscriptPaperData', JSON.stringify(AppState));
+      updateAutoSaveLabel();
+    }
+
+    // 자동저장 타임스탬프 라벨 UI 출력 동기화 함수
+    function updateAutoSaveLabel() {
+      const label = document.getElementById('auto-save-time');
+      if (label && AppState.lastSavedTime) {
+        label.textContent = `${AppState.lastSavedTime}에 자동저장 되었습니다.`;
+        label.classList.remove('hidden');
+      }
     }
 
     // 로컬 스토리지 안전 수신 및 수화(Hydration)
@@ -755,7 +786,7 @@
       }
     }
 
-    // Hydrated 상태를 UI 뷰에 정적 매핑
+    // Hydrated 상태를 UI 뷰에 정적 매핑 (초기 로딩 시 자동저장 라벨 갱신을 생략하여 숨김 보존)
     function applyLoadedDataToUI() {
       document.getElementById('source-text').value = AppState.sourceText;
       document.getElementById('input-title').value = AppState.articleTitle;
@@ -865,7 +896,7 @@
       saveToLocalStorage();
       renderPages();
     });
-    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; AppState.hideManuscriptHeader = e.target.checked; saveToLocalStorage(); renderPages(); });
     document.getElementById('hide-char-count').addEventListener('change', (e) => { AppState.hideCharCount = e.target.checked; saveToLocalStorage(); renderPages(); });
     document.getElementById('hide-page-numbers').addEventListener('change', (e) => { AppState.hidePageNumbers = e.target.checked; saveToLocalStorage(); renderPages(); });
     document.getElementById('hide-grid-guides').addEventListener('change', (e) => {
@@ -904,7 +935,6 @@
         document.getElementById('grid-color-picker').value = val;
       }
 
-      // '다른 색' 원형 디자인 동적 커스텀 매핑
       const customBtnSpan = document.querySelector('button[onclick*="grid-color-picker.click()"] span');
       if (customBtnSpan) {
         if (isCustom) {
@@ -937,7 +967,6 @@
         document.getElementById('guide-color-picker').value = val;
       }
 
-      // '다른 색' 원형 디자인 동적 커스텀 매핑
       const customBtnSpan = document.querySelector('button[onclick*="guide-color-picker.click()"] span');
       if (customBtnSpan) {
         if (isCustom) {
@@ -1378,7 +1407,7 @@
       const isPunctuation = (c) => /[.,!?'"ным“('_~);:]/.test(c) || /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
       
       const isPeriodOrComma = (c) => c === '.' || c === ',';
-      const isQuote = (c) => /[“‘”’"']/.test(c);
+      const isQuote = (c) => /[법“‘”’"']/.test(c);
       const isSymbol = (c) => /[!?！？]/.test(c); 
 
       const paragraphs = text.split('\n');
@@ -2236,10 +2265,25 @@
 
     // 5. [책임 분리] 원문 읽기 전용 렌더러
     function renderSourcePageContent(wrapper, spec) {
-      let nextState = spec.pageData.fontSize + "_" + calculateSourcePageHash(spec.pageData.segments);
+      let nextState = spec.pageData.fontSize + "_" + calculateSourcePageHash(spec.pageData.segments) + "_" + spec.totalSourcePages;
       if (wrapper.dataset.stateKey !== nextState) {
         const pInnerContent = wrapper.querySelector('.p-inner-content');
         pInnerContent.innerHTML = "";
+        
+        // 전체 페이지 수에 따른 테두리 선 상태 동적 업데이트
+        const frameDiv = pInnerContent.parentElement;
+        if (frameDiv) {
+          let borderClasses = "border-2 border-solid custom-grid-border bg-white flex flex-col justify-stretch p-6 w-full h-auto";
+          if (spec.totalSourcePages > 1) {
+            if (spec.sIdx === 0) borderClasses += " border-b-0 rounded-t-xl rounded-b-none";
+            else if (spec.sIdx === spec.totalSourcePages - 1) borderClasses += " border-t-0 rounded-b-xl rounded-t-none";
+            else borderClasses += " border-t-0 border-b-0 rounded-none";
+          } else {
+            borderClasses += " rounded-xl";
+          }
+          frameDiv.className = borderClasses;
+        }
+
         const htmlParagraphs = [];
         let currentParaText = "";
         let isContinuedPara = false;
@@ -2848,6 +2892,12 @@
     function initApp() {
       loadFromLocalStorage();
       applyLoadedDataToUI();
+
+      // 초기 기동 시점에는 자동저장 문구를 무조건 숨김 처리
+      const label = document.getElementById('auto-save-time');
+      if (label) {
+        label.classList.add('hidden');
+      }
 
       const presetGridColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
       const presetGuideColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
