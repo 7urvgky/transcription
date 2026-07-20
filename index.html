@@ -7,7 +7,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Noto Sans/Serif JP & KR -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght=300;400;500;700&family=Noto+Sans+KR:wght=300;400;500;700&family=Noto+Serif+JP:wght=400;500;700&family=Noto+Serif+KR:wght=400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
@@ -300,12 +300,52 @@
         margin-bottom: 0 !important;
       }
     }
+
+    /* 데스크톱 vs 모바일 최적 레이아웃 분기 처리 */
+    @media screen and (min-width: 1024px) {
+      html, body {
+        height: 100vh !important;
+        overflow: hidden !important;
+      }
+      #main-layout-container {
+        height: calc(100vh - 72px) !important;
+        overflow: hidden !important;
+      }
+      aside {
+        height: calc(100vh - 72px) !important;
+        overflow-y: auto !important;
+      }
+      main {
+        height: calc(100vh - 72px) !important;
+        overflow: auto !important;
+        touch-action: pan-y;
+      }
+    }
+
+    @media screen and (max-width: 1023px) {
+      html, body {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      #main-layout-container {
+        height: auto !important;
+        overflow: visible !important;
+      }
+      aside {
+        height: auto !important;
+        overflow-y: visible !important;
+      }
+      main {
+        height: auto !important;
+        overflow-y: visible !important;
+        touch-action: pan-y;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- Slim Header (슬림하게 py-2.5 설정, 스크롤에 따라 상단으로 자연스레 밀려서 사라짐) -->
-  <header class="bg-slate-900 text-white shadow-md no-print py-2.5 px-6 flex justify-between items-center z-10 shrink-0">
+  <header class="bg-slate-900 text-white shadow-md no-print py-4 px-6 flex justify-between items-center z-10 shrink-0">
     <div class="flex items-center space-x-3">
       <div class="bg-emerald-600 p-2 rounded-lg">
         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -318,11 +358,11 @@
     </div>
   </header>
 
-  <!-- 메인 작업 분할 영역 (브라우저 자연 스크롤을 유지하며 데스크톱 고정 sticky 적용) -->
+  <!-- 메인 작업 분할 영역 -->
   <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
     
-    <!-- 왼쪽 사이드바 (데스크톱에서 sticky 고정되어 따라다님, 브라우저 스크롤시 상단에 고정) -->
-    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:sticky lg:top-0 lg:h-screen flex flex-col">
+    <!-- 왼쪽 사이드바 -->
+    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 flex flex-col">
       
       <!-- 인쇄 및 PDF 저장 버튼 패널 -->
       <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
@@ -547,20 +587,15 @@
             </label>
           </div>
         </div>
-
-        <!-- 자동저장 표시 안내 문구 -->
-        <div id="auto-save-time" class="text-center text-[11px] text-slate-400 mt-0 mb-0.5 hidden">
-          자동저장 되었습니다.
-        </div>
-        <button onclick="triggerResetConfirm()" class="w-full mt-0 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
+        <button onclick="triggerResetConfirm()" class="w-full mt-2 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
           설정 초기화
         </button>
 
       </div>
     </aside>
 
-    <!-- 미리보기 프레임 처리 구역 (전체 화면 스크롤과의 동기화를 위해 fixed 높이 지정 없음) -->
-    <main class="flex-1 bg-slate-100 p-4 md:p-8 flex flex-col items-center relative overflow-visible">
+    <!-- 미리보기 프레임 처리 구역 -->
+    <main class="flex-1 bg-slate-100 p-4 md:p-8 flex flex-col items-center relative">
       <div id="print-area-wrapper" class="w-full flex flex-col items-center">
         <!-- 동적으로 페이지들이 얹어질 프리뷰 컨테이너 -->
         <div id="pages-container" class="flex flex-col items-center"></div>
@@ -663,10 +698,7 @@
       hideGridGuides: false,
       patternGuide: true,
       patternEmpty: true,
-      charYOffset: 0,
-      
-      // 자동저장 최종 타임스탬프 필드
-      lastSavedTime: null
+      charYOffset: 0
     };
 
     // 하단 기본 라벨 상수
@@ -702,32 +734,9 @@
       };
     }
 
-    // 현재 날짜 시간을 한국어 날짜/시간 포맷으로 변환
-    function getFormattedCurrentTime() {
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const hh = String(now.getHours()).padStart(2, '0');
-      const min = String(now.getMinutes()).padStart(2, '0');
-      const ss = String(now.getSeconds()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
-    }
-
-    // 로컬 스토리지 상태 보존 및 자동저장 라벨 갱신
+    // 로컬 스토리지 상태 보존
     function saveToLocalStorage() {
-      AppState.lastSavedTime = getFormattedCurrentTime();
       localStorage.setItem('manuscriptPaperData', JSON.stringify(AppState));
-      updateAutoSaveLabel();
-    }
-
-    // 자동저장 타임스탬프 라벨 UI 출력 동기화 함수
-    function updateAutoSaveLabel() {
-      const label = document.getElementById('auto-save-time');
-      if (label && AppState.lastSavedTime) {
-        label.textContent = `${AppState.lastSavedTime}에 자동저장 되었습니다.`;
-        label.classList.remove('hidden');
-      }
     }
 
     // 로컬 스토리지 안전 수신 및 수화(Hydration)
@@ -746,7 +755,7 @@
       }
     }
 
-    // Hydrated 상태를 UI 뷰에 정적 매핑 (초기 로딩 시 자동저장 라벨 갱신을 생략하여 숨김 보존)
+    // Hydrated 상태를 UI 뷰에 정적 매핑
     function applyLoadedDataToUI() {
       document.getElementById('source-text').value = AppState.sourceText;
       document.getElementById('input-title').value = AppState.articleTitle;
@@ -895,6 +904,7 @@
         document.getElementById('grid-color-picker').value = val;
       }
 
+      // '다른 색' 원형 디자인 동적 커스텀 매핑
       const customBtnSpan = document.querySelector('button[onclick*="grid-color-picker.click()"] span');
       if (customBtnSpan) {
         if (isCustom) {
@@ -927,6 +937,7 @@
         document.getElementById('guide-color-picker').value = val;
       }
 
+      // '다른 색' 원형 디자인 동적 커스텀 매핑
       const customBtnSpan = document.querySelector('button[onclick*="guide-color-picker.click()"] span');
       if (customBtnSpan) {
         if (isCustom) {
@@ -1240,7 +1251,7 @@
       }
     });
 
-    // 실시간 지면 편집 내용 싱크
+    // 지면 실시간 편집 내용 싱크
     document.addEventListener('input', (e) => {
       const target = e.target;
       if (!target.hasAttribute('contenteditable')) return;
@@ -1352,7 +1363,7 @@
       }
     }, true);
 
-    // parseTextToManuscriptCells 결과 캐싱 레이어 탑재
+    // [성능 향상] parseTextToManuscriptCells 결과 캐싱 레이어 탑재
     let cachedParsedCells = null;
     let lastParsedText = "";
     let lastParsedCols = null;
@@ -1367,7 +1378,7 @@
       const isPunctuation = (c) => /[.,!?'"ным“('_~);:]/.test(c) || /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
       
       const isPeriodOrComma = (c) => c === '.' || c === ',';
-      const isQuote = (c) => /[법“‘”’"']/.test(c);
+      const isQuote = (c) => /[“‘”’"']/.test(c);
       const isSymbol = (c) => /[!?！？]/.test(c); 
 
       const paragraphs = text.split('\n');
@@ -2117,15 +2128,13 @@
       const cellsPerPage = isLineNote ? optRows : (parseInt(AppState.gridCols) * optRows);
       
       let totalGridPages = 1;
-      let linesData = [];
-      let cellsData = [];
       if (isLineNote) {
         const maxNonSpace = (AppState.orientation === 'portrait') ? 25 : 33;
-        linesData = splitTextForLineNote(AppState.sourceText, maxNonSpace);
+        const linesData = splitTextForLineNote(AppState.sourceText, maxNonSpace);
         totalGridPages = Math.ceil(linesData.length / optRows) || 1;
       } else {
         const colsNum = parseInt(AppState.gridCols);
-        cellsData = parseTextToManuscriptCells(AppState.sourceText, colsNum);
+        const cellsData = parseTextToManuscriptCells(AppState.sourceText, colsNum);
         totalGridPages = Math.ceil(cellsData.length / cellsPerPage) || 1;
       }
 
@@ -2227,25 +2236,10 @@
 
     // 5. [책임 분리] 원문 읽기 전용 렌더러
     function renderSourcePageContent(wrapper, spec) {
-      let nextState = spec.pageData.fontSize + "_" + calculateSourcePageHash(spec.pageData.segments) + "_" + spec.totalSourcePages;
+      let nextState = spec.pageData.fontSize + "_" + calculateSourcePageHash(spec.pageData.segments);
       if (wrapper.dataset.stateKey !== nextState) {
         const pInnerContent = wrapper.querySelector('.p-inner-content');
         pInnerContent.innerHTML = "";
-        
-        // 전체 페이지 수에 따른 테두리 선 상태 동적 업데이트
-        const frameDiv = pInnerContent.parentElement;
-        if (frameDiv) {
-          let borderClasses = "border-2 border-solid custom-grid-border bg-white flex flex-col justify-stretch p-6 w-full h-auto";
-          if (spec.totalSourcePages > 1) {
-            if (spec.sIdx === 0) borderClasses += " border-b-0 rounded-t-xl rounded-b-none";
-            else if (spec.sIdx === spec.totalSourcePages - 1) borderClasses += " border-t-0 rounded-b-xl rounded-t-none";
-            else borderClasses += " border-t-0 border-b-0 rounded-none";
-          } else {
-            borderClasses += " rounded-xl";
-          }
-          frameDiv.className = borderClasses;
-        }
-
         const htmlParagraphs = [];
         let currentParaText = "";
         let isContinuedPara = false;
@@ -2309,7 +2303,7 @@
       return hash;
     }
 
-    // 6. 비할당형 롤링 해시 기반 원고지 렌더러
+    // [성능 극대화] 6. 비할당형 롤링 해시 기반 원고지 렌더러
     function renderGridPageContent(wrapper, spec, cellsData, cellsPerPage) {
       const pageOffset = spec.pageIdx * cellsPerPage;
       const pageCells = cellsData.slice(pageOffset, pageOffset + cellsPerPage);
@@ -2325,6 +2319,7 @@
       const colsNum = parseInt(AppState.gridCols);
 
       for (let c = 0; c < cellsPerPage; c++) {
+        const cellIdx = pageOffset + c;
         const cellData = pageCells[c] || { char: "" };
         const cell = cells[c];
         if (!cell) continue;
@@ -2538,7 +2533,7 @@
       }
     }
 
-    // IntersectionObserver를 통한 쪽 감지 스캐너 (Viewport 전체 스크롤을 감지하기 위해 root: null 설정)
+    // IntersectionObserver를 통한 쪽 감지 스캐너
     let pageObserver = null;
     function setupIntersectionObserver() {
       if (pageObserver) {
@@ -2546,7 +2541,7 @@
       }
       
       const options = {
-        root: null, // Viewport is now the scroll root to allow window-level scroll tracking
+        root: document.querySelector('main'),
         threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
       };
       
@@ -2610,11 +2605,11 @@
         const mainArea = document.querySelector('main');
         if (!mainArea) return;
         
-        // 폭 맞춤과 쪽 맞춤을 독립적이고 완벽한 스케일링으로 구현
         const availableWidth = mainArea.offsetWidth - 48; 
-        
-        // window.innerHeight를 기반으로 가변적인 헤더 스크롤 한계선을 물리 계산하여 쪽 맞춤(fit-to-page)을 완벽 구현
-        const availableHeight = window.innerHeight - 96; 
+        const isNarrowLayout = window.innerWidth < 1024;
+        const availableHeight = isNarrowLayout 
+          ? (window.innerHeight - 80) 
+          : (mainArea.offsetHeight - 48);
         
         if (cachedPageWidth === 0 || cachedPageHeight === 0) {
           cachePageDimensions();
@@ -2853,12 +2848,6 @@
     function initApp() {
       loadFromLocalStorage();
       applyLoadedDataToUI();
-
-      // 초기 기동 시점에는 자동저장 문구를 무조건 숨김 처리
-      const label = document.getElementById('auto-save-time');
-      if (label) {
-        label.classList.add('hidden');
-      }
 
       const presetGridColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
       const presetGuideColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
