@@ -300,52 +300,12 @@
         margin-bottom: 0 !important;
       }
     }
-
-    /* 데스크톱 vs 모바일 최적 레이아웃 분기 처리 */
-    @media screen and (min-width: 1024px) {
-      html, body {
-        height: 100vh !important;
-        overflow: hidden !important;
-      }
-      #main-layout-container {
-        height: calc(100vh - 72px) !important;
-        overflow: hidden !important;
-      }
-      aside {
-        height: calc(100vh - 72px) !important;
-        overflow-y: auto !important;
-      }
-      main {
-        height: calc(100vh - 72px) !important;
-        overflow: auto !important;
-        touch-action: pan-y;
-      }
-    }
-
-    @media screen and (max-width: 1023px) {
-      html, body {
-        height: auto !important;
-        overflow: auto !important;
-      }
-      #main-layout-container {
-        height: auto !important;
-        overflow: visible !important;
-      }
-      aside {
-        height: auto !important;
-        overflow-y: visible !important;
-      }
-      main {
-        height: auto !important;
-        overflow-y: visible !important;
-        touch-action: pan-y;
-      }
-    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <header class="bg-slate-900 text-white shadow-md no-print py-4 px-6 flex justify-between items-center z-10 shrink-0">
+  <!-- Slim Header (슬림하게 py-2.5 설정, 스크롤에 따라 상단으로 자연스레 밀려서 사라짐) -->
+  <header class="bg-slate-900 text-white shadow-md no-print py-2.5 px-6 flex justify-between items-center z-10 shrink-0">
     <div class="flex items-center space-x-3">
       <div class="bg-emerald-600 p-2 rounded-lg">
         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,8 +321,8 @@
   <!-- 메인 작업 분할 영역 -->
   <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
     
-    <!-- 왼쪽 사이드바 -->
-    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 flex flex-col">
+    <!-- 왼쪽 사이드바 (데스크톱에서 sticky 고정되어 따라다님) -->
+    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:sticky lg:top-0 lg:h-[calc(100vh-56px)] flex flex-col">
       
       <!-- 인쇄 및 PDF 저장 버튼 패널 -->
       <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
@@ -599,8 +559,8 @@
       </div>
     </aside>
 
-    <!-- 미리보기 프레임 처리 구역 -->
-    <main class="flex-1 bg-slate-100 p-4 md:p-8 flex flex-col items-center relative">
+    <!-- 미리보기 프레임 처리 구역 (전체 화면 스크롤과의 동기화를 위해 fixed 높이 지정 없음) -->
+    <main class="flex-1 bg-slate-100 p-4 md:p-8 flex flex-col items-center relative overflow-visible">
       <div id="print-area-wrapper" class="w-full flex flex-col items-center">
         <!-- 동적으로 페이지들이 얹어질 프리뷰 컨테이너 -->
         <div id="pages-container" class="flex flex-col items-center"></div>
@@ -896,7 +856,7 @@
       saveToLocalStorage();
       renderPages();
     });
-    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; AppState.hideManuscriptHeader = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; saveToLocalStorage(); renderPages(); });
     document.getElementById('hide-char-count').addEventListener('change', (e) => { AppState.hideCharCount = e.target.checked; saveToLocalStorage(); renderPages(); });
     document.getElementById('hide-page-numbers').addEventListener('change', (e) => { AppState.hidePageNumbers = e.target.checked; saveToLocalStorage(); renderPages(); });
     document.getElementById('hide-grid-guides').addEventListener('change', (e) => {
@@ -1280,7 +1240,7 @@
       }
     });
 
-    // 지면 실시간 편집 내용 싱크
+    // 실시간 지면 편집 내용 싱크
     document.addEventListener('input', (e) => {
       const target = e.target;
       if (!target.hasAttribute('contenteditable')) return;
@@ -1392,7 +1352,7 @@
       }
     }, true);
 
-    // [성능 향상] parseTextToManuscriptCells 결과 캐싱 레이어 탑재
+    // [성공적인 캐시 구현] parseTextToManuscriptCells 결과 캐싱 레이어 탑재
     let cachedParsedCells = null;
     let lastParsedText = "";
     let lastParsedCols = null;
@@ -2157,13 +2117,15 @@
       const cellsPerPage = isLineNote ? optRows : (parseInt(AppState.gridCols) * optRows);
       
       let totalGridPages = 1;
+      let linesData = [];
+      let cellsData = [];
       if (isLineNote) {
         const maxNonSpace = (AppState.orientation === 'portrait') ? 25 : 33;
-        const linesData = splitTextForLineNote(AppState.sourceText, maxNonSpace);
+        linesData = splitTextForLineNote(AppState.sourceText, maxNonSpace);
         totalGridPages = Math.ceil(linesData.length / optRows) || 1;
       } else {
         const colsNum = parseInt(AppState.gridCols);
-        const cellsData = parseTextToManuscriptCells(AppState.sourceText, colsNum);
+        cellsData = parseTextToManuscriptCells(AppState.sourceText, colsNum);
         totalGridPages = Math.ceil(cellsData.length / cellsPerPage) || 1;
       }
 
@@ -2363,7 +2325,6 @@
       const colsNum = parseInt(AppState.gridCols);
 
       for (let c = 0; c < cellsPerPage; c++) {
-        const cellIdx = pageOffset + c;
         const cellData = pageCells[c] || { char: "" };
         const cell = cells[c];
         if (!cell) continue;
@@ -2577,7 +2538,7 @@
       }
     }
 
-    // IntersectionObserver를 통한 쪽 감지 스캐너
+    // IntersectionObserver를 통한 쪽 감지 스캐너 (Viewport 전체 스크롤을 감지하기 위해 root: null 설정)
     let pageObserver = null;
     function setupIntersectionObserver() {
       if (pageObserver) {
@@ -2585,7 +2546,7 @@
       }
       
       const options = {
-        root: document.querySelector('main'),
+        root: null, // Viewport is now the scroll root to allow window-level scroll tracking
         threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
       };
       
