@@ -7,7 +7,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Noto Sans/Serif JP & KR -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght=300;400;500;700&family=Noto+Sans+KR:wght=300;400;500;700&family=Noto+Serif+JP:wght=400;500;700&family=Noto+Serif+KR:wght=400;500;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
@@ -318,11 +318,11 @@
     </div>
   </header>
 
-  <!-- 메인 작업 분할 영역 -->
+  <!-- 메인 작업 분할 영역 (브라우저 자연 스크롤을 유지하며 데스크톱 고정 sticky 적용) -->
   <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
     
-    <!-- 왼쪽 사이드바 (데스크톱에서 sticky 고정되어 따라다님) -->
-    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:sticky lg:top-0 lg:h-[calc(100vh-56px)] flex flex-col">
+    <!-- 왼쪽 사이드바 (데스크톱에서 sticky 고정되어 따라다님, 브라우저 스크롤시 상단에 고정) -->
+    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 lg:sticky lg:top-0 lg:h-screen flex flex-col">
       
       <!-- 인쇄 및 PDF 저장 버튼 패널 -->
       <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
@@ -548,7 +548,7 @@
           </div>
         </div>
 
-        <!-- 자동저장 표시 안내 문구 (기본적으로 숨김 상태로 렌더링) -->
+        <!-- 자동저장 표시 안내 문구 -->
         <div id="auto-save-time" class="text-center text-[11px] text-slate-400 mt-0 mb-0.5 hidden">
           자동저장 되었습니다.
         </div>
@@ -1352,7 +1352,7 @@
       }
     }, true);
 
-    // [성공적인 캐시 구현] parseTextToManuscriptCells 결과 캐싱 레이어 탑재
+    // parseTextToManuscriptCells 결과 캐싱 레이어 탑재
     let cachedParsedCells = null;
     let lastParsedText = "";
     let lastParsedCols = null;
@@ -2309,7 +2309,7 @@
       return hash;
     }
 
-    // [성능 극대화] 6. 비할당형 롤링 해시 기반 원고지 렌더러
+    // 6. 비할당형 롤링 해시 기반 원고지 렌더러
     function renderGridPageContent(wrapper, spec, cellsData, cellsPerPage) {
       const pageOffset = spec.pageIdx * cellsPerPage;
       const pageCells = cellsData.slice(pageOffset, pageOffset + cellsPerPage);
@@ -2610,11 +2610,11 @@
         const mainArea = document.querySelector('main');
         if (!mainArea) return;
         
+        // 폭 맞춤과 쪽 맞춤을 독립적이고 완벽한 스케일링으로 구현
         const availableWidth = mainArea.offsetWidth - 48; 
-        const isNarrowLayout = window.innerWidth < 1024;
-        const availableHeight = isNarrowLayout 
-          ? (window.innerHeight - 80) 
-          : (mainArea.offsetHeight - 48);
+        
+        // window.innerHeight를 기반으로 가변적인 헤더 스크롤 한계선을 물리 계산하여 쪽 맞춤(fit-to-page)을 완벽 구현
+        const availableHeight = window.innerHeight - 96; 
         
         if (cachedPageWidth === 0 || cachedPageHeight === 0) {
           cachePageDimensions();
