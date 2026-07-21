@@ -587,7 +587,9 @@
             </label>
           </div>
         </div>
-        <button onclick="triggerResetConfirm()" class="w-full mt-2 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
+        <!-- 자동저장 시각 표시 구역 (설정 초기화 버튼 바로 위 회색 작은 글씨) -->
+        <div id="auto-save-status" class="text-center text-[11px] text-slate-400 mt-1 mb-0 min-h-[16px] font-medium"></div>
+        <button onclick="triggerResetConfirm()" class="w-full mt-1 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
           설정 초기화
         </button>
 
@@ -698,7 +700,10 @@
       hideGridGuides: false,
       patternGuide: true,
       patternEmpty: true,
-      charYOffset: 0
+      charYOffset: 0,
+ 
+      // 자동저장 시각 타임스탬프
+      lastSavedTime: null
     };
 
     // 하단 기본 라벨 상수
@@ -734,11 +739,37 @@
       };
     }
 
-    // 로컬 스토리지 상태 보존
-    function saveToLocalStorage() {
-      localStorage.setItem('manuscriptPaperData', JSON.stringify(AppState));
+    // 자동저장 시각 UI 업데이트
+    function updateAutoSaveStatus() {
+      const el = document.getElementById('auto-save-status');
+      if (!el) return;
+      if (!AppState.lastSavedTime) {
+        el.textContent = '';
+        return;
+      }
+      const d = new Date(AppState.lastSavedTime);
+      if (isNaN(d.getTime())) {
+        el.textContent = '';
+        return;
+      }
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const date = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const seconds = String(d.getSeconds()).padStart(2, '0');
+      
+      el.style.whiteSpace = 'pre-line';
+      el.textContent = `${year}. ${month}. ${date}. ${hours}:${minutes}:${seconds}에 로컬에 자동 저장 되었습니다.\n` + `(인터넷에는 어떠한 데이터도 업로드되지 않습니다)`;
     }
 
+    // 로컬 스토리지 상태 보존
+    function saveToLocalStorage() {
+      AppState.lastSavedTime = new Date().toISOString();
+      localStorage.setItem('manuscriptPaperData', JSON.stringify(AppState));
+      updateAutoSaveStatus();
+    }
+    
     // 로컬 스토리지 안전 수신 및 수화(Hydration)
     function loadFromLocalStorage() {
       const saved = localStorage.getItem('manuscriptPaperData');
@@ -772,6 +803,7 @@
       document.getElementById('exclude-first-page').checked = !AppState.excludeFirstPage;
       document.getElementById('char-counter').textContent = `${AppState.sourceText.length}자 입력됨`;
       document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
+      updateAutoSaveStatus();
     }
 
     function showCustomAlert(title, message) {
