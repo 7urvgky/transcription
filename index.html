@@ -587,7 +587,7 @@
             </label>
           </div>
         </div>
-        <!-- 자동저장 시각 표시 구역 (설정 초기화 버튼 바로 위 회색 작은 글씨) -->
+        <!-- 임시 저장 시각 표시 구역 (설정 초기화 버튼 바로 위 회색 작은 글씨) -->
         <div id="auto-save-status" class="text-center text-[11px] text-slate-400 mt-1 mb-0 min-h-[16px] font-medium"></div>
         <button onclick="triggerResetConfirm()" class="w-full mt-1 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
           설정 초기화
@@ -702,7 +702,7 @@
       patternEmpty: true,
       charYOffset: 0,
  
-      // 자동저장 시각 타임스탬프
+      // 임시 저장 시각 타임스탬프
       lastSavedTime: null
     };
 
@@ -739,7 +739,7 @@
       };
     }
 
-    // 자동저장 시각 UI 업데이트
+    // 임시 저장 시각 UI 업데이트
     function updateAutoSaveStatus() {
       const el = document.getElementById('auto-save-status');
       if (!el) return;
@@ -760,7 +760,7 @@
       const seconds = String(d.getSeconds()).padStart(2, '0');
       
       el.style.whiteSpace = 'pre-line';
-      el.textContent = `${year}. ${month}. ${date}. ${hours}:${minutes}:${seconds}에 로컬에 자동 저장 되었습니다.\n` + `(인터넷에는 어떠한 데이터도 업로드되지 않습니다)`;
+      el.textContent = `${year}. ${month}. ${date}. ${hours}:${minutes}:${seconds}에 로컬에 임시 저장 되었습니다.\n` + `(인터넷에는 어떠한 데이터도 업로드되지 않습니다)`;
     }
 
     // 로컬 스토리지 상태 보존
