@@ -587,10 +587,10 @@
             </label>
           </div>
         </div>
-        <!-- 임시 저장 시각 표시 구역 (설정 초기화 버튼 바로 위 회색 작은 글씨) -->
+        <!-- 임시 저장 시각 표시 구역 (임시 저장 데이터 초기화 버튼 바로 위 회색 작은 글씨) -->
         <div id="auto-save-status" class="text-center text-[11px] text-slate-400 mt-1 mb-0 min-h-[16px] font-medium"></div>
         <button onclick="triggerResetConfirm()" class="w-full mt-1 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
-          설정 초기화
+          임시 저장 데이터 초기화
         </button>
 
       </div>
@@ -837,7 +837,7 @@
 
     function triggerResetConfirm() {
       showCustomConfirm(
-        '설정 초기화',
+        '임시 저장 데이터 초기화',
         '입력된 내용과 설정을 완전히 초기화하고 처음으로 되돌릴까요?',
         function() {
           localStorage.removeItem('manuscriptPaperData');
