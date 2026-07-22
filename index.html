@@ -2241,18 +2241,28 @@
         const spec = pageSpecs[i];
         const wrapper = wrappers[i];
 
+        const sourceFrameState =
+          spec.type === 'source'
+          ? `${spec.sIdx}_${spec.totalSourcePages}`
+          : 'normal';
+
         // 레이아웃 비틀림 감지 시 해당 단일 지면만 뼈대 복원
-        if (wrapper.dataset.pageType !== spec.type || 
-            wrapper.dataset.pageMode !== (spec.currentMode || 'none') || 
-            wrapper.dataset.layoutSignature !== currentLayoutSignature) {
+        if (
+    wrapper.dataset.pageType !== spec.type ||
+    wrapper.dataset.pageMode !== (spec.currentMode || 'none') ||
+    wrapper.dataset.layoutSignature !== currentLayoutSignature ||
+    wrapper.dataset.sourceFrameState !== sourceFrameState
+) {
           
           const rebuiltWrapper = buildSkeletonPage(spec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage);
           wrapper.innerHTML = rebuiltWrapper.innerHTML;
-          wrapper.dataset.pageType = spec.type;
-          wrapper.dataset.pageMode = spec.currentMode || 'none';
-          wrapper.dataset.layoutSignature = currentLayoutSignature;
+wrapper.dataset.pageType = spec.type;
+wrapper.dataset.pageMode = spec.currentMode || 'none';
+wrapper.dataset.layoutSignature = currentLayoutSignature;
+wrapper.dataset.sourceFrameState = sourceFrameState;
           delete wrapper.dataset.stateKey; 
           delete wrapper.dataset.pageContentState; 
+          delete wrapper.dataset.sourceFrameState;
         }
 
         // 각 서브 전용 렌더러에게 세부 그리기 작업 양도
