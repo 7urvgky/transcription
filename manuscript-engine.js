@@ -1,6 +1,6 @@
 'use strict';
 
-    // [성능 향상] parseTextToManuscriptCells 결과 캐싱 레이어 탑재
+    // 원고지 엔진 분리
 const ManuscriptEngine = {};
 
 ManuscriptEngine.cachedParsedCells = null;
