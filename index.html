@@ -2408,83 +2408,154 @@ wrapper.dataset.sourceFrameState = sourceFrameState;
       return mode + "_" + hash;
     }
 
-    function drawCellContent(cell, cellData, nextState, colsNum) {
+    /**
+ * 원고지 한 칸(cell)에 들어갈 내용을 렌더링하는 함수.
+ *
+ * - 일반 문자: <span>으로 렌더링
+ * - 특수 문장부호 조합: SVG로 렌더링 (문자+부호를 한 칸에 배치)
+ *
+ * @param {HTMLElement} cell - 실제 DOM 셀 요소
+ * @param {Object} cellData - { char, squeezedPunct, isSqueezed, ... } 등 문자 정보
+ * @param {String} nextState - 상태 문자열, "_S_" 포함 시 특수 렌더링
+ * @param {Number} colsNum - 전체 칸 수 (가로 칸 수)
+ */
+function drawCellContent(cell, cellData, nextState, colsNum) {
 
-  // ==========================================
-  // 글자 크기 설정
-  // ==========================================
-  const SINGLE_CHAR_SIZE = 62; // 한 칸에 1글자
-  const DOUBLE_CHAR_SIZE = 62; // 한 칸에 2글자
-  const TRIPLE_CHAR_SIZE = 62; // 한 칸에 3글자 이상
-  // ==========================================
+  // ============================================================
+  // 글자 크기 설정: SVG 내부에서 사용하는 font-size 값
+  // ============================================================
+  const SINGLE_CHAR_SIZE = 62; //한 칸에 1글자 들어갈 때
+  const DOUBLE_CHAR_SIZE = 62; //한 칸에 2글자(문자+부호) 들어갈 때
+  const TRIPLE_CHAR_SIZE = 62; //한 칸에 3개 이상 부호가 들어갈 때
 
+  // ============================================================
+  // 특수 문장부호 렌더링 여부 판단
+  //
+  // nextState 문자열에 "_S_"가 포함되어 있으면
+  // 이 칸은 일반 문자 렌더링이 아니라
+  // SVG 기반의 "문자 + 문장부호 조합" 렌더링을 수행한다.
+  //
+  // 예:
+  //   가.
+  //   가!
+  //   !?
+  //   .”
+  //   “?
+  // ============================================================
   const isSpecialPunct = nextState.includes("_S_");
 
+  // ============================================================
+  // SVG 기반 렌더링
+  // ============================================================
   if (isSpecialPunct) {
-    let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none" style="z-index: 10;">`;
-    svgHtml += `<g class="trace-text-node">`;
 
+    // SVG 시작
+    // viewBox 0 0 100 100 → 한 칸을 100x100 좌표계로 고정
+    // absolute inset-0 → 셀 전체를 덮는 레이어
+    let svgHtml = `
+      <svg viewBox="0 0 100 100"
+           class="w-full h-full select-none absolute inset-0 pointer-events-none"
+           style="z-index: 10;">
+        <g class="trace-text-node">
+    `;
+
+    // ============================================================
+    // 1) 원고지 마지막 칸 압축(Squeezed)
+    //
+    // 예:
+    //   가.
+    //   가!
+    //   가?
+    //   가)
+    //   가”
+    //
+    // cellData 예:
+    // {
+    //   char: "가",
+    //   squeezedPunct: ")",
+    //   isSqueezed: true
+    // }
+    //
+    // 문자 + 문장부호를 한 칸에 함께 배치해야 하므로 SVG로 좌표를 직접 지정한다.
+    // ============================================================
     if (cellData.isSqueezed) {
+
       const mainChar = escapeHTML(cellData.char);
 
+      // 메인 문자 위치
+      // x=38, y=50 → 칸의 왼쪽 중앙
       svgHtml += `
-        <text
-          x="38"
-          y="50"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${SINGLE_CHAR_SIZE}"
-          class="font-serif-fixed fill-current text-slate-800 font-medium"
-        >${mainChar}</text>`;
+        <text x="38" y="50"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${SINGLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${mainChar}
+        </text>
+      `;
 
+      // squeezedPunct 문자열을 배열로 변환
       const puncts = Array.from(cellData.squeezedPunct || "");
 
+      // ============================================================
+      // 1-1) 문장부호가 1개인 경우
+      // ============================================================
       if (puncts.length === 1) {
         const p = escapeHTML(puncts[0]);
 
+        // 문장부호 종류에 따라 y 좌표를 미세 조정
         if (p === '.' || p === ',') {
+          // 온점/반점은 살짝 아래
           svgHtml += `
-            <text
-              x="78"
-              y="49"
-              dominant-baseline="central"
-              text-anchor="middle"
-              font-size="${SINGLE_CHAR_SIZE}"
-              class="font-serif-fixed fill-current text-slate-800 font-bold"
-            >${p}</text>`;
+            <text x="78" y="49"
+                  dominant-baseline="central"
+                  text-anchor="middle"
+                  font-size="${SINGLE_CHAR_SIZE}"
+                  class="font-serif-fixed fill-current text-slate-800 font-bold">
+              ${p}
+            </text>
+          `;
         } else if (p === '!' || p === '?') {
+          // 느낌표/물음표는 중앙
           svgHtml += `
-            <text
-              x="76"
-              y="50"
-              dominant-baseline="central"
-              text-anchor="middle"
-              font-size="${SINGLE_CHAR_SIZE}"
-              class="font-serif-fixed fill-current text-slate-800 font-medium"
-            >${p}</text>`;
+            <text x="76" y="50"
+                  dominant-baseline="central"
+                  text-anchor="middle"
+                  font-size="${SINGLE_CHAR_SIZE}"
+                  class="font-serif-fixed fill-current text-slate-800 font-medium">
+              ${p}
+            </text>
+          `;
         } else if (p === '"' || p === "'" || p === '”' || p === '’') {
+          // 닫는 따옴표류는 위쪽
           svgHtml += `
-            <text
-              x="76"
-              y="41"
-              dominant-baseline="central"
-              text-anchor="middle"
-              font-size="${SINGLE_CHAR_SIZE}"
-              class="font-serif-fixed fill-current text-slate-800 font-medium"
-            >${p}</text>`;
+            <text x="76" y="41"
+                  dominant-baseline="central"
+                  text-anchor="middle"
+                  font-size="${SINGLE_CHAR_SIZE}"
+                  class="font-serif-fixed fill-current text-slate-800 font-medium">
+              ${p}
+            </text>
+          `;
         } else {
+          // 기타 부호는 중앙
           svgHtml += `
-            <text
-              x="76"
-              y="50"
-              dominant-baseline="central"
-              text-anchor="middle"
-              font-size="${SINGLE_CHAR_SIZE}"
-              class="font-serif-fixed fill-current text-slate-800 font-medium"
-            >${p}</text>`;
+            <text x="76" y="50"
+                  dominant-baseline="central"
+                  text-anchor="middle"
+                  font-size="${SINGLE_CHAR_SIZE}"
+                  class="font-serif-fixed fill-current text-slate-800 font-medium">
+              ${p}
+            </text>
+          `;
         }
 
+      // ============================================================
+      // 1-2) 문장부호가 2개인 경우
+      // 예: !?  .”  ”?
+      // ============================================================
       } else if (puncts.length === 2) {
+
         const p1 = escapeHTML(puncts[0]);
         const p2 = escapeHTML(puncts[1]);
 
@@ -2492,127 +2563,183 @@ wrapper.dataset.sourceFrameState = sourceFrameState;
         let y2 = 50;
         let fontSize = DOUBLE_CHAR_SIZE;
 
+        // 온점/반점은 아래쪽
         if (p1 === '.' || p1 === ',') y1 = 49;
         if (p2 === '.' || p2 === ',') y2 = 49;
 
+        // 닫는 따옴표류는 위쪽
         if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 41;
         if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 41;
 
+        // 첫 번째 부호
         svgHtml += `
-          <text
-            x="68"
-            y="${y1}"
-            dominant-baseline="central"
-            text-anchor="middle"
-            font-size="${fontSize}"
-            class="font-serif-fixed fill-current text-slate-800 font-medium"
-          >${p1}</text>`;
+          <text x="68" y="${y1}"
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${fontSize}"
+                class="font-serif-fixed fill-current text-slate-800 font-medium">
+            ${p1}
+          </text>
+        `;
 
+        // 두 번째 부호
         svgHtml += `
-          <text
-            x="86"
-            y="${y2}"
-            dominant-baseline="central"
-            text-anchor="middle"
-            font-size="${fontSize}"
-            class="font-serif-fixed fill-current text-slate-800 font-medium"
-          >${p2}</text>`;
+          <text x="86" y="${y2}"
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${fontSize}"
+                class="font-serif-fixed fill-current text-slate-800 font-medium">
+            ${p2}
+          </text>
+        `;
 
+      // ============================================================
+      // 1-3) 문장부호가 3개 이상인 경우
+      // 예: !!!  ???  .”?
+      // ============================================================
       } else {
         puncts.forEach((p, idx) => {
-          const x = 64 + idx * 12;
-          let y = 50;
-
           const ep = escapeHTML(p);
+
+          const x = 64 + idx * 12; // 오른쪽으로 나열
+          let y = 50;
 
           if (ep === '.' || ep === ',') y = 49;
           if (ep === '"' || ep === "'" || ep === '”' || ep === '’') y = 41;
 
           svgHtml += `
-            <text
-              x="${x}"
-              y="${y}"
-              dominant-baseline="central"
-              text-anchor="middle"
-              font-size="${TRIPLE_CHAR_SIZE}"
-              class="font-serif-fixed fill-current text-slate-800 font-medium"
-            >${ep}</text>`;
+            <text x="${x}" y="${y}"
+                  dominant-baseline="central"
+                  text-anchor="middle"
+                  font-size="${TRIPLE_CHAR_SIZE}"
+                  class="font-serif-fixed fill-current text-slate-800 font-medium">
+              ${ep}
+            </text>
+          `;
         });
       }
 
+    // ============================================================
+    // 2) 온점 + 닫는 따옴표 조합
+    // 예: .”
+    // ============================================================
     } else if (cellData.isPeriodQuoteCombo) {
-      const p1 = escapeHTML(cellData.char);
-      const p2 = escapeHTML(cellData.squeezedPunct);
+
+      const p1 = escapeHTML(cellData.char);          // 온점
+      const p2 = escapeHTML(cellData.squeezedPunct); // 닫는 따옴표
 
       svgHtml += `
         <text x="25" y="54"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${DOUBLE_CHAR_SIZE}"
-          class="font-serif-fixed fill-current text-slate-800 font-bold">${p1}</text>`;
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-bold">
+          ${p1}
+        </text>
+      `;
 
       svgHtml += `
         <text x="78" y="45"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${DOUBLE_CHAR_SIZE}"
-          class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p2}
+        </text>
+      `;
 
+    // ============================================================
+    // 3) 온점 + 여는 따옴표 조합
+    // 예: .“
+    // ============================================================
     } else if (cellData.isPeriodOpeningQuoteCombo) {
+
       const p1 = escapeHTML(cellData.char);
       const p2 = escapeHTML(cellData.squeezedPunct);
 
       svgHtml += `
         <text x="25" y="54"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${DOUBLE_CHAR_SIZE}"
-          class="font-serif-fixed fill-current text-slate-800 font-bold">${p1}</text>`;
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-bold">
+          ${p1}
+        </text>
+      `;
 
       svgHtml += `
         <text x="64" y="45"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${DOUBLE_CHAR_SIZE}"
-          class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p2}
+        </text>
+      `;
 
+    // ============================================================
+    // 4) 기호가 먼저 오는 조합
+    // 예: )”
+    // ============================================================
     } else if (cellData.isSymbolFirstCombo) {
+
       const p1 = escapeHTML(cellData.char);
       const p2 = escapeHTML(cellData.squeezedPunct);
 
       svgHtml += `
         <text x="30" y="50"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${DOUBLE_CHAR_SIZE}"
-          class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p1}
+        </text>
+      `;
 
       svgHtml += `
         <text x="74" y="41"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${DOUBLE_CHAR_SIZE}"
-          class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p2}
+        </text>
+      `;
 
+    // ============================================================
+    // 5) 여는 따옴표가 먼저 오는 조합
+    // 예: “?
+    // ============================================================
     } else if (cellData.isQuoteFirstCombo) {
+
       const p1 = escapeHTML(cellData.char);
       const p2 = escapeHTML(cellData.squeezedPunct);
 
       svgHtml += `
         <text x="28" y="41"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${DOUBLE_CHAR_SIZE}"
-          class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p1}
+        </text>
+      `;
 
       svgHtml += `
         <text x="68" y="50"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${DOUBLE_CHAR_SIZE}"
-          class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p2}
+        </text>
+      `;
 
+    // ============================================================
+    // 6) 문장부호 2개 조합 (기본)
+    // ============================================================
     } else if (cellData.isDoublePunct) {
+
       const p1 = escapeHTML(cellData.char);
       const p2 = escapeHTML(cellData.squeezedPunct);
 
@@ -2631,64 +2758,94 @@ wrapper.dataset.sourceFrameState = sourceFrameState;
 
       svgHtml += `
         <text x="32" y="${y1}"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${fontSize}"
-          class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${fontSize}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p1}
+        </text>
+      `;
 
       svgHtml += `
         <text x="68" y="${y2}"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${fontSize}"
-          class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${fontSize}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p2}
+        </text>
+      `;
 
+    // ============================================================
+    // 7) 단일 문장부호 기본 렌더링
+    // ============================================================
     } else {
+
       const char = escapeHTML(cellData.char);
 
       if (char === '.' || char === ',') {
         svgHtml += `
           <text x="25" y="54"
-            dominant-baseline="central"
-            text-anchor="middle"
-            font-size="${SINGLE_CHAR_SIZE}"
-            class="font-serif-fixed fill-current text-slate-800 font-bold">${char}</text>`;
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${SINGLE_CHAR_SIZE}"
+                class="font-serif-fixed fill-current text-slate-800 font-bold">
+            ${char}
+          </text>
+        `;
       } else if (char === '“' || char === '‘') {
         svgHtml += `
           <text x="75" y="45"
-            dominant-baseline="central"
-            text-anchor="middle"
-            font-size="${SINGLE_CHAR_SIZE}"
-            class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${SINGLE_CHAR_SIZE}"
+                class="font-serif-fixed fill-current text-slate-800 font-medium">
+            ${char}
+          </text>
+        `;
       } else if (char === '”' || char === '’') {
         svgHtml += `
           <text x="25" y="45"
-            dominant-baseline="central"
-            text-anchor="middle"
-            font-size="${SINGLE_CHAR_SIZE}"
-            class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${SINGLE_CHAR_SIZE}"
+                class="font-serif-fixed fill-current text-slate-800 font-medium">
+            ${char}
+          </text>
+        `;
       } else {
         svgHtml += `
           <text x="50" y="50"
-            dominant-baseline="central"
-            text-anchor="middle"
-            font-size="${SINGLE_CHAR_SIZE}"
-            class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${SINGLE_CHAR_SIZE}"
+                class="font-serif-fixed fill-current text-slate-800 font-medium">
+            ${char}
+          </text>
+        `;
       }
     }
 
+    // SVG 종료
     svgHtml += `</g></svg>`;
     cell.innerHTML = svgHtml;
 
+  // ============================================================
+  // 일반 문자 렌더링 (SVG 사용 안 함)
+  // ============================================================
   } else {
+
+    // 칸 너비(mm) 계산
     const cellWidthMm =
       (AppState.orientation === 'portrait' ? 170 : 257) / colsNum;
 
+    // 일반 문자 span 생성
     const charSpan = document.createElement('span');
 
     charSpan.className =
       "font-serif-fixed text-slate-800 trace-text-node select-none absolute inset-0 flex items-center justify-center w-full h-full pointer-events-none cell-char-span";
 
+    // mm 단위로 폰트 크기 설정
     charSpan.style.fontSize = `${cellWidthMm * 0.62}mm`;
     charSpan.style.lineHeight = "1";
     charSpan.textContent = cellData.char;
@@ -2696,6 +2853,7 @@ wrapper.dataset.sourceFrameState = sourceFrameState;
     cell.replaceChildren(charSpan);
   }
 }
+
 
     // 7. [책임 분리] 줄 노트 전용 렌더러
     function renderLinePageContent(wrapper, spec, linesData, optRows) {
