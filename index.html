@@ -1395,6 +1395,7 @@
       }
     }, true);
 
+    
     // [성능 향상] parseTextToManuscriptCells 결과 캐싱 레이어 탑재
     let cachedParsedCells = null;
     let lastParsedText = "";
@@ -1450,6 +1451,8 @@
 
           const isAtRowEnd = (colIndex === 0 && cells.length > 0);
 
+        
+          // 원고지 마지막 칸의 문자 + 기호일 때한 칸으로 합침
           if (isPunctuation(char) && isAtRowEnd) {
             let targetIdx = cells.length - 1;
             if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
@@ -1460,6 +1463,7 @@
             }
           }
 
+        
           if (isPeriodOrComma(char) && nextChar && (nextChar === '“' || nextChar === '‘')) {
             cells.push({
               char: char,
@@ -2405,111 +2409,293 @@ wrapper.dataset.sourceFrameState = sourceFrameState;
     }
 
     function drawCellContent(cell, cellData, nextState, colsNum) {
-      const isSpecialPunct = nextState.includes("_S_");
-      if (isSpecialPunct) {
-        let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none" style="z-index: 10;">`;
-        svgHtml += `<g class="trace-text-node">`;
 
-        if (cellData.isSqueezed) {
-          const mainChar = escapeHTML(cellData.char);
-          svgHtml += `<text x="38" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${mainChar}</text>`;
+  // ==========================================
+  // 글자 크기 설정
+  // ==========================================
+  const SINGLE_CHAR_SIZE = 62; // 한 칸에 1글자
+  const DOUBLE_CHAR_SIZE = 62; // 한 칸에 2글자
+  const TRIPLE_CHAR_SIZE = 62; // 한 칸에 3글자 이상
+  // ==========================================
 
-          const puncts = Array.from(cellData.squeezedPunct || "");
-          if (puncts.length === 1) {
-            const p = escapeHTML(puncts[0]);
-            if (p === '.' || p === ',') {
-              svgHtml += `<text x="78" y="49" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-800 font-bold">${p}</text>`;
-            } else if (p === '!' || p === '?') {
-              svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-800 font-medium">${p}</text>`;
-            } else if (p === '"' || p === "'" || p === '”' || p === '’') {
-              svgHtml += `<text x="76" y="41" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-800 font-medium">${p}</text>`;
-            } else {
-              svgHtml += `<text x="76" y="50" dominant-baseline="central" text-anchor="middle" font-size="54" class="font-serif-fixed fill-current text-slate-800 font-medium">${p}</text>`;
-            }
-          } else if (puncts.length === 2) {
-            const p1 = escapeHTML(puncts[0]);
-            const p2 = escapeHTML(puncts[1]);
+  const isSpecialPunct = nextState.includes("_S_");
 
-            let y1 = 50, y2 = 50;
-            let fontSize = 46;
-            
-            if (p1 === '.' || p1 === ',') y1 = 49; 
-            if (p2 === '.' || p2 === ',') y2 = 49; 
-            if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 41; 
-            if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 41; 
+  if (isSpecialPunct) {
+    let svgHtml = `<svg viewBox="0 0 100 100" class="w-full h-full select-none absolute inset-0 pointer-events-none" style="z-index: 10;">`;
+    svgHtml += `<g class="trace-text-node">`;
 
-            svgHtml += `<text x="68" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
-            svgHtml += `<text x="86" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
-          } else {
-            puncts.forEach((p, idx) => {
-              const x = 64 + idx * 12;
-              let y = 50;
-              const ep = escapeHTML(p);
-              if (ep === '.' || ep === ',') y = 49; 
-              if (ep === '"' || ep === "'" || ep === '”' || ep === '’') y = 41; 
-              svgHtml += `<text x="${x}" y="${y}" dominant-baseline="central" text-anchor="middle" font-size="38" class="font-serif-fixed fill-current text-slate-800 font-medium">${ep}</text>`;
-            });
-          }
-        } else if (cellData.isPeriodQuoteCombo) {
-          const p1 = escapeHTML(cellData.char);
-          const p2 = escapeHTML(cellData.squeezedPunct);
-          svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-bold">${p1}</text>`;
-          svgHtml += `<text x="78" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
-        } else if (cellData.isPeriodOpeningQuoteCombo) {
-          const p1 = escapeHTML(cellData.char);
-          const p2 = escapeHTML(cellData.squeezedPunct);
-          svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-bold">${p1}</text>`;
-          svgHtml += `<text x="64" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
-        } else if (cellData.isSymbolFirstCombo) {
-          const p1 = escapeHTML(cellData.char);
-          const p2 = escapeHTML(cellData.squeezedPunct);
-          svgHtml += `<text x="30" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
-          svgHtml += `<text x="74" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
-        } else if (cellData.isQuoteFirstCombo) {
-          const p1 = escapeHTML(cellData.char);
-          const p2 = escapeHTML(cellData.squeezedPunct);
-          svgHtml += `<text x="28" y="41" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
-          svgHtml += `<text x="68" y="50" dominant-baseline="central" text-anchor="middle" font-size="56" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
-        } else if (cellData.isDoublePunct) {
-          const p1 = escapeHTML(cellData.char);
-          const p2 = escapeHTML(cellData.squeezedPunct);
-          let y1 = 50, y2 = 50;
-          let fontSize = 46;
-          
-          if (p1 === '.' || p1 === ',') y1 = 54; 
-          if (p2 === '.' || p2 === ',') y2 = 54; 
-          if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 45; 
-          if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 45; 
-          if (p1 === '“' || p1 === '‘') y1 = 45;
-          if (p2 === '“' || p2 === '‘') y2 = 45;
+    if (cellData.isSqueezed) {
+      const mainChar = escapeHTML(cellData.char);
 
-          svgHtml += `<text x="32" y="${y1}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
-          svgHtml += `<text x="68" y="${y2}" dominant-baseline="central" text-anchor="middle" font-size="${fontSize}" class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+      svgHtml += `
+        <text
+          x="38"
+          y="50"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${SINGLE_CHAR_SIZE}"
+          class="font-serif-fixed fill-current text-slate-800 font-medium"
+        >${mainChar}</text>`;
+
+      const puncts = Array.from(cellData.squeezedPunct || "");
+
+      if (puncts.length === 1) {
+        const p = escapeHTML(puncts[0]);
+
+        if (p === '.' || p === ',') {
+          svgHtml += `
+            <text
+              x="78"
+              y="49"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${SINGLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-bold"
+            >${p}</text>`;
+        } else if (p === '!' || p === '?') {
+          svgHtml += `
+            <text
+              x="76"
+              y="50"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${SINGLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium"
+            >${p}</text>`;
+        } else if (p === '"' || p === "'" || p === '”' || p === '’') {
+          svgHtml += `
+            <text
+              x="76"
+              y="41"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${SINGLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium"
+            >${p}</text>`;
         } else {
-          const char = escapeHTML(cellData.char);
-          if (char === '.' || char === ',') {
-            svgHtml += `<text x="25" y="54" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-bold">${char}</text>`;
-          } else if (char === '“' || char === '‘') {
-            svgHtml += `<text x="75" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
-          } else if (char === '”' || char === '’') {
-            svgHtml += `<text x="25" y="45" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
-          } else {
-            svgHtml += `<text x="50" y="50" dominant-baseline="central" text-anchor="middle" font-size="62" class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
-          }
+          svgHtml += `
+            <text
+              x="76"
+              y="50"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${SINGLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium"
+            >${p}</text>`;
         }
 
-        svgHtml += `</g></svg>`; 
-        cell.innerHTML = svgHtml;
+      } else if (puncts.length === 2) {
+        const p1 = escapeHTML(puncts[0]);
+        const p2 = escapeHTML(puncts[1]);
+
+        let y1 = 50;
+        let y2 = 50;
+        let fontSize = DOUBLE_CHAR_SIZE;
+
+        if (p1 === '.' || p1 === ',') y1 = 49;
+        if (p2 === '.' || p2 === ',') y2 = 49;
+
+        if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 41;
+        if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 41;
+
+        svgHtml += `
+          <text
+            x="68"
+            y="${y1}"
+            dominant-baseline="central"
+            text-anchor="middle"
+            font-size="${fontSize}"
+            class="font-serif-fixed fill-current text-slate-800 font-medium"
+          >${p1}</text>`;
+
+        svgHtml += `
+          <text
+            x="86"
+            y="${y2}"
+            dominant-baseline="central"
+            text-anchor="middle"
+            font-size="${fontSize}"
+            class="font-serif-fixed fill-current text-slate-800 font-medium"
+          >${p2}</text>`;
+
       } else {
-        const cellWidthMm = (AppState.orientation === 'portrait' ? 170 : 257) / colsNum;
-        const charSpan = document.createElement('span');
-        charSpan.className = "font-serif-fixed text-slate-800 trace-text-node select-none absolute inset-0 flex items-center justify-center w-full h-full pointer-events-none cell-char-span";
-        charSpan.style.fontSize = `${cellWidthMm * 0.62}mm`;
-        charSpan.style.lineHeight = "1";
-        charSpan.textContent = cellData.char;
-        cell.replaceChildren(charSpan);
+        puncts.forEach((p, idx) => {
+          const x = 64 + idx * 12;
+          let y = 50;
+
+          const ep = escapeHTML(p);
+
+          if (ep === '.' || ep === ',') y = 49;
+          if (ep === '"' || ep === "'" || ep === '”' || ep === '’') y = 41;
+
+          svgHtml += `
+            <text
+              x="${x}"
+              y="${y}"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${TRIPLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium"
+            >${ep}</text>`;
+        });
+      }
+
+    } else if (cellData.isPeriodQuoteCombo) {
+      const p1 = escapeHTML(cellData.char);
+      const p2 = escapeHTML(cellData.squeezedPunct);
+
+      svgHtml += `
+        <text x="25" y="54"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${DOUBLE_CHAR_SIZE}"
+          class="font-serif-fixed fill-current text-slate-800 font-bold">${p1}</text>`;
+
+      svgHtml += `
+        <text x="78" y="45"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${DOUBLE_CHAR_SIZE}"
+          class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+
+    } else if (cellData.isPeriodOpeningQuoteCombo) {
+      const p1 = escapeHTML(cellData.char);
+      const p2 = escapeHTML(cellData.squeezedPunct);
+
+      svgHtml += `
+        <text x="25" y="54"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${DOUBLE_CHAR_SIZE}"
+          class="font-serif-fixed fill-current text-slate-800 font-bold">${p1}</text>`;
+
+      svgHtml += `
+        <text x="64" y="45"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${DOUBLE_CHAR_SIZE}"
+          class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+
+    } else if (cellData.isSymbolFirstCombo) {
+      const p1 = escapeHTML(cellData.char);
+      const p2 = escapeHTML(cellData.squeezedPunct);
+
+      svgHtml += `
+        <text x="30" y="50"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${DOUBLE_CHAR_SIZE}"
+          class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
+
+      svgHtml += `
+        <text x="74" y="41"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${DOUBLE_CHAR_SIZE}"
+          class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+
+    } else if (cellData.isQuoteFirstCombo) {
+      const p1 = escapeHTML(cellData.char);
+      const p2 = escapeHTML(cellData.squeezedPunct);
+
+      svgHtml += `
+        <text x="28" y="41"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${DOUBLE_CHAR_SIZE}"
+          class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
+
+      svgHtml += `
+        <text x="68" y="50"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${DOUBLE_CHAR_SIZE}"
+          class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+
+    } else if (cellData.isDoublePunct) {
+      const p1 = escapeHTML(cellData.char);
+      const p2 = escapeHTML(cellData.squeezedPunct);
+
+      let y1 = 50;
+      let y2 = 50;
+      let fontSize = DOUBLE_CHAR_SIZE;
+
+      if (p1 === '.' || p1 === ',') y1 = 54;
+      if (p2 === '.' || p2 === ',') y2 = 54;
+
+      if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 45;
+      if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 45;
+
+      if (p1 === '“' || p1 === '‘') y1 = 45;
+      if (p2 === '“' || p2 === '‘') y2 = 45;
+
+      svgHtml += `
+        <text x="32" y="${y1}"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${fontSize}"
+          class="font-serif-fixed fill-current text-slate-800 font-medium">${p1}</text>`;
+
+      svgHtml += `
+        <text x="68" y="${y2}"
+          dominant-baseline="central"
+          text-anchor="middle"
+          font-size="${fontSize}"
+          class="font-serif-fixed fill-current text-slate-800 font-medium">${p2}</text>`;
+
+    } else {
+      const char = escapeHTML(cellData.char);
+
+      if (char === '.' || char === ',') {
+        svgHtml += `
+          <text x="25" y="54"
+            dominant-baseline="central"
+            text-anchor="middle"
+            font-size="${SINGLE_CHAR_SIZE}"
+            class="font-serif-fixed fill-current text-slate-800 font-bold">${char}</text>`;
+      } else if (char === '“' || char === '‘') {
+        svgHtml += `
+          <text x="75" y="45"
+            dominant-baseline="central"
+            text-anchor="middle"
+            font-size="${SINGLE_CHAR_SIZE}"
+            class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
+      } else if (char === '”' || char === '’') {
+        svgHtml += `
+          <text x="25" y="45"
+            dominant-baseline="central"
+            text-anchor="middle"
+            font-size="${SINGLE_CHAR_SIZE}"
+            class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
+      } else {
+        svgHtml += `
+          <text x="50" y="50"
+            dominant-baseline="central"
+            text-anchor="middle"
+            font-size="${SINGLE_CHAR_SIZE}"
+            class="font-serif-fixed fill-current text-slate-800 font-medium">${char}</text>`;
       }
     }
+
+    svgHtml += `</g></svg>`;
+    cell.innerHTML = svgHtml;
+
+  } else {
+    const cellWidthMm =
+      (AppState.orientation === 'portrait' ? 170 : 257) / colsNum;
+
+    const charSpan = document.createElement('span');
+
+    charSpan.className =
+      "font-serif-fixed text-slate-800 trace-text-node select-none absolute inset-0 flex items-center justify-center w-full h-full pointer-events-none cell-char-span";
+
+    charSpan.style.fontSize = `${cellWidthMm * 0.62}mm`;
+    charSpan.style.lineHeight = "1";
+    charSpan.textContent = cellData.char;
+
+    cell.replaceChildren(charSpan);
+  }
+}
 
     // 7. [책임 분리] 줄 노트 전용 렌더러
     function renderLinePageContent(wrapper, spec, linesData, optRows) {
