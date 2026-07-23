@@ -1,0 +1,3313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>별 헤는 밤</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans/Serif JP & KR -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      /* 동적 변수 설정 - 자간 점선 표시 가이드 및 투명도 제어 */
+      --guide-display: block;
+      --guide-color: rgba(255, 140, 140, 0.35); 
+      --grid-color: rgba(105, 175, 160, 1);  
+      --manuscript-grid-color: rgba(105, 175, 160, 1); 
+      --char-y-offset: 0%; 
+    }
+
+    /* 필사 전용 고정폭 명조 계열 서체 선언 */
+    .font-serif-fixed {
+      font-family: 'Noto Serif JP', 'Noto Serif KR', 'Batang', 'AppleMyungjo', 'serif' !important;
+      font-weight: 500 !important;
+      font-style: normal !important;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      background-color: #f1f5f9;
+    }
+
+    .custom-grid-border { border-color: var(--grid-color) !important; }
+    .custom-grid-text { color: var(--grid-color) !important; }
+    .manuscript-grid-border { border-color: var(--manuscript-grid-color) !important; }
+
+    /* 원고지 칸 가이드 십자 점선 생성 규칙 */
+    .grid-cell-guide {
+      position: relative;
+      box-sizing: border-box;
+    }
+    .grid-cell-guide::before {
+      content: "";
+      display: var(--guide-display) !important;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      border-left: 1px dashed var(--guide-color) !important;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .grid-cell-guide::after {
+      content: "";
+      display: var(--guide-display) !important;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      border-top: 1px dashed var(--guide-color) !important;
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* GPU 가속을 이용한 글자 상하 미세정렬 규칙 일괄 적용 */
+    .grid-cell-guide svg g, 
+    .line-note-text-span,
+    .cell-char-span {
+      transform: translate3d(0, var(--char-y-offset, 0%), 0) !important;
+      transform-origin: center !important;
+      will-change: transform;
+    }
+
+    /* 따라 쓰기 연한 글씨 투명도 고정 수치 반영 */
+    .trace-text-node {
+      opacity: 0.35 !important;
+    }
+
+    /* 실시간 인쇄 지면 편집 영역 인디케이터 및 영역 유지 장치 */
+    [contenteditable="true"] {
+      transition: all 0.2s ease;
+      border-radius: 4px;
+      padding: 1px 4px;
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      min-width: 1.5em;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    [contenteditable="true"]:hover {
+      background-color: rgba(245, 158, 11, 0.08); 
+      outline: 1.5px dashed rgba(245, 158, 11, 0.5);
+      cursor: text;
+    }
+    [contenteditable="true"]:focus {
+      background-color: rgba(245, 158, 11, 0.12);
+      outline: 2px solid #d97706;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+    [contenteditable="true"]:empty::before {
+      content: "입력";
+      color: #cbd5e1;
+      font-style: italic;
+    }
+
+    .name-placeholder[contenteditable="true"]:empty::before {
+      content: "" !important;
+    }
+
+    /* 실측 A4 크기 지면 내부 패딩 규칙 */
+    .print-page-inner {
+      width: 100%;
+      height: 100%;
+      padding: 18mm 20mm 23.5mm 20mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      position: relative;
+    }
+
+    .p-inner-content {
+      column-rule-color: var(--grid-color) !important;
+      column-rule-style: dashed !important;
+      column-rule-width: 1px !important;
+    }
+
+    .print-page {
+      page-break-after: auto !important;
+      break-after: auto !important;
+      page-break-before: auto !important;
+      break-before: auto !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+    }
+    .print-page:last-child, .print-page:last-of-type {
+      page-break-after: auto !important;
+      break-after: auto !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    /* 인쇄 모드 최적화 미디어 쿼리 */
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      
+      html, body {
+        display: block !important;
+        background-color: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      #main-layout-container,
+      main,
+      #print-area-wrapper,
+      #pages-container {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+
+      #pages-container {
+        contain: none !important;
+        align-items: stretch !important;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .border-2 {
+        border-width: 2px !important;
+        border-style: solid !important;
+      }
+      .border-dashed { border-style: dashed !important; }
+      .border-b { border-bottom-width: 1px !important; border-bottom-style: solid !important; }
+      .border-r { border-right-width: 1px !important; border-right-style: solid !important; }
+      .border-t-0 { border-top-width: 0px !important; }
+      .border-b-0 { border-bottom-width: 0px !important; }
+      .rounded-b-none { border-bottom-left-radius: 0px !important; border-bottom-right-radius: 0px !important; }
+      .rounded-t-none { border-top-left-radius: 0px !important; border-top-right-radius: 0px !important; }
+      .rounded-none { border-radius: 0px !important; }
+
+      .page-scale-wrapper {
+        display: contents !important;
+      }
+
+      .print-page {
+        box-shadow: none !important;
+        margin: 0 !important;
+        border: none !important;
+        width: var(--print-page-width) !important;
+        height: var(--print-page-height) !important;
+        max-width: var(--print-page-width) !important;
+        max-height: var(--print-page-height) !important;
+        break-after: auto !important;
+        page-break-after: auto !important;
+        break-before: auto !important;
+        page-break-before: auto !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        box-sizing: border-box !important;
+        display: block !important; 
+        position: relative !important;
+        float: none !important;
+        clear: both !important;
+        overflow: visible !important;
+        background-color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        transform: none !important;
+        top: 0 !important;
+        left: 0 !important;
+      }
+
+      .print-page + .print-page {
+        break-before: page !important;
+        page-break-before: always !important;
+        -webkit-column-break-before: always !important;
+      }
+
+      .print-page:last-child, .print-page:last-of-type {
+        break-after: auto !important;
+        page-break-after: auto !important;
+        -webkit-column-break-after: auto !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+
+      [contenteditable="true"] {
+        outline: none !important;
+        border-color: transparent !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+      }
+
+      [contenteditable="true"]:empty::before {
+        content: "" !important;
+        display: none !important;
+      }
+    }
+
+    /* 화면 프리뷰용 실측 A4 박스 쉐도우 및 스타일 */
+    .a4-page {
+      background: white;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.04);
+      padding: 0; 
+      box-sizing: border-box;
+      display: block;
+      position: relative;
+      margin-bottom: 2.5rem;
+    }
+
+    /* 스크롤바 디자인 정밀 단일화 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f8fafc;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @media screen {
+      .page-scale-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        position: relative;
+      }
+      .print-page {
+        margin-bottom: 0 !important;
+      }
+    }
+
+    /* 데스크톱 vs 모바일 최적 레이아웃 분기 처리 */
+    @media screen and (min-width: 1024px) {
+      html, body {
+        height: 100vh !important;
+        overflow: hidden !important;
+      }
+      #main-layout-container {
+        height: calc(100vh - 72px) !important;
+        overflow: hidden !important;
+      }
+      aside {
+        height: calc(100vh - 72px) !important;
+        overflow-y: auto !important;
+      }
+      main {
+        height: calc(100vh - 72px) !important;
+        overflow: auto !important;
+        touch-action: pan-y;
+      }
+    }
+
+    @media screen and (max-width: 1023px) {
+      html, body {
+        height: auto !important;
+        overflow: auto !important;
+      }
+      #main-layout-container {
+        height: auto !important;
+        overflow: visible !important;
+      }
+      aside {
+        height: auto !important;
+        overflow-y: visible !important;
+      }
+      main {
+        height: auto !important;
+        overflow-y: visible !important;
+        touch-action: pan-y;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <header class="bg-slate-900 text-white shadow-md no-print py-4 px-6 flex justify-between items-center z-10 shrink-0">
+    <div class="flex items-center space-x-3">
+      <div class="bg-emerald-600 p-2 rounded-lg">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-tight">필사 용지 만들기</h1>
+        <div class="text-[10px] text-slate-400 font-medium tracking-wide">Ver.0.072305</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 메인 작업 분할 영역 -->
+  <div id="main-layout-container" class="flex-1 flex flex-col lg:flex-row min-h-0">
+    
+    <!-- 왼쪽 사이드바 -->
+    <aside class="w-full lg:w-[420px] bg-white border-r border-slate-200 no-print shrink-0 flex flex-col">
+      
+      <!-- 인쇄 및 PDF 저장 버튼 패널 -->
+      <div class="p-6 pb-4 border-b border-slate-200 bg-white z-20 shrink-0">
+        <button onclick="window.print()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2 transition-all active:scale-[0.98]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+          </svg>
+          <span class="text-base tracking-wide">인쇄 및 PDF로 저장</span>
+        </button>
+        <div class="flex gap-2 mt-2">
+          <button onclick="exportSettings()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold py-1.5 rounded-lg border border-slate-200 transition-all active:scale-[0.98]">
+            내용/설정 저장하기
+          </button>
+          <button onclick="document.getElementById('import-settings-file').click()" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold py-1.5 rounded-lg border border-slate-200 transition-all active:scale-[0.98]">
+            불러오기
+          </button>
+        </div>
+        <input type="file" id="import-settings-file" accept=".json" onchange="importSettings(event)" class="hidden">
+      </div>
+
+      <!-- 셋팅 제어판 영역 -->
+      <div class="flex-1 overflow-y-auto p-6 pt-4 space-y-6">
+        
+        <!-- 1. 용지 방향 -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-2 text-sm">1. 용지 방향</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="btn-portrait" onclick="setOrientation('portrait')" class="py-2.5 px-4 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-800 font-bold text-sm transition-all flex items-center justify-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              <span>세로 모드</span>
+            </button>
+            <button id="btn-landscape" onclick="setOrientation('landscape')" class="py-2.5 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm transition-all flex items-center justify-center space-x-2">
+              <svg class="w-4 h-4 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              <span>가로 모드</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. 글 제목 -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-2 text-sm">2. 글 제목</label>
+          <input type="text" id="input-title" value="별 헤는 밤" class="w-full p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium" placeholder="필사할 글의 제목을 적어주세요.">
+        </div>
+
+        <!-- 3. 필사할 원문 붙여넣기 -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-2 text-sm flex justify-between items-center">
+            <span>3. 필사할 원문 붙여넣기</span>
+            <span id="char-counter" class="text-xs font-normal text-slate-500">0자 입력됨</span>
+          </label>
+          <textarea id="source-text" class="w-full h-36 p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm leading-relaxed" placeholder="여기에 필사할 원문을 붙여 넣으세요."></textarea>
+        </div>
+
+        <!-- 4. 원고지 설정 -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-2 text-sm">4. 원고지 설정</label>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-4">
+            
+            <!-- 원고지 가로 칸 수 -->
+            <div>
+              <span class="block text-slate-600 font-semibold text-xs mb-1.5">원고지 가로 칸 수</span>
+              <select id="grid-cols-select" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white">
+                <option value="10">10칸 (초등 저학년 / 큰 글자)</option>
+                <option value="12">12칸</option>
+                <option value="14">14칸</option>
+                <option value="16">16칸</option>
+                <option value="18">18칸</option>
+                <option value="20" selected>20칸 (표준 200자형 / 500자)</option>
+                <option value="22">22칸</option>
+                <option value="24">24칸 (집중도 높은 필사용)</option>
+                <option value="line">줄 노트 (가로줄만 표시)</option>
+              </select>
+            </div>
+
+            <!-- 세부 옵션 체크박스 4종 -->
+            <div class="space-y-2 pt-1 border-t border-slate-200/60">
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" id="hide-manuscript-header" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 페이지에 이름 등 표시 안 함</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" id="hide-char-count" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 오른쪽 글자 수 표시 안 함</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" id="hide-grid-guides" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 가운데 점선 표시 안 함</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" id="hide-page-numbers" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                <span class="ml-2.5 text-xs text-slate-700 font-bold">꼬리말, 페이지 번호 표시 안 함</span>
+              </label>
+            </div>
+
+            <!-- 글자 상하 위치 미세 조정 -->
+            <div class="pt-3 border-t border-slate-200/60">
+              <label class="block text-slate-700 font-bold mb-1 text-xs flex justify-between">
+                <span>글자 상하 위치 미세 조정</span>
+                <span id="charYOffsetVal" class="text-emerald-600 font-bold">0%</span>
+              </label>
+              <input type="range" id="charYOffsetSlider" min="-15" max="15" step="0.5" value="0" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" oninput="updateCharYOffset(this.value)">
+              <p class="text-[10px] text-slate-400 mt-1">시스템 환경에 따라 원고지 안의 글자 높이가 맞지 않을 때 슬라이더로 올리거나 내리세요.</p>
+            </div>
+
+            <!-- 원고지 및 점선 색상 팔레트 -->
+            <div class="pt-3 border-t border-slate-200/60 space-y-3">
+              <div>
+                <span class="block text-slate-600 font-semibold text-xs mb-1.5">원고지 색</span>
+                <div class="flex flex-wrap gap-2 items-center">
+                  <button onclick="setGridColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="검은색" style="background-color: #000000;">
+                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGridColor('#69afa0')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="녹색" style="background-color: #69afa0;">
+                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGridColor('#ff8c8c')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="빨간색" style="background-color: #ff8c8c;">
+                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGridColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="파란색" style="background-color: #2563eb;">
+                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGridColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="진한 빨간색" style="background-color: #991b1b;">
+                    <span class="grid-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <div class="relative flex items-center">
+                    <button onclick="document.getElementById('grid-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 flex items-center space-x-1 shadow-sm active:scale-95 transition-all" title="다른 색 선택">
+                      <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
+                      <span>다른 색</span>
+                    </button>
+                    <input type="color" id="grid-color-picker" value="#69afa0" class="sr-only" oninput="setGridColor(this.value, true, false)" onchange="setGridColor(this.value, true, true)">
+                  </div>
+                </div>
+                <!-- 원고지 선 투명도 슬라이더 -->
+                <div class="mt-2.5">
+                  <div class="flex justify-between items-center text-[10px] text-slate-500 font-semibold mb-1">
+                    <span>원고지 선 투명도</span>
+                    <span id="gridOpacityVal" class="text-emerald-600 font-bold">100%</span>
+                  </div>
+                  <input type="range" id="gridOpacitySlider" min="0" max="100" step="5" value="100" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" oninput="updateGridOpacity(this.value)">
+                </div>
+              </div>
+
+              <div>
+                <span class="block text-slate-500 font-semibold text-[11px] mb-1.5">원고지 가운데 점선 색</span>
+                <div class="flex flex-wrap gap-2 items-center">
+                  <button onclick="setGuideColor('#000000')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="검은색" style="background-color: #000000;">
+                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGuideColor('#69afa0')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="녹색" style="background-color: #69afa0;">
+                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGuideColor('#ff8c8c')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="빨간색" style="background-color: #ff8c8c;">
+                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGuideColor('#2563eb')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="파란색" style="background-color: #2563eb;">
+                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <button onclick="setGuideColor('#991b1b')" class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95" title="진한 빨간색" style="background-color: #991b1b;">
+                    <span class="guide-color-check hidden text-white"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                  </button>
+                  <div class="relative flex items-center">
+                    <button onclick="document.getElementById('guide-color-picker').click()" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 flex items-center space-x-1 shadow-sm active:scale-95 transition-all" title="다른 색 선택">
+                      <span class="w-3 h-3 rounded-full border border-slate-400 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500"></span>
+                      <span>다른 색</span>
+                    </button>
+                    <input type="color" id="guide-color-picker" value="#ff8c8c" class="sr-only" oninput="setGuideColor(this.value, true, false)" onchange="setGuideColor(this.value, true, true)">
+                  </div>
+                </div>
+                <!-- 원고지 가운데 점선 투명도 슬라이더 -->
+                <div class="mt-2.5">
+                  <div class="flex justify-between items-center text-[10px] text-slate-500 font-semibold mb-1">
+                    <span>가운데 점선 투명도</span>
+                    <span id="guideOpacityVal" class="text-emerald-600 font-bold">35%</span>
+                  </div>
+                  <input type="range" id="guideOpacitySlider" min="0" max="100" step="5" value="35" class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" oninput="updateGuideOpacity(this.value)">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 학생 정보 -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-2 text-sm">5. 학생 정보</label>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+            <div class="grid grid-cols-2 gap-3 text-xs text-slate-600">
+              <div>
+                <span class="block mb-1 font-medium text-slate-500">학교 이름</span>
+                <input type="text" id="input-school" value="건국초등학교" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="학교 이름 입력">
+              </div>
+              <div>
+                <span class="block mb-1 font-medium text-slate-500">학년 / 반</span>
+                <input type="text" id="input-grade" value="" class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="학년 / 반 입력">
+              </div>
+              <div class="col-span-2">
+                <span class="block mb-1 font-semibold text-emerald-800">학생 이름</span>
+                <input type="text" id="input-name" value="" class="w-full p-2.5 border-2 border-emerald-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm font-bold bg-emerald-50/35" placeholder="학생 이름 입력">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. 출력 설정 -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-2 text-sm">6. 출력 설정</label>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="exclude-first-page" checked class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+              <span class="ml-2.5 text-xs text-slate-700 font-bold">원문 읽기 페이지</span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="pattern-guide" checked class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+              <span class="ml-2.5 text-xs text-slate-700 font-bold">따라 쓰기 페이지</span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="pattern-empty" checked class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+              <span class="ml-2.5 text-xs text-slate-700 font-bold">빈 원고지</span>
+            </label>
+          </div>
+        </div>
+        <!-- 임시 저장 시각 표시 구역 (임시 저장 데이터 초기화 버튼 바로 위 회색 작은 글씨) -->
+        <div id="auto-save-status" class="text-center text-[11px] text-slate-400 mt-1 mb-0 min-h-[16px] font-medium"></div>
+        <button onclick="triggerResetConfirm()" class="w-full mt-1 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold py-1.5 px-4 rounded-lg border border-red-200 transition-all active:scale-[0.98]">
+          임시 저장 데이터 초기화
+        </button>
+
+      </div>
+    </aside>
+
+    <!-- 미리보기 프레임 처리 구역 -->
+    <main class="flex-1 bg-slate-100 p-4 md:p-8 flex flex-col items-center relative">
+      <div id="print-area-wrapper" class="w-full flex flex-col items-center">
+        <div id="font-loading"
+     class="flex flex-col items-center justify-center py-16 text-slate-400">
+  <div class="text-lg font-semibold">
+    폰트 로딩 중...
+  </div>
+  <div class="text-xs mt-2">
+    필사용 글꼴을 준비하고 있습니다.
+  </div>
+</div>
+
+        <!-- 동적으로 페이지들이 얹어질 프리뷰 컨테이너 -->
+        <div id="pages-container"
+     class="flex flex-col items-center opacity-0">
+</div>
+      </div>
+
+      <!-- 플로팅 컨트롤러 -->
+      <div class="fixed bottom-6 right-6 bg-slate-900/90 backdrop-blur text-white px-3 py-2 rounded-xl shadow-2xl border border-slate-700/50 flex items-center space-x-3 z-30 no-print">
+        
+        <!-- 현재 화면 표시 쪽 / 전체 쪽 수 대화형 클릭 네비게이션 인디케이터 배지 -->
+        <div id="pages-badge-container" onclick="enablePageInput(event)" class="bg-white hover:bg-slate-100 text-slate-900 text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-sm flex items-center space-x-1 shrink-0 select-none cursor-pointer transition-all active:scale-95 border border-slate-200" title="클릭하여 원하는 쪽으로 이동">
+          <span id="total-pages-badge">📄 계산 중...</span>
+          <input id="pages-badge-input" type="number" min="1" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[50px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disablePageInput(this.value)" onkeydown="if(event.key==='Enter') disablePageInput(this.value)" onclick="event.stopPropagation();">
+        </div>
+
+        <button id="btn-zoom-out" onclick="zoomOut()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all duration-200" title="축소">
+          <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"></path>
+          </svg>
+        </button>
+        
+        <!-- 하이브리드 배율 인디케이터 -->
+        <div class="flex items-center justify-center min-w-[70px]">
+          <span id="zoom-indicator-text" onclick="enableZoomInput()" class="text-xs font-bold font-mono tracking-tight select-none cursor-pointer hover:bg-slate-800 px-2 py-1 rounded text-center text-slate-200 transition-all" title="클릭하여 직접 입력">자동</span>
+          <input id="zoom-input-field" type="number" min="30" max="200" class="hidden text-xs font-bold font-mono text-center text-slate-900 bg-white rounded px-1.5 py-0.5 w-[60px] focus:outline-none focus:ring-2 focus:ring-emerald-500" onblur="disableZoomInput(this.value)" onkeydown="if(event.key==='Enter') disableZoomInput(this.value)">
+        </div>
+
+        <button id="btn-zoom-in" onclick="zoomIn()" class="hover:bg-slate-800 p-1.5 rounded-lg active:scale-95 transition-all duration-200" title="확대">
+          <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+          </svg>
+        </button>
+        <div class="w-px h-4 bg-slate-700"></div>
+        
+        <!-- 폭 맞춤과 쪽 맞춤 제어 버튼 -->
+        <button onclick="setZoomMode('width')" id="btn-zoom-width" class="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="폭 맞춤">
+          폭 맞춤
+        </button>
+        <button onclick="setZoomMode('page')" id="btn-zoom-page" class="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm" title="쪽 맞춤">
+          쪽 맞춤
+        </button>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- 커스텀 대화상자 모달 -->
+  <div id="custom-modal-overlay" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 transition-opacity duration-200 no-print">
+    <div class="bg-white rounded-2xl max-w-sm w-full mx-4 shadow-2xl p-6 border border-slate-100 flex flex-col">
+      <div class="flex items-start space-x-3.5">
+        <div id="modal-icon-container" class="p-2.5 rounded-xl bg-amber-50 text-amber-600 shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 id="modal-title" class="text-base font-bold text-slate-800 leading-snug">알림</h3>
+          <p id="modal-message" class="text-xs text-slate-500 mt-1 leading-relaxed">내용을 확인해주세요.</p>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end space-x-2 shrink-0">
+        <button id="modal-btn-cancel" onclick="closeCustomModal(false)" class="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-all">취소</button>
+        <button id="modal-btn-confirm" onclick="closeCustomModal(true)" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-md transition-all">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+  
+    // 단일화된 전역 애플리케이션 상태 (AppState 아키텍처)
+    const AppState = {
+      sourceText: "계절이 지나가는 하늘에는\n가을로 가득 차 있습니다.\n\n나는 아무 걱정도 없이\n가을 속의 별들을 다 헤일 듯합니다.\n\n가슴 속에 하나 둘 새겨지는 별을\n이제 다 못 헤는 것은\n쉬이 아침이 오는 까닭이요,\n내일 밤이 남은 까닭이요,\n아직 나의 청춘이 다하지 않은 까닭입니다.\n\n별 하나에 추억과\n별 하나에 사랑과\n별 하나에 쓸쓸함과\n별 하나에 동경과\n별 하나에 시와\n별 하나에 어머니, 어머니",
+      articleTitle: "별 헤는 밤",
+      gridCols: "20", 
+      schoolName: "건국초등학교",
+      gradeInfo: "",
+      studentName: "",
+      excludeFirstPage: false, 
+      hideManuscriptHeader: false, 
+      hideCharCount: false,
+      hidePageNumbers: false, 
+      orientation: "portrait",
+      headerLeftText: "",
+      customFooterSourceText: null,
+      customFooterGuideText: null,
+      customFooterEmptyText: null,
+
+      // 실시간 색상 및 불투명도 상태
+      currentGridColor: '#69afa0',
+      currentGuideColor: '#ff8c8c',
+      gridOpacity: 1.0,
+      guideOpacity: 0.35,
+
+      // 화면 프리뷰 배율 제어 상태
+      previewZoomMode: 'width', 
+      previewZoomValue: 100,
+      lastComputedScale: 1.0,
+
+      // 개별 위젯 제어 상태
+      hideGridGuides: false,
+      patternGuide: true,
+      patternEmpty: true,
+      charYOffset: 0,
+ 
+      // 임시 저장 시각 타임스탬프
+      lastSavedTime: null
+    };
+
+    // 하단 기본 라벨 상수
+    const footerSourceText = "원문 읽기";
+    const footerGuideText = "따라 쓰기";
+    const footerEmptyText = "원고지";
+
+    // Layout Thrashing 최적화용 치수 캐시
+    let cachedPageWidth = 0;
+    let cachedPageHeight = 0;
+
+    // 모달 콜백 핸들러
+    let activeModalCallback = null;
+    window.hasShownLengthWarning = false;
+
+    // [보안 지향] DOM 기반 HTML Injection 차단 탈출 필터
+    function escapeHTML(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // 디바운서
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+
+    // 임시 저장 시각 UI 업데이트
+    function updateAutoSaveStatus() {
+      const el = document.getElementById('auto-save-status');
+      if (!el) return;
+      if (!AppState.lastSavedTime) {
+        el.textContent = '';
+        return;
+      }
+      const d = new Date(AppState.lastSavedTime);
+      if (isNaN(d.getTime())) {
+        el.textContent = '';
+        return;
+      }
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const date = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const seconds = String(d.getSeconds()).padStart(2, '0');
+      
+      el.style.whiteSpace = 'pre-line';
+      el.textContent = `${year}. ${month}. ${date}. ${hours}:${minutes}:${seconds} 로컬에 임시 저장 되었습니다.\n` + `(인터넷에는 어떠한 입력 데이터도 송신 되지 않습니다.)`;
+    }
+
+    // 로컬 스토리지 상태 보존
+    function saveToLocalStorage() {
+      AppState.lastSavedTime = new Date().toISOString();
+      localStorage.setItem('manuscriptPaperData', JSON.stringify(AppState));
+      updateAutoSaveStatus();
+    }
+    
+    // 로컬 스토리지 안전 수신 및 수화(Hydration)
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem('manuscriptPaperData');
+      if (!saved) return;
+      try {
+        const data = JSON.parse(saved);
+        Object.keys(data).forEach(key => {
+          if (key in AppState) {
+            AppState[key] = data[key];
+          }
+        });
+      } catch (err) {
+        console.error("로컬 스토리지 파싱 에러:", err);
+      }
+    }
+
+    // Hydrated 상태를 UI 뷰에 정적 매핑
+    function applyLoadedDataToUI() {
+      document.getElementById('source-text').value = AppState.sourceText;
+      document.getElementById('input-title').value = AppState.articleTitle;
+      document.getElementById('input-school').value = AppState.schoolName;
+      document.getElementById('input-grade').value = AppState.gradeInfo;
+      document.getElementById('input-name').value = AppState.studentName;
+      document.getElementById('grid-cols-select').value = AppState.gridCols;
+      document.getElementById('hide-manuscript-header').checked = AppState.hideManuscriptHeader;
+      document.getElementById('hide-char-count').checked = AppState.hideCharCount;
+      document.getElementById('hide-page-numbers').checked = AppState.hidePageNumbers;
+      document.getElementById('hide-grid-guides').checked = AppState.hideGridGuides;
+      document.getElementById('pattern-guide').checked = AppState.patternGuide;
+      document.getElementById('pattern-empty').checked = AppState.patternEmpty;
+      document.getElementById('exclude-first-page').checked = !AppState.excludeFirstPage;
+      document.getElementById('char-counter').textContent = `${AppState.sourceText.length}자 입력됨`;
+      document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
+      updateAutoSaveStatus();
+    }
+
+    function showCustomAlert(title, message) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = message;
+      document.getElementById('modal-btn-cancel').classList.add('hidden');
+      document.getElementById('modal-icon-container').className = "p-2.5 rounded-xl bg-amber-50 text-amber-600 shrink-0";
+      document.getElementById('custom-modal-overlay').classList.remove('hidden');
+      document.getElementById('custom-modal-overlay').classList.add('flex');
+      activeModalCallback = null;
+    }
+
+    function showCustomConfirm(title, message, onConfirm) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = message;
+      document.getElementById('modal-btn-cancel').classList.remove('hidden');
+      document.getElementById('modal-icon-container').className = "p-2.5 rounded-xl bg-red-50 text-red-600 shrink-0";
+      document.getElementById('custom-modal-overlay').classList.remove('hidden');
+      document.getElementById('custom-modal-overlay').classList.add('flex');
+      activeModalCallback = onConfirm;
+    }
+
+    function closeCustomModal(isConfirmed) {
+      document.getElementById('custom-modal-overlay').classList.add('hidden');
+      document.getElementById('custom-modal-overlay').classList.remove('flex');
+      if (isConfirmed && activeModalCallback) {
+        activeModalCallback();
+      }
+      activeModalCallback = null;
+    }
+
+    function triggerResetConfirm() {
+      showCustomConfirm(
+        '임시 저장 데이터 초기화',
+        '입력된 내용과 설정을 완전히 초기화하고 처음으로 되돌릴까요?',
+        function() {
+          localStorage.removeItem('manuscriptPaperData');
+          location.reload();
+        }
+      );
+    }
+
+    // 렌더 및 저장 디바운서 연계
+    const debouncedRender = debounce(renderPages, 200);
+    const debouncedSave = debounce(saveToLocalStorage, 500);
+
+    // 이벤트 리스너 바인딩
+    document.getElementById('source-text').addEventListener('input', (e) => {
+      AppState.sourceText = e.target.value;
+      document.getElementById('char-counter').textContent = `${AppState.sourceText.length}자 입력됨`;
+      
+      if (AppState.sourceText.length > 3000 && !window.hasShownLengthWarning) {
+        window.hasShownLengthWarning = true;
+        showCustomAlert(
+          '대용량 텍스트 안내',
+          '원문이 3,000자를 초과했습니다. 원고지 페이지가 과도하게 늘어나면 실시간 렌더링이 다소 느려질 수 있으므로, 3,000자 이내로 나누어 제작하시는 것을 추천합니다.'
+        );
+      } else if (AppState.sourceText.length <= 3000) {
+        window.hasShownLengthWarning = false;
+      }
+      
+      debouncedRender();
+    });
+
+    document.getElementById('input-title').addEventListener('input', (e) => {
+      AppState.articleTitle = e.target.value;
+      document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
+      updateHeaderAndTitle();
+    });
+
+    document.getElementById('grid-cols-select').addEventListener('change', (e) => {
+      AppState.gridCols = e.target.value;
+      saveToLocalStorage();
+      renderPages();
+    });
+
+    ['input-school', 'input-grade', 'input-name'].forEach(id => {
+      document.getElementById(id).addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (id === 'input-school') AppState.schoolName = val;
+        if (id === 'input-grade') AppState.gradeInfo = val;
+        if (id === 'input-name') AppState.studentName = val;
+        updateHeaderAndTitle();
+      });
+    });
+
+    document.getElementById('pattern-guide').addEventListener('change', (e) => { AppState.patternGuide = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('pattern-empty').addEventListener('change', (e) => { AppState.patternEmpty = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('exclude-first-page').addEventListener('change', (e) => {
+      AppState.excludeFirstPage = !e.target.checked;
+      saveToLocalStorage();
+      renderPages();
+    });
+    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('hide-char-count').addEventListener('change', (e) => { AppState.hideCharCount = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('hide-page-numbers').addEventListener('change', (e) => { AppState.hidePageNumbers = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('hide-grid-guides').addEventListener('change', (e) => {
+      AppState.hideGridGuides = e.target.checked;
+      updateGridGuides();
+      saveToLocalStorage();
+    });
+
+    function hexToRgba(hex, alpha = 0.35) {
+      if (!hex) return `rgba(0, 0, 0, ${alpha})`;
+      hex = hex.replace('#', '');
+      if (hex.length === 3) {
+        hex = hex.split('').map(c => c + c).join('');
+      }
+      if (hex.length !== 6) return `rgba(0, 0, 0, ${alpha})`;
+      let r = parseInt(hex.substring(0, 2), 16);
+      let g = parseInt(hex.substring(2, 4), 16);
+      let b = parseInt(hex.substring(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function setGridColor(val, isCustom = false, shouldSave = true) {
+      AppState.currentGridColor = val;
+      document.documentElement.style.setProperty('--grid-color', val);
+      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(val, AppState.gridOpacity));
+      
+      const buttons = document.querySelectorAll('.grid-color-check');
+      buttons.forEach(el => el.classList.add('hidden'));
+      
+      if (!isCustom) {
+        const matchedBtn = document.querySelector(`button[onclick^="setGridColor('${val}'"] .grid-color-check`) || 
+                           document.querySelector(`button[onclick*="'${val}'"] .grid-color-check`);
+        if (matchedBtn) matchedBtn.classList.remove('hidden');
+        document.getElementById('grid-color-picker').value = val;
+      } else {
+        document.getElementById('grid-color-picker').value = val;
+      }
+
+      // '다른 색' 원형 디자인 동적 커스텀 매핑
+      const customBtnSpan = document.querySelector('button[onclick*="grid-color-picker.click()"] span');
+      if (customBtnSpan) {
+        if (isCustom) {
+          customBtnSpan.style.backgroundColor = val;
+          customBtnSpan.style.backgroundImage = 'none';
+        } else {
+          customBtnSpan.style.backgroundColor = '';
+          customBtnSpan.style.backgroundImage = 'linear-gradient(to top right, #6366f1, #a855f7, #ec4899)';
+        }
+      }
+
+      if (shouldSave) {
+        saveToLocalStorage();
+      }
+    }
+
+    function setGuideColor(val, isCustom = false, shouldSave = true) {
+      AppState.currentGuideColor = val;
+      updateGridGuides();
+
+      const checks = document.querySelectorAll('.guide-color-check');
+      checks.forEach(el => el.classList.add('hidden'));
+
+      if (!isCustom) {
+        const matchedBtn = document.querySelector(`button[onclick^="setGuideColor('${val}'"] .guide-color-check`) || 
+                           document.querySelector(`button[onclick*="'${val}'"] .guide-color-check`);
+        if (matchedBtn) matchedBtn.classList.remove('hidden');
+        document.getElementById('guide-color-picker').value = val;
+      } else {
+        document.getElementById('guide-color-picker').value = val;
+      }
+
+      // '다른 색' 원형 디자인 동적 커스텀 매핑
+      const customBtnSpan = document.querySelector('button[onclick*="guide-color-picker.click()"] span');
+      if (customBtnSpan) {
+        if (isCustom) {
+          customBtnSpan.style.backgroundColor = val;
+          customBtnSpan.style.backgroundImage = 'none';
+        } else {
+          customBtnSpan.style.backgroundColor = '';
+          customBtnSpan.style.backgroundImage = 'linear-gradient(to top right, #6366f1, #a855f7, #ec4899)';
+        }
+      }
+
+      if (shouldSave) {
+        saveToLocalStorage();
+      }
+    }
+
+    function updateGridGuides() {
+      document.documentElement.style.setProperty('--guide-display', AppState.hideGridGuides ? 'none' : 'block');
+      document.documentElement.style.setProperty('--guide-color', hexToRgba(AppState.currentGuideColor, AppState.guideOpacity));
+    }
+
+    function updateGridOpacity(val) {
+      AppState.gridOpacity = Number(val) / 100;
+      document.getElementById('gridOpacityVal').innerText = val + '%';
+      
+      const slider = document.getElementById('gridOpacitySlider');
+      if (slider && slider.value != val) {
+        slider.value = val;
+      }
+      
+      document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(AppState.currentGridColor, AppState.gridOpacity));
+      saveToLocalStorage();
+    }
+
+    function updateGuideOpacity(val) {
+      AppState.guideOpacity = Number(val) / 100;
+      document.getElementById('guideOpacityVal').innerText = val + '%';
+      
+      const slider = document.getElementById('guideOpacitySlider');
+      if (slider && slider.value != val) {
+        slider.value = val;
+      }
+      
+      updateGridGuides();
+      saveToLocalStorage();
+    }
+
+    function updateCharYOffset(val) {
+      AppState.charYOffset = Number(val);
+      const displayVal = (val > 0 ? '+' : '') + val + '%';
+      document.getElementById('charYOffsetVal').innerText = displayVal;
+      
+      const slider = document.getElementById('charYOffsetSlider');
+      if (slider && slider.value != val) {
+        slider.value = val;
+      }
+      
+      document.documentElement.style.setProperty('--char-y-offset', val + '%');
+      saveToLocalStorage();
+    }
+
+    // 설정 JSON 파일 추출
+    async function exportSettings() {
+      const json = JSON.stringify(AppState, null, 2);
+
+      if (window.showSaveFilePicker) {
+        try {
+          const fileHandle = await window.showSaveFilePicker({
+            suggestedName: '필사용지설정.json',
+            types: [{
+              description: 'JSON 파일',
+              accept: { 'application/json': ['.json'] }
+            }]
+          });
+          const writable = await fileHandle.createWritable();
+          await writable.write(json);
+          await writable.close();
+        } catch (err) {
+          console.log('저장 취소');
+        }
+        return;
+      }
+
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '필사용지설정.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // 설정 데이터 병합 수화
+    function importSettings(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        let data;
+        try {
+          data = JSON.parse(e.target.result);
+        } catch(error) {
+          showCustomAlert('가져오기 실패', '올바른 설정 파일(JSON)이 아닙니다.');
+          return;
+        }
+
+        if (typeof data !== 'object' || data === null || !('sourceText' in data)) {
+          showCustomAlert('가져오기 실패', '필사용지 설정 파일 규격에 일치하지 않습니다.');
+          return;
+        }
+
+        Object.keys(data).forEach(key => {
+          if (key in AppState) {
+            AppState[key] = data[key];
+          }
+        });
+
+        applyLoadedDataToUI();
+        
+        updatePageStyleSheet();
+        setOrientation(AppState.orientation);
+        
+        const presetGridColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
+        const presetGuideColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
+        
+        setGridColor(AppState.currentGridColor, !presetGridColors.includes(AppState.currentGridColor), false);
+        setGuideColor(AppState.currentGuideColor, !presetGuideColors.includes(AppState.currentGuideColor), false);
+        
+        updateGridOpacity(AppState.gridOpacity * 100);
+        updateGuideOpacity(AppState.guideOpacity * 100);
+        updateCharYOffset(AppState.charYOffset);
+
+        saveToLocalStorage();
+        renderPages();
+      };
+      reader.readAsText(file);
+    }
+
+    function setOrientation(mode) {
+      AppState.orientation = mode;
+      
+      const btnPortrait = document.getElementById('btn-portrait');
+      const btnLandscape = document.getElementById('btn-landscape');
+
+      if (AppState.orientation === 'portrait') {
+        btnPortrait.className = "py-2.5 px-4 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-800 font-bold text-sm transition-all flex items-center justify-center space-x-2";
+        btnLandscape.className = "py-2.5 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm transition-all flex items-center justify-center space-x-2";
+      } else {
+        btnPortrait.className = "py-2.5 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm transition-all flex items-center justify-center space-x-2";
+        btnLandscape.className = "py-2.5 px-4 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-800 font-bold text-sm transition-all flex items-center justify-center space-x-2";
+      }
+
+      updatePageStyleSheet();
+      renderPages();
+      
+      setTimeout(cachePageDimensions, 100);
+    }
+
+    // 용지 인쇄용 미디어 쿼리 주입
+    function updatePageStyleSheet() {
+      let styleEl = document.getElementById('dynamic-page-style');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'dynamic-page-style';
+        document.head.appendChild(styleEl);
+      }
+      if (AppState.orientation === 'portrait') {
+        styleEl.innerHTML = `
+          @page { size: A4 portrait !important; margin: 0mm !important; }
+          :root {
+            --screen-page-width: 210mm;
+            --screen-page-height: 297mm;
+            --print-page-width: 210mm;
+            --print-page-height: 297mm;
+          }
+          .print-page { 
+            width: var(--screen-page-width) !important; 
+            height: var(--screen-page-height) !important; 
+            max-width: var(--screen-page-width) !important; 
+            max-height: var(--screen-page-height) !important; 
+            margin: 0 auto 2.5rem auto !important;
+          }
+          @media print {
+            .print-page {
+              width: var(--print-page-width) !important;
+              height: var(--print-page-height) !important;
+              max-width: var(--print-page-width) !important;
+              max-height: var(--print-page-height) !important;
+              margin: 0 !important;
+              transform: none !important;
+              top: 0 !important;
+              left: 0 !important;
+            }
+            .page-scale-wrapper {
+              height: auto !important;
+            }
+          }
+        `;
+      } else {
+        styleEl.innerHTML = `
+          @page { size: A4 landscape !important; margin: 0 !important; }
+          :root {
+            --screen-page-width: 297mm;
+            --screen-page-height: 210mm;
+            --print-page-width: 297mm;
+            --print-page-height: 210mm;
+          }
+          .print-page { 
+            width: var(--screen-page-width) !important; 
+            height: var(--screen-page-height) !important; 
+            max-width: var(--screen-page-width) !important; 
+            max-height: var(--screen-page-height) !important; 
+            margin: 0 auto 2.5rem auto !important;
+          }
+          @media print {
+            .print-page {
+              width: var(--print-page-width) !important;
+              height: var(--print-page-height) !important;
+              max-width: var(--print-page-width) !important;
+              max-height: var(--print-page-height) !important;
+              margin: 0 !important;
+              transform: none !important;
+              top: 0 !important;
+              left: 0 !important;
+            }
+            .page-scale-wrapper {
+              height: auto !important;
+            }
+          }
+        `;
+      }
+    }
+
+    function getBlankPlaceholders() {
+      return {
+        school: (AppState.schoolName === " " || AppState.schoolName.trim()) ? AppState.schoolName : "",
+        grade: (AppState.gradeInfo === " " || AppState.gradeInfo.trim()) ? AppState.gradeInfo : "__________학년 __________반",
+        name: "" 
+      };
+    }
+
+    function buildHeaderHTML(placeholders) {
+      return `
+        <div class="flex items-center justify-between w-full text-slate-800 text-sm font-bold">
+          <div class="flex items-center space-x-6">
+            <span class="school-placeholder whitespace-nowrap" contenteditable="true">${escapeHTML(placeholders.school)}</span>
+            <span class="grade-placeholder whitespace-nowrap" contenteditable="true">${escapeHTML(placeholders.grade)}</span>
+          </div>
+          <div class="flex items-center border-2 custom-grid-border rounded-lg px-4 py-1.5 bg-slate-50/50 w-[240px]">
+            <span class="text-sm font-extrabold text-slate-700 shrink-0 mr-3">이름 :</span>
+            <div class="name-placeholder-container flex-1 flex justify-center items-center min-w-[100px]">
+              ${AppState.studentName.trim() 
+                ? `<span class="name-placeholder text-slate-900 text-base font-extrabold flex-1 text-center tracking-[1em] pl-[1em]" contenteditable="true">${escapeHTML(AppState.studentName)}</span>`
+                : `<span class="name-placeholder text-slate-400 text-base font-medium flex-1 text-center tracking-normal" contenteditable="true"></span>`
+              }
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateHeaderAndTitle() {
+      const placeholders = getBlankPlaceholders();
+      
+      document.querySelectorAll('.school-placeholder').forEach(el => el.textContent = placeholders.school);
+      document.querySelectorAll('.grade-placeholder').forEach(el => el.textContent = placeholders.grade);
+      
+      document.querySelectorAll('.name-placeholder-container').forEach(el => {
+        if (AppState.studentName.trim()) {
+          el.innerHTML = `<span class="name-placeholder text-slate-900 text-base font-extrabold flex-1 text-center tracking-[1em] pl-[1em]" contenteditable="true">${escapeHTML(AppState.studentName)}</span>`;
+        } else {
+          el.innerHTML = `<span class="name-placeholder text-slate-400 text-base font-medium flex-1 text-center tracking-normal" contenteditable="true"></span>`;
+        }
+      });
+      
+      document.querySelectorAll('.title-placeholder').forEach(el => {
+        el.textContent = AppState.articleTitle ? AppState.articleTitle : '';
+      });
+    }
+
+    function syncMetadata(className, value, activeElement) {
+      document.querySelectorAll('.' + className).forEach(el => {
+        if (el !== activeElement) {
+          el.textContent = value;
+        }
+      });
+    }
+
+    // 엔터키 줄바꿈 무효화
+    document.addEventListener('keydown', (e) => {
+      const target = e.target;
+      if (target.hasAttribute('contenteditable')) {
+        const isSingleLineField = 
+          target.classList.contains('school-placeholder') ||
+          target.classList.contains('grade-placeholder') ||
+          target.classList.contains('name-placeholder') ||
+          target.classList.contains('title-placeholder') ||
+          target.classList.contains('mini-header-left') ||
+          target.classList.contains('mini-header-center') ||
+          target.classList.contains('footer-label-source') ||
+          target.classList.contains('footer-label-guide') ||
+          target.classList.contains('footer-label-empty');
+
+        if (isSingleLineField && e.key === 'Enter') {
+          e.preventDefault();
+          target.blur(); 
+        }
+      }
+    });
+
+    // 지면 실시간 편집 내용 싱크
+    document.addEventListener('input', (e) => {
+      const target = e.target;
+      if (!target.hasAttribute('contenteditable')) return;
+
+      if (target.innerHTML === '<br>') {
+        target.innerHTML = '';
+      }
+
+      const txt = target.textContent;
+
+      if (target.classList.contains('school-placeholder')) {
+        AppState.schoolName = txt === "" ? " " : txt;
+        document.getElementById('input-school').value = AppState.schoolName === " " ? "" : AppState.schoolName;
+        syncMetadata('school-placeholder', AppState.schoolName, target);
+      }
+      else if (target.classList.contains('grade-placeholder')) {
+        AppState.gradeInfo = txt === "" ? " " : txt;
+        document.getElementById('input-grade').value = AppState.gradeInfo === " " ? "" : AppState.gradeInfo;
+        syncMetadata('grade-placeholder', AppState.gradeInfo, target);
+      }
+      else if (target.classList.contains('name-placeholder')) {
+        AppState.studentName = txt;
+        document.getElementById('input-name').value = AppState.studentName;
+        syncMetadata('name-placeholder', AppState.studentName, target);
+      }
+      else if (target.classList.contains('title-placeholder')) {
+        AppState.articleTitle = txt;
+        document.getElementById('input-title').value = AppState.articleTitle;
+        syncMetadata('title-placeholder', AppState.articleTitle, target);
+        document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
+        syncMetadata('mini-header-center', AppState.articleTitle, null);
+      }
+      else if (target.classList.contains('mini-header-left')) {
+        AppState.headerLeftText = txt;
+        syncMetadata('mini-header-left', AppState.headerLeftText, target);
+      }
+      else if (target.classList.contains('mini-header-center')) {
+        AppState.articleTitle = txt;
+        document.getElementById('input-title').value = AppState.articleTitle;
+        syncMetadata('mini-header-center', AppState.articleTitle, target);
+        syncMetadata('title-placeholder', AppState.articleTitle, null);
+        document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
+      }
+      else if (target.classList.contains('footer-label-source')) {
+        AppState.customFooterSourceText = txt === "" ? null : txt;
+        syncMetadata('footer-label-source', txt, target);
+      }
+      else if (target.classList.contains('footer-label-guide')) {
+        AppState.customFooterGuideText = txt === "" ? null : txt;
+        syncMetadata('footer-label-guide', txt, target);
+      }
+      else if (target.classList.contains('footer-label-empty')) {
+        AppState.customFooterEmptyText = txt === "" ? null : txt;
+        syncMetadata('footer-label-empty', txt, target);
+      }
+
+      debouncedSave();
+    });
+
+    // 클립보드 붙여넣기 퓨어텍스트 치환 안전 가드
+    document.addEventListener('paste', (e) => {
+      const target = e.target;
+      const isTargetEditable = target.hasAttribute('contenteditable') || target.id === 'source-text';
+      if (!isTargetEditable) return;
+
+      e.preventDefault();
+      let text = (e.clipboardData || window.clipboardData).getData('text/plain');
+      text = text.replace(/\r\n/g, '\n');
+      
+      if (target.id === 'source-text') {
+        text = text.replace(/\n{3,}/g, '\n\n');
+        const start = target.selectionStart;
+        const end = target.selectionEnd;
+        const currentVal = target.value;
+        target.value = currentVal.substring(0, start) + text + currentVal.substring(end);
+        target.selectionStart = target.selectionEnd = start + text.length;
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+      } else {
+        text = text.replace(/\n/g, ' ');
+        
+        const selection = window.getSelection();
+        if (selection.rangeCount) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          const textNode = document.createTextNode(text);
+          range.insertNode(textNode);
+          
+          range.setStartAfter(textNode);
+          range.setEndAfter(textNode);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } else if (document.queryCommandSupported('insertText')) {
+          document.execCommand('insertText', false, text);
+        }
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+
+    document.addEventListener('blur', (e) => {
+      const target = e.target;
+      if (!target.hasAttribute('contenteditable')) return;
+
+      if (target.textContent.trim() === "") {
+        target.innerHTML = "";
+      }
+
+      if (target.classList.contains('title-placeholder') || target.classList.contains('mini-header-center')) {
+        updateHeaderAndTitle();
+      }
+    }, true);
+
+    
+    // [성능 향상] parseTextToManuscriptCells 결과 캐싱 레이어 탑재
+    let cachedParsedCells = null;
+    let lastParsedText = "";
+    let lastParsedCols = null;
+
+    function parseTextToManuscriptCells(text, cols) {
+      if (cachedParsedCells && lastParsedText === text && lastParsedCols === cols) {
+        return cachedParsedCells;
+      }
+
+      const cells = [];
+      const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
+      const isPunctuation = (c) => /[.,!?'"ным“('_~);:]/.test(c) || /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
+      
+      const isPeriodOrComma = (c) => c === '.' || c === ',';
+      const isQuote = (c) => /[“‘”’"']/.test(c);
+      const isSymbol = (c) => /[!?！？]/.test(c); 
+
+      const paragraphs = text.split('\n');
+
+      paragraphs.forEach((pText, pIdx) => {
+        if (pText.trim() === "" && pIdx > 0) {
+          const colIndex = cells.length % cols;
+          if (colIndex > 0) {
+            const fillCount = cols - colIndex;
+            for (let f = 0; f < fillCount; f++) {
+              cells.push({ char: "", isSpace: true, isParagraphFiller: true });
+            }
+          }
+          for (let f = 0; f < cols; f++) {
+            cells.push({ char: "", isSpace: true, isParagraphFiller: true });
+          }
+          return;
+        }
+
+        if (pIdx > 0) {
+          const colIndex = cells.length % cols;
+          if (colIndex > 0) {
+            const fillCount = cols - colIndex;
+            for (let f = 0; f < fillCount; f++) {
+              cells.push({ char: "", isSpace: true, isParagraphFiller: true });
+            }
+          }
+        }
+
+        cells.push({ char: " ", isSpace: true, isParagraphStartSpace: true });
+
+        let charIdx = 0;
+        while (charIdx < pText.length) {
+          let char = pText[charIdx];
+          let nextChar = pText[charIdx + 1];
+          let colIndex = cells.length % cols;
+
+          const isAtRowEnd = (colIndex === 0 && cells.length > 0);
+
+        
+          // 원고지 마지막 칸의 문자 + 기호일 때한 칸으로 합침
+          if (isPunctuation(char) && isAtRowEnd) {
+            let targetIdx = cells.length - 1;
+            if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller && !cells[targetIdx].squeezedPunct) {
+              cells[targetIdx].squeezedPunct = char; 
+              cells[targetIdx].isSqueezed = true;
+              charIdx += 1;
+              continue;
+            }
+          }
+
+        
+          if (isPeriodOrComma(char) && nextChar && (nextChar === '“' || nextChar === '‘')) {
+            cells.push({
+              char: char,
+              squeezedPunct: nextChar,
+              isPeriodOpeningQuoteCombo: true
+            });
+            charIdx += 2;
+            continue;
+          }
+
+          if (isPeriodOrComma(char) && nextChar && (nextChar === '”' || nextChar === '’' || nextChar === '"' || nextChar === "'")) {
+            cells.push({
+              char: char,
+              squeezedPunct: nextChar,
+              isPeriodQuoteCombo: true
+            });
+            charIdx += 2;
+            continue;
+          }
+
+          if (isSymbol(char) && nextChar && isQuote(nextChar)) {
+            cells.push({
+              char: char,
+              squeezedPunct: nextChar,
+              isSymbolFirstCombo: true
+            });
+            charIdx += 2;
+            continue;
+          }
+
+          if (isQuote(char) && nextChar && isSymbol(nextChar)) {
+            cells.push({
+              char: char,
+              squeezedPunct: nextChar,
+              isQuoteFirstCombo: true
+            });
+            charIdx += 2;
+            continue;
+          }
+
+          if (isPunctuation(char) && nextChar && isPunctuation(nextChar)) {
+            cells.push({
+              char: char,
+              squeezedPunct: nextChar,
+              isDoublePunct: true
+            });
+            charIdx += 2;
+            continue;
+          }
+
+          if (char === ' ') {
+            if (colIndex === 0) {
+              charIdx++;
+              continue;
+            }
+            if (cells.length > 0) {
+              const prevCell = cells[cells.length - 1];
+              if (prevCell && (prevCell.char === '.' || prevCell.char === ',')) {
+                if (prevCell.isPeriodQuoteCombo) {
+                  cells.push({ char: " ", isSpace: true });
+                  charIdx++;
+                  continue;
+                }
+                charIdx++;
+                continue;
+              }
+            }
+            cells.push({ char: " ", isSpace: true });
+            charIdx++;
+            continue;
+          }
+
+          if (isAlphanumeric(char)) {
+            let nextChar = pText[charIdx + 1];
+            if (nextChar && isAlphanumeric(nextChar)) {
+              cells.push({ char: char + nextChar, isAlphanumeric: true });
+              charIdx += 2;
+            } else {
+              cells.push({ char: char, isAlphanumeric: true });
+              charIdx += 1;
+            }
+            continue;
+          }
+
+          cells.push({ char: char });
+          charIdx++;
+        }
+
+        const endColIndex = cells.length % cols;
+        if (endColIndex > 0) {
+          const fillCount = cols - endColIndex;
+          for (let f = 0; f < fillCount; f++) {
+            cells.push({ char: "", isSpace: true, isParagraphFiller: true });
+          }
+        }
+      });
+
+      lastParsedText = text;
+      lastParsedCols = cols;
+      cachedParsedCells = cells;
+
+      return cells;
+    }
+
+    function calculateOptimalRows(cols) {
+      if (cols === "line") {
+        if (AppState.orientation === 'portrait') {
+          return AppState.hideManuscriptHeader ? 24 : 21; 
+        } else {
+          return AppState.hideManuscriptHeader ? 16 : 13; 
+        }
+      }
+      const colsNum = parseInt(cols);
+      
+      if (colsNum === 20 && AppState.orientation === 'portrait') {
+        return 25;
+      }
+      
+      const usableWidthMm = (AppState.orientation === 'portrait') ? 170 : 257;
+      const cellWidthMm = usableWidthMm / colsNum;
+      
+      const usableHeightMm = (AppState.orientation === 'portrait')
+        ? (AppState.hideManuscriptHeader ? 228 : 208)
+        : (AppState.hideManuscriptHeader ? 158 : 133);
+
+      return Math.floor(usableHeightMm / cellWidthMm);
+    }
+
+    function estimateLinesForSegments(segments, fontSizePt) {
+      const charWidthMm = fontSizePt * 0.3527; 
+      const maxLineWidthMm = (AppState.orientation === 'portrait') ? 155 : 112; 
+
+      let totalLines = 0;
+
+      function getCharWidthMm(char) {
+        if (/[0-9a-zA-Z]/.test(char)) return charWidthMm * 0.58; 
+        if (char === ' ') return charWidthMm * 0.35; 
+        if (/[.,!?'"ным“('_~);:]/.test(char)) return charWidthMm * 0.5; 
+        return charWidthMm; 
+      }
+
+      const paragraphsToCalculate = [];
+      let currentParaWords = [];
+      let currentParaHasIndent = false;
+
+      for (let i = 0; i < segments.length; i++) {
+        const seg = segments[i];
+
+        if (seg.isBlankLine) {
+          if (currentParaWords.length > 0) {
+            paragraphsToCalculate.push({
+              text: currentParaWords.join(' '),
+              words: currentParaWords,
+              hasIndent: currentParaHasIndent
+            });
+            currentParaWords = [];
+          }
+          paragraphsToCalculate.push({ isBlankLine: true });
+        } else {
+          const prevSeg = i > 0 ? segments[i - 1] : null;
+          const isNewParagraph = !prevSeg || prevSeg.isBlankLine || (prevSeg.pIdx !== seg.pIdx);
+
+          if (isNewParagraph) {
+            if (currentParaWords.length > 0) {
+              paragraphsToCalculate.push({
+                text: currentParaWords.join(' '),
+                words: currentParaWords,
+                hasIndent: currentParaHasIndent
+              });
+              currentParaWords = [];
+            }
+            currentParaHasIndent = !seg.isContinued;
+          }
+
+          const wordsInSeg = seg.text.split(' ');
+          wordsInSeg.forEach((w, wIdx) => {
+            if (w !== "") {
+              currentParaWords.push(w);
+            } else if (wIdx > 0 && wIdx < wordsInSeg.length - 1) {
+              currentParaWords.push(""); 
+            }
+          });
+        }
+      }
+
+      if (currentParaWords.length > 0) {
+        paragraphsToCalculate.push({
+          text: currentParaWords.join(' '),
+          words: currentParaWords,
+          hasIndent: currentParaHasIndent
+        });
+      }
+
+      paragraphsToCalculate.forEach(p => {
+        if (p.isBlankLine) {
+          totalLines += 1.0;
+          return;
+        }
+
+        const indentWidth = p.hasIndent ? (charWidthMm * 1.5) : 0;
+        let currentLineWidth = indentWidth;
+        let linesInPara = 1;
+
+        p.words.forEach(word => {
+          if (word === "") {
+            currentLineWidth += getCharWidthMm(' ');
+            return;
+          }
+
+          let wordWidth = 0;
+          for (let char of word) {
+            wordWidth += getCharWidthMm(char);
+          }
+
+          const spaceWidth = (currentLineWidth > indentWidth) ? getCharWidthMm(' ') : 0;
+
+          if (currentLineWidth + spaceWidth + wordWidth > maxLineWidthMm) {
+            linesInPara += 1;
+            currentLineWidth = wordWidth;
+          } else {
+            currentLineWidth += spaceWidth + wordWidth;
+          }
+        });
+
+        totalLines += linesInPara;
+      });
+
+      return totalLines;
+    }
+
+    function getMaxLines(fontSizePt, pageIdx) {
+      if (AppState.orientation === 'portrait') {
+        const baseLines = (pageIdx === 0) ? 27 : 30;
+        return Math.floor(baseLines * (10 / fontSizePt));
+      } else { 
+        const baseLinesPerCol = (pageIdx === 0) ? 16 : 18;
+        const linesPerCol = Math.floor(baseLinesPerCol * (10 / fontSizePt));
+        return linesPerCol * 2; 
+      }
+    }
+
+    function canFitSinglePage(paragraphs, fontSizePt) {
+      const segments = [];
+      paragraphs.forEach((p, pIdx) => {
+        if (p.trim() === "") {
+          segments.push({ isBlankLine: true, pIdx: pIdx });
+        } else {
+          segments.push({ text: p.trim(), isContinued: false, pIdx: pIdx });
+        }
+      });
+      const lines = estimateLinesForSegments(segments, fontSizePt);
+      const maxLines = getMaxLines(fontSizePt, 0); 
+      return lines <= maxLines;
+    }
+
+    function paginateSourceText(paragraphs) {
+      let globalFontSize = '12pt';
+      
+      if (canFitSinglePage(paragraphs, 12)) {
+        globalFontSize = '12pt';
+      } else if (canFitSinglePage(paragraphs, 11)) {
+        globalFontSize = '11pt';
+      } else if (canFitSinglePage(paragraphs, 10)) {
+        globalFontSize = '10pt';
+      } else {
+        globalFontSize = '12pt'; 
+      }
+
+      const fontSizeNum = parseInt(globalFontSize);
+
+      const stream = [];
+      paragraphs.forEach((p, pIdx) => {
+        const trimmed = p.trim();
+        if (trimmed === "") {
+          stream.push({ type: 'blank', pIdx: pIdx });
+        } else {
+          const sentences = trimmed.split(/(?<=[.?!])\s+/);
+          sentences.forEach((s, idx) => {
+            if (s.trim() !== "") {
+              stream.push({
+                type: 'sentence',
+                text: s.trim(),
+                isParaStart: (idx === 0),
+                pIdx: pIdx
+              });
+            }
+          });
+        }
+      });
+
+      const pages = [];
+      let currentPageIdx = 0;
+      let currentPageSegments = [];
+
+      for (let i = 0; i < stream.length; i++) {
+        const item = stream[i];
+        let candidateSegments = [...currentPageSegments];
+        let nextSegment;
+
+        if (item.type === 'blank') {
+          nextSegment = { isBlankLine: true, pIdx: item.pIdx };
+        } else {
+          const isContinued = !item.isParaStart;
+          nextSegment = { text: item.text, isContinued: isContinued, pIdx: item.pIdx };
+        }
+
+        candidateSegments.push(nextSegment);
+
+        const maxLines = getMaxLines(fontSizeNum, currentPageIdx);
+        const estimated = estimateLinesForSegments(candidateSegments, fontSizeNum);
+
+        if (estimated <= maxLines) {
+          currentPageSegments.push(nextSegment);
+        } else {
+          if (currentPageSegments.length > 0) {
+            pages.push({ segments: [...currentPageSegments], fontSize: globalFontSize });
+            currentPageSegments = [];
+            currentPageIdx++;
+
+            if (item.type === 'sentence') {
+              const isContinuedOnNewPage = !item.isParaStart;
+              currentPageSegments.push({ text: item.text, isContinued: isContinuedOnNewPage, pIdx: item.pIdx });
+            } else {
+              currentPageSegments.push({ isBlankLine: true, pIdx: item.pIdx });
+            }
+          } else {
+            currentPageSegments.push(nextSegment);
+          }
+        }
+      }
+      
+      if (currentPageSegments.length > 0) {
+        pages.push({ segments: currentPageSegments, fontSize: globalFontSize });
+      }
+
+      return pages;
+    }
+
+    function splitTextForLineNote(text, maxNonSpace) {
+      const lines = [];
+      const paragraphs = text.split('\n');
+      const isPunctuation = (c) => /[.,!?'"ным“('_~);:]/.test(c) || /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
+
+      paragraphs.forEach((p) => {
+        if (p.trim() === "") {
+          lines.push({ text: "", isFirstLine: false, isLastLineOfPara: true });
+          return;
+        }
+
+        let chars = Array.from(p);
+        let currentLineText = "";
+        let currentNonSpaceCount = 0;
+        let isFirstLine = true;
+
+        let i = 0;
+        while (i < chars.length) {
+          let char = chars[i];
+          let isSpace = (char === ' ' || char === '\t' || char === '\r');
+
+          if (!isSpace && currentNonSpaceCount >= maxNonSpace) {
+            if (isPunctuation(char)) {
+              while (i < chars.length && isPunctuation(chars[i])) {
+                currentLineText += chars[i];
+                i++;
+              }
+            }
+            
+            lines.push({ text: currentLineText, isFirstLine: isFirstLine, isLastLineOfPara: false });
+            currentLineText = "";
+            currentNonSpaceCount = 0;
+            isFirstLine = false;
+            
+            if (i < chars.length && (chars[i] === ' ' || chars[i] === '\t' || chars[i] === '\r')) {
+              i++;
+            }
+            continue;
+          }
+
+          currentLineText += char;
+          if (!isSpace) {
+            currentNonSpaceCount++;
+          }
+          i++;
+        }
+
+        if (currentLineText.length > 0 || isFirstLine) {
+          lines.push({ text: currentLineText, isFirstLine: isFirstLine, isLastLineOfPara: true });
+        }
+      });
+
+      return lines;
+    }
+
+    // 빈 페이지 뼈대 빌드 엔진
+    function buildSkeletonPage(spec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage) {
+      const wrapper = document.createElement('div');
+      wrapper.className = "page-scale-wrapper mb-10";
+      wrapper.dataset.pageType = spec.type;
+      wrapper.dataset.pageMode = spec.currentMode || 'none';
+
+      const pageDiv = document.createElement('div');
+      pageDiv.className = pageClass;
+
+      const innerDiv = document.createElement('div');
+      innerDiv.className = "print-page-inner";
+      pageDiv.appendChild(innerDiv);
+      wrapper.appendChild(pageDiv);
+
+      if (spec.type === 'source') {
+        if (spec.sIdx === 0) {
+          const pageOneHeader = document.createElement('div');
+          pageOneHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
+          pageOneHeader.innerHTML = headerHTML;
+          innerDiv.appendChild(pageOneHeader);
+
+          const pageOneTitle = document.createElement('div');
+          pageOneTitle.className = "mt-4 mb-2 w-full text-left shrink-0";
+          pageOneTitle.innerHTML = `
+            <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(AppState.articleTitle)}</h2>
+          `;
+          innerDiv.appendChild(pageOneTitle);
+        } else {
+          const pageOneHeader = document.createElement('div');
+          pageOneHeader.className = "pb-2 border-b border-dashed custom-grid-border grid grid-cols-3 items-center text-xs custom-grid-text opacity-80 font-serif-fixed shrink-0 w-full mb-4";
+          pageOneHeader.innerHTML = `
+            <span class="mini-header-left text-left tracking-wider opacity-90 text-[11px] font-medium" contenteditable="true">${escapeHTML(AppState.headerLeftText)}</span>
+            <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${escapeHTML(AppState.articleTitle)}</span>
+            <span class="text-right"></span>
+          `;
+          innerDiv.appendChild(pageOneHeader);
+        }
+
+        const pageOneBody = document.createElement('div');
+        pageOneBody.className = "w-full flex flex-col justify-start items-center mb-[15mm]";
+        
+        if (AppState.orientation === 'portrait') {
+          pageOneBody.style.maxHeight = (spec.sIdx === 0) ? "175mm" : "195mm";
+        } else {
+          const baseHeight = (spec.sIdx === 0) ? 108 : 132;
+          pageOneBody.style.maxHeight = `${baseHeight}mm`;
+        }
+        pageOneBody.style.minHeight = "0";
+
+        const frameDiv = document.createElement('div');
+        let borderClasses = "border-2 border-solid custom-grid-border bg-white flex flex-col justify-stretch p-6 w-full h-auto";
+        if (spec.totalSourcePages > 1) {
+          if (spec.sIdx === 0) borderClasses += " border-b-0 rounded-t-xl rounded-b-none";
+          else if (spec.sIdx === spec.totalSourcePages - 1) borderClasses += " border-t-0 rounded-b-xl rounded-t-none";
+          else borderClasses += " border-t-0 border-b-0 rounded-none";
+        } else {
+          borderClasses += " rounded-xl";
+        }
+        frameDiv.className = borderClasses;
+
+        const pInnerContent = document.createElement('div');
+        pInnerContent.className = "font-serif-fixed text-slate-800 leading-[2.2] font-medium w-full text-justify p-inner-content outline-none";
+        pInnerContent.style.textJustify = "inter-character";
+        pInnerContent.style.wordBreak = "keep-all";
+        pInnerContent.style.fontSize = spec.pageData.fontSize; 
+        pInnerContent.style.height = "auto";
+
+        const fontSizeNum = parseInt(spec.pageData.fontSize);
+        const maxLinesOnThisPage = (AppState.orientation === 'portrait') 
+          ? ((spec.sIdx === 0) ? getMaxLines(fontSizeNum, 0) : getMaxLines(fontSizeNum, 1))
+          : ((spec.sIdx === 0) ? getMaxLines(fontSizeNum, 0) / 2 : getMaxLines(fontSizeNum, 1) / 2); 
+        
+        const lineHeightMm = fontSizeNum * 2.2 * 0.352778;
+        const maxContentHeightMm = maxLinesOnThisPage * lineHeightMm;
+
+        pInnerContent.style.maxHeight = `${maxContentHeightMm}mm`;
+        pInnerContent.style.overflow = "hidden"; 
+
+        if (AppState.orientation === 'landscape') {
+          pInnerContent.style.columnCount = "2";
+          pInnerContent.style.columnGap = "15mm";
+          pInnerContent.style.columnFill = "auto"; 
+          pInnerContent.style.height = `${maxContentHeightMm}mm`;
+        } else {
+          pInnerContent.style.columnCount = "auto";
+          pInnerContent.style.columnGap = "normal";
+          pInnerContent.style.columnFill = "balance";
+          pInnerContent.style.height = "auto";
+        }
+
+        frameDiv.appendChild(pInnerContent);
+        pageOneBody.appendChild(frameDiv);
+        innerDiv.appendChild(pageOneBody);
+
+        if (!AppState.hidePageNumbers) {
+          const pageOneFooter = document.createElement('div');
+          pageOneFooter.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
+          const displaySourceFooter = AppState.customFooterSourceText !== null ? AppState.customFooterSourceText : footerSourceText;
+          pageOneFooter.innerHTML = `
+            <span class="tracking-wide text-slate-400"><span class="footer-label-source" contenteditable="true">${escapeHTML(displaySourceFooter)}</span></span>
+            <span class="bg-emerald-50 text-emerald-800 px-3.5 py-1 rounded-full border border-emerald-100">${spec.sIdx + 1} / ${spec.totalSourcePages}</span>
+          `;
+          innerDiv.appendChild(pageOneFooter);
+        }
+      } else {
+        if (!AppState.hideManuscriptHeader) {
+          const gridPageHeader = document.createElement('div');
+          gridPageHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
+          gridPageHeader.innerHTML = headerHTML;
+          innerDiv.appendChild(gridPageHeader);
+
+          const gridPageTitle = document.createElement('div');
+          gridPageTitle.className = "mt-3 mb-1 w-full text-left shrink-0";
+          gridPageTitle.style.marginBottom = "2mm"; 
+          
+          const borderClass = isLineNote ? "" : "border-b custom-grid-border pb-1";
+          gridPageTitle.innerHTML = `
+            <div class="${borderClass}">
+              <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(AppState.articleTitle)}</h2>
+            </div>
+          `;
+          innerDiv.appendChild(gridPageTitle);
+        } else {
+          if (!isLineNote) {
+            const singleLine = document.createElement('div');
+            singleLine.className = "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
+            innerDiv.appendChild(singleLine);
+          }
+        }
+
+        const gridWrapper = document.createElement('div');
+        gridWrapper.className = AppState.hideManuscriptHeader ? "w-full flex items-center justify-center" : "w-full my-0 flex items-center justify-center"; 
+        innerDiv.appendChild(gridWrapper);
+
+        if (isLineNote) {
+          const usableWidthMm = (AppState.orientation === 'portrait') ? 162 : 249;
+          const relativeContainer = document.createElement('div');
+          relativeContainer.className = "relative mx-auto";
+          relativeContainer.style.width = `${usableWidthMm}mm`;
+          relativeContainer.style.height = `${optRows * 10}mm`;
+
+          const noteContainer = document.createElement('div');
+          noteContainer.className = "w-full h-full border-t-2 manuscript-grid-border flex flex-col justify-start relative";
+          
+          for (let r = 0; r < optRows; r++) {
+            const rowDiv = document.createElement('div');
+            const isLastRow = (r === optRows - 1);
+            const borderThicknessClass = isLastRow ? "border-b-[3px]" : "border-b";
+            rowDiv.className = `${borderThicknessClass} manuscript-grid-border w-full shrink-0 relative`;
+            rowDiv.style.height = "10mm";
+            noteContainer.appendChild(rowDiv);
+          }
+          relativeContainer.appendChild(noteContainer);
+          gridWrapper.appendChild(relativeContainer);
+        } else {
+          const colsNum = parseInt(AppState.gridCols);
+          const usableWidthMm = (AppState.orientation === 'portrait') ? 170 : 257;
+          const cellWidthMm = usableWidthMm / colsNum;
+          
+          const relativeContainer = document.createElement('div');
+          relativeContainer.className = "relative mx-auto block";
+          relativeContainer.style.width = `${usableWidthMm}mm`;
+          relativeContainer.style.height = `${optRows * cellWidthMm}mm`;
+
+          const gridBody = document.createElement('div');
+          gridBody.className = "grid gap-0 border-2 manuscript-grid-border w-full h-full";
+          gridBody.style.gridTemplateColumns = `repeat(${colsNum}, minmax(0, 1fr))`;
+          gridBody.style.gridTemplateRows = `repeat(${optRows}, minmax(0, 1fr))`;
+
+          for (let r = 0; r < optRows; r++) {
+            for (let c = 0; c < colsNum; c++) {
+              const cell = document.createElement('div');
+              cell.className = "grid-cell-guide border-b border-r manuscript-grid-border flex items-center justify-center relative aspect-square";
+              if (c === colsNum - 1) cell.classList.remove('border-r');
+              if (r === optRows - 1) cell.classList.remove('border-b');
+              gridBody.appendChild(cell);
+            }
+          }
+          relativeContainer.appendChild(gridBody);
+
+          if (!AppState.hideCharCount) {
+            const pageOffset = spec.pageIdx * cellsPerPage;
+            for (let r = 0; r < optRows; r++) {
+              const rowStartCell = pageOffset + r * colsNum;
+              const rowEndCell = pageOffset + (r + 1) * colsNum;
+              const currentMaxMultiplesCount = Math.floor(rowEndCell / 100);
+              
+              for (let k = 1; k <= currentMaxMultiplesCount; k++) {
+                const targetBaseValue = 100 * k;
+                if (targetBaseValue > rowStartCell && targetBaseValue <= rowEndCell) {
+                  const labelVal = rowEndCell; 
+                  const label = document.createElement('div');
+                  label.className = "absolute text-[10px] custom-grid-text font-mono font-bold opacity-75 flex items-center justify-start pointer-events-none";
+                  label.style.right = "-32px";
+                  label.style.width = "25px";
+                  label.style.height = `${100 / optRows}%`;
+                  label.style.top = `${(r * 100) / optRows}%`;
+                  label.textContent = labelVal;
+                  relativeContainer.appendChild(label);
+                  break; 
+                }
+              }
+            }
+          }
+          gridWrapper.appendChild(relativeContainer);
+        }
+
+        if (!isLineNote) {
+          if (AppState.hideManuscriptHeader) {
+            const singleBottomLine = document.createElement('div');
+            singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[3mm] shrink-0";
+            innerDiv.appendChild(singleBottomLine);
+          } else {
+            const singleBottomLine = document.createElement('div');
+            singleBottomLine.className = "w-full border-t border-solid custom-grid-border mt-[2mm] shrink-0";
+            innerDiv.appendChild(singleBottomLine);
+          }
+        }
+
+        if (!AppState.hidePageNumbers) {
+          const footerDiv = document.createElement('div');
+          footerDiv.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
+          
+          let currentFooterLabel = "";
+          let currentFooterClass = "";
+          
+          if (isLineNote) {
+            if (spec.currentMode === 'guide') {
+              currentFooterLabel = AppState.customFooterGuideText !== null ? AppState.customFooterGuideText : (footerGuideText + " - 줄 노트");
+              currentFooterClass = "footer-label-guide";
+            } else {
+              currentFooterLabel = AppState.customFooterEmptyText !== null ? AppState.customFooterEmptyText : (footerEmptyText + " - 줄 노트");
+              currentFooterClass = "footer-label-empty";
+            }
+          } else {
+            if (spec.currentMode === 'guide') {
+              currentFooterLabel = AppState.customFooterGuideText !== null ? AppState.customFooterGuideText : (footerGuideText + " - 가로 " + AppState.gridCols + "칸");
+              currentFooterClass = "footer-label-guide";
+            } else {
+              currentFooterLabel = AppState.customFooterEmptyText !== null ? AppState.customFooterEmptyText : (footerEmptyText + " - 가로 " + AppState.gridCols + "칸");
+              currentFooterClass = "footer-label-empty";
+            }
+          }
+
+          footerDiv.innerHTML = `
+            <span class="tracking-wide text-slate-400"><span class="${currentFooterClass}" contenteditable="true">${escapeHTML(currentFooterLabel)}</span></span>
+            <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">- ${spec.pageIdx + 1} / ${spec.totalGridPages} -</span>
+          `;
+          innerDiv.appendChild(footerDiv);
+        }
+      }
+
+      return wrapper;
+    }
+
+    // 1. renderPages() 전체 조판 엔진 책임 분배 실행계획부
+    function renderPages() {
+      const container = document.getElementById('pages-container');
+      const currentLayoutSignature = AppState.orientation + "_" + AppState.gridCols + "_" + AppState.hideManuscriptHeader + "_" + AppState.hideCharCount + "_" + AppState.hidePageNumbers + "_" + AppState.excludeFirstPage + "_" + AppState.patternGuide + "_" + AppState.patternEmpty;
+
+      // 단계 A: 페이지 메타 스펙 빌드 (구조 연산 전담)
+      const pageSpecs = buildPageSpecs();
+
+      // 단계 B: DOM 페이지 래퍼 보존 및 조율 (엘리먼트 풀 재사용 기법)
+      adjustDOMWrappersPool(container, pageSpecs, currentLayoutSignature);
+
+      // 단계 C: 각 지면 서브 렌더러 분기 및 가상 렌더링 (데이터 바인딩 전담)
+      renderPageContents(pageSpecs, currentLayoutSignature);
+
+      // 단계 D: 실시간 메타 데이터 동기화 및 부속 상태 갱신
+      updateHeaderAndTitle();
+
+      const totalPages = container.querySelectorAll('.page-scale-wrapper').length;
+      updatePageBadge(1, totalPages);
+      
+      cachePageDimensions();
+      adjustPreviewScale();
+
+      setupIntersectionObserver();
+      debouncedSave();
+    }
+
+    // 2. [책임 분리] 페이지 스펙 모델링 생성부
+    function buildPageSpecs() {
+      const pageSpecs = [];
+
+      // A4 원문 읽기 지면
+      if (!AppState.excludeFirstPage) {
+        const paragraphs = AppState.sourceText.split('\n');
+        const sourcePages = paginateSourceText(paragraphs);
+        sourcePages.forEach((pageData, sIdx) => {
+          pageSpecs.push({
+            type: 'source',
+            sIdx: sIdx,
+            totalSourcePages: sourcePages.length,
+            pageData: pageData
+          });
+        });
+      }
+
+      // 원고지 및 줄노트 지면 계산
+      const optRows = calculateOptimalRows(AppState.gridCols);
+      const isLineNote = (AppState.gridCols === 'line');
+      const cellsPerPage = isLineNote ? optRows : (parseInt(AppState.gridCols) * optRows);
+      
+      let totalGridPages = 1;
+      if (isLineNote) {
+        const maxNonSpace = (AppState.orientation === 'portrait') ? 25 : 33;
+        const linesData = splitTextForLineNote(AppState.sourceText, maxNonSpace);
+        totalGridPages = Math.ceil(linesData.length / optRows) || 1;
+      } else {
+        const colsNum = parseInt(AppState.gridCols);
+        const cellsData = parseTextToManuscriptCells(AppState.sourceText, colsNum);
+        totalGridPages = Math.ceil(cellsData.length / cellsPerPage) || 1;
+      }
+
+      const renderingModes = [];
+      if (AppState.patternGuide) renderingModes.push('guide');
+      if (AppState.patternEmpty) renderingModes.push('empty');
+      if (renderingModes.length === 0) renderingModes.push('empty');
+
+      renderingModes.forEach(currentMode => {
+        for (let pageIdx = 0; pageIdx < totalGridPages; pageIdx++) {
+          pageSpecs.push({
+            type: isLineNote ? 'line' : 'grid',
+            pageIdx: pageIdx,
+            totalGridPages: totalGridPages,
+            currentMode: currentMode
+          });
+        }
+      });
+
+      return pageSpecs;
+    }
+
+    // 3. [책임 분리] 고성능 Flyweight 엘리먼트 풀 유지보수기
+    function adjustDOMWrappersPool(container, pageSpecs, currentLayoutSignature) {
+      const existingWrappers = Array.from(container.querySelectorAll('.page-scale-wrapper'));
+      
+      // 넘치는 기존 래퍼 엘리먼트 메모리 해제
+      while (existingWrappers.length > pageSpecs.length) {
+        const popped = existingWrappers.pop();
+        container.removeChild(popped);
+      }
+
+      const pageClass = AppState.orientation === 'portrait' ? 'a4-page print-page portrait-page' : 'a4-page print-page landscape-page';
+      const placeholders = getBlankPlaceholders();
+      const headerHTML = buildHeaderHTML(placeholders);
+      const optRows = calculateOptimalRows(AppState.gridCols);
+      const isLineNote = (AppState.gridCols === 'line');
+      const cellsPerPage = isLineNote ? optRows : (parseInt(AppState.gridCols) * optRows);
+
+      // 부족한 분량만 최소 가상 객체 주입
+      while (existingWrappers.length < pageSpecs.length) {
+        const newSpec = pageSpecs[existingWrappers.length];
+        const newWrapper = buildSkeletonPage(newSpec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage);
+        container.appendChild(newWrapper);
+        existingWrappers.push(newWrapper);
+      }
+    }
+
+    // 4. [책임 분리] 지면 데이터 동기화 분기 제어부
+    function renderPageContents(pageSpecs, currentLayoutSignature) {
+      const container = document.getElementById('pages-container');
+      const wrappers = Array.from(container.querySelectorAll('.page-scale-wrapper'));
+      const pageClass = AppState.orientation === 'portrait' ? 'a4-page print-page portrait-page' : 'a4-page print-page landscape-page';
+      const placeholders = getBlankPlaceholders();
+      const headerHTML = buildHeaderHTML(placeholders);
+      const optRows = calculateOptimalRows(AppState.gridCols);
+      const isLineNote = (AppState.gridCols === 'line');
+      const cellsPerPage = isLineNote ? optRows : (parseInt(AppState.gridCols) * optRows);
+
+      let cellsData = [];
+      let linesData = [];
+
+      if (isLineNote) {
+        const maxNonSpace = (AppState.orientation === 'portrait') ? 25 : 33;
+        linesData = splitTextForLineNote(AppState.sourceText, maxNonSpace);
+      } else {
+        const colsNum = parseInt(AppState.gridCols);
+        cellsData = parseTextToManuscriptCells(AppState.sourceText, colsNum);
+      }
+
+      for (let i = 0; i < pageSpecs.length; i++) {
+        const spec = pageSpecs[i];
+        const wrapper = wrappers[i];
+
+        const sourceFrameState =
+          spec.type === 'source'
+          ? `${spec.sIdx}_${spec.totalSourcePages}`
+          : 'normal';
+
+        // 레이아웃 비틀림 감지 시 해당 단일 지면만 뼈대 복원
+        if (
+    wrapper.dataset.pageType !== spec.type ||
+    wrapper.dataset.pageMode !== (spec.currentMode || 'none') ||
+    wrapper.dataset.layoutSignature !== currentLayoutSignature ||
+    wrapper.dataset.sourceFrameState !== sourceFrameState
+) {
+          
+          const rebuiltWrapper = buildSkeletonPage(spec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage);
+          wrapper.innerHTML = rebuiltWrapper.innerHTML;
+wrapper.dataset.pageType = spec.type;
+wrapper.dataset.pageMode = spec.currentMode || 'none';
+wrapper.dataset.layoutSignature = currentLayoutSignature;
+wrapper.dataset.sourceFrameState = sourceFrameState;
+          delete wrapper.dataset.stateKey; 
+          delete wrapper.dataset.pageContentState; 
+          delete wrapper.dataset.sourceFrameState;
+        }
+
+        // 각 서브 전용 렌더러에게 세부 그리기 작업 양도
+        if (spec.type === 'source') {
+          renderSourcePageContent(wrapper, spec);
+        } else if (spec.type === 'grid') {
+          renderGridPageContent(wrapper, spec, cellsData, cellsPerPage);
+        } else if (spec.type === 'line') {
+          renderLinePageContent(wrapper, spec, linesData, optRows);
+        }
+      }
+    }
+
+    // 5. [책임 분리] 원문 읽기 전용 렌더러
+    function renderSourcePageContent(wrapper, spec) {
+      let nextState = spec.pageData.fontSize + "_" + calculateSourcePageHash(spec.pageData.segments);
+      if (wrapper.dataset.stateKey !== nextState) {
+        const pInnerContent = wrapper.querySelector('.p-inner-content');
+        pInnerContent.innerHTML = "";
+        const htmlParagraphs = [];
+        let currentParaText = "";
+        let isContinuedPara = false;
+        let currentParaId = null;
+
+        spec.pageData.segments.forEach(seg => {
+          if (seg.isBlankLine) {
+            if (currentParaText !== "") {
+              htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
+              currentParaText = "";
+              currentParaId = null;
+            }
+            htmlParagraphs.push({ isBlank: true });
+          } else {
+            if (currentParaText === "") {
+              isContinuedPara = seg.isContinued;
+              currentParaText = seg.text;
+              currentParaId = seg.pIdx;
+            } else if (currentParaId !== seg.pIdx) {
+              htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
+              isContinuedPara = seg.isContinued;
+              currentParaText = seg.text;
+              currentParaId = seg.pIdx;
+            } else {
+              currentParaText += " " + seg.text;
+            }
+          }
+        });
+        if (currentParaText !== "") {
+          htmlParagraphs.push({ text: currentParaText, isContinued: isContinuedPara, pIdx: currentParaId });
+        }
+
+        htmlParagraphs.forEach(p => {
+          if (p.isBlank) {
+            const emptySpacer = document.createElement('p');
+            emptySpacer.className = "mb-0 text-justify";
+            emptySpacer.innerHTML = "&nbsp;"; 
+            pInnerContent.appendChild(emptySpacer);
+          } else {
+            const paraEl = document.createElement('p');
+            paraEl.className = "mb-0 text-justify"; 
+            paraEl.style.textIndent = p.isContinued ? "0" : "1.5em";
+            paraEl.style.wordBreak = "keep-all";
+            paraEl.style.textJustify = "inter-character";
+            paraEl.textContent = p.text; 
+            pInnerContent.appendChild(paraEl);
+          }
+        });
+        wrapper.dataset.stateKey = nextState;
+      }
+    }
+
+    function calculateSourcePageHash(segments) {
+      let hash = 0;
+      segments.forEach(seg => {
+        const text = seg.text || "";
+        for (let i = 0; i < text.length; i++) {
+          hash = (hash * 31 + text.charCodeAt(i)) | 0;
+        }
+      });
+      return hash;
+    }
+
+    // [성능 극대화] 6. 비할당형 롤링 해시 기반 원고지 렌더러
+    function renderGridPageContent(wrapper, spec, cellsData, cellsPerPage) {
+      const pageOffset = spec.pageIdx * cellsPerPage;
+      const pageCells = cellsData.slice(pageOffset, pageOffset + cellsPerPage);
+      
+      const pageContentHash = calculatePageHash(pageCells, spec.currentMode);
+      
+      if (wrapper.dataset.pageContentState === pageContentHash) {
+        return; 
+      }
+      wrapper.dataset.pageContentState = pageContentHash;
+
+      const cells = wrapper.querySelectorAll('.grid-cell-guide');
+      const colsNum = parseInt(AppState.gridCols);
+
+      for (let c = 0; c < cellsPerPage; c++) {
+        const cellIdx = pageOffset + c;
+        const cellData = pageCells[c] || { char: "" };
+        const cell = cells[c];
+        if (!cell) continue;
+
+        let nextState = "EMPTY";
+        if (spec.currentMode === 'guide' && cellData.char && cellData.char !== " ") {
+          const isSpecialPunct = cellData.isSqueezed || 
+                                 cellData.isPeriodQuoteCombo || 
+                                 cellData.isPeriodOpeningQuoteCombo || 
+                                 cellData.isSymbolFirstCombo || 
+                                 cellData.isQuoteFirstCombo || 
+                                 cellData.isDoublePunct ||
+                                 /[.,!?'"“‘”’]/.test(cellData.char);
+          nextState = cellData.char + "_" + (isSpecialPunct ? "S" : "N") + "_" + (cellData.squeezedPunct || "");
+        }
+
+        if (cell.dataset.charState === nextState) continue;
+
+        if (nextState === "EMPTY") {
+          cell.innerHTML = "";
+        } else {
+          drawCellContent(cell, cellData, nextState, colsNum);
+        }
+        cell.dataset.charState = nextState;
+      }
+    }
+
+    function calculatePageHash(pageCells, mode) {
+      let hash = 0;
+      for (let i = 0; i < pageCells.length; i++) {
+        const char = pageCells[i].char || "";
+        const squeezed = pageCells[i].squeezedPunct || "";
+        for (let j = 0; j < char.length; j++) {
+          hash = (hash * 31 + char.charCodeAt(j)) | 0;
+        }
+        for (let j = 0; j < squeezed.length; j++) {
+          hash = (hash * 31 + squeezed.charCodeAt(j)) | 0;
+        }
+      }
+      return mode + "_" + hash;
+    }
+
+    /**
+ * 원고지 한 칸(cell)에 들어갈 내용을 렌더링하는 함수.
+ *
+ * - 일반 문자: <span>으로 렌더링
+ * - 특수 문장부호 조합: SVG로 렌더링 (문자+부호를 한 칸에 배치)
+ *
+ * @param {HTMLElement} cell - 실제 DOM 셀 요소
+ * @param {Object} cellData - { char, squeezedPunct, isSqueezed, ... } 등 문자 정보
+ * @param {String} nextState - 상태 문자열, "_S_" 포함 시 특수 렌더링
+ * @param {Number} colsNum - 전체 칸 수 (가로 칸 수)
+ */
+function drawCellContent(cell, cellData, nextState, colsNum) {
+
+  // ============================================================
+  // 글자 크기 설정: SVG 내부에서 사용하는 font-size 값
+  // ============================================================
+  const SINGLE_CHAR_SIZE = 62; //한 칸에 1글자 들어갈 때
+  const DOUBLE_CHAR_SIZE = 62; //한 칸에 2글자(문자+부호) 들어갈 때
+  const TRIPLE_CHAR_SIZE = 62; //한 칸에 3개 이상 부호가 들어갈 때
+
+  // ============================================================
+  // 특수 문장부호 렌더링 여부 판단
+  //
+  // nextState 문자열에 "_S_"가 포함되어 있으면
+  // 이 칸은 일반 문자 렌더링이 아니라
+  // SVG 기반의 "문자 + 문장부호 조합" 렌더링을 수행한다.
+  //
+  // 예:
+  //   가.
+  //   가!
+  //   !?
+  //   .”
+  //   “?
+  // ============================================================
+  const isSpecialPunct = nextState.includes("_S_");
+
+  // ============================================================
+  // SVG 기반 렌더링
+  // ============================================================
+  if (isSpecialPunct) {
+
+    // SVG 시작
+    // viewBox 0 0 100 100 → 한 칸을 100x100 좌표계로 고정
+    // absolute inset-0 → 셀 전체를 덮는 레이어
+    let svgHtml = `
+      <svg viewBox="0 0 100 100"
+           class="w-full h-full select-none absolute inset-0 pointer-events-none"
+           style="z-index: 10;">
+        <g class="trace-text-node">
+    `;
+
+    // ============================================================
+    // 1) 원고지 마지막 칸 압축(Squeezed)
+    //
+    // 예:
+    //   가.
+    //   가!
+    //   가?
+    //   가)
+    //   가”
+    //
+    // cellData 예:
+    // {
+    //   char: "가",
+    //   squeezedPunct: ")",
+    //   isSqueezed: true
+    // }
+    //
+    // 문자 + 문장부호를 한 칸에 함께 배치해야 하므로 SVG로 좌표를 직접 지정한다.
+    // ============================================================
+    if (cellData.isSqueezed) {
+
+      const mainChar = escapeHTML(cellData.char);
+
+      // 메인 문자 위치
+      // x=38, y=50 → 칸의 왼쪽 중앙
+      svgHtml += `
+        <text x="38" y="50"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${SINGLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${mainChar}
+        </text>
+      `;
+
+      // squeezedPunct 문자열을 배열로 변환
+      const puncts = Array.from(cellData.squeezedPunct || "");
+
+      // ============================================================
+      // 1-1) 문장부호가 1개인 경우
+      // ============================================================
+      if (puncts.length === 1) {
+        const p = escapeHTML(puncts[0]);
+
+        // 문장부호 종류에 따라 y 좌표를 미세 조정
+        if (p === '.' || p === ',') {
+          // 온점/반점은 살짝 아래
+          svgHtml += `
+            <text x="78" y="49"
+                  dominant-baseline="central"
+                  text-anchor="middle"
+                  font-size="${SINGLE_CHAR_SIZE}"
+                  class="font-serif-fixed fill-current text-slate-800 font-bold">
+              ${p}
+            </text>
+          `;
+        } else if (p === '!' || p === '?') {
+          // 느낌표/물음표는 중앙
+          svgHtml += `
+            <text x="76" y="50"
+                  dominant-baseline="central"
+                  text-anchor="middle"
+                  font-size="${SINGLE_CHAR_SIZE}"
+                  class="font-serif-fixed fill-current text-slate-800 font-medium">
+              ${p}
+            </text>
+          `;
+        } else if (p === '"' || p === "'" || p === '”' || p === '’') {
+          // 닫는 따옴표류는 위쪽
+          svgHtml += `
+            <text x="76" y="41"
+                  dominant-baseline="central"
+                  text-anchor="middle"
+                  font-size="${SINGLE_CHAR_SIZE}"
+                  class="font-serif-fixed fill-current text-slate-800 font-medium">
+              ${p}
+            </text>
+          `;
+        } else {
+          // 기타 부호는 중앙
+          svgHtml += `
+            <text x="76" y="50"
+                  dominant-baseline="central"
+                  text-anchor="middle"
+                  font-size="${SINGLE_CHAR_SIZE}"
+                  class="font-serif-fixed fill-current text-slate-800 font-medium">
+              ${p}
+            </text>
+          `;
+        }
+
+      // ============================================================
+      // 1-2) 문장부호가 2개인 경우
+      // 예: !?  .”  ”?
+      // ============================================================
+      } else if (puncts.length === 2) {
+
+        const p1 = escapeHTML(puncts[0]);
+        const p2 = escapeHTML(puncts[1]);
+
+        let y1 = 50;
+        let y2 = 50;
+        let fontSize = DOUBLE_CHAR_SIZE;
+
+        // 온점/반점은 아래쪽
+        if (p1 === '.' || p1 === ',') y1 = 49;
+        if (p2 === '.' || p2 === ',') y2 = 49;
+
+        // 닫는 따옴표류는 위쪽
+        if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 41;
+        if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 41;
+
+        // 첫 번째 부호
+        svgHtml += `
+          <text x="68" y="${y1}"
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${fontSize}"
+                class="font-serif-fixed fill-current text-slate-800 font-medium">
+            ${p1}
+          </text>
+        `;
+
+        // 두 번째 부호
+        svgHtml += `
+          <text x="86" y="${y2}"
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${fontSize}"
+                class="font-serif-fixed fill-current text-slate-800 font-medium">
+            ${p2}
+          </text>
+        `;
+
+      // ============================================================
+      // 1-3) 문장부호가 3개 이상인 경우
+      // 예: !!!  ???  .”?
+      // ============================================================
+      } else {
+        puncts.forEach((p, idx) => {
+          const ep = escapeHTML(p);
+
+          const x = 64 + idx * 12; // 오른쪽으로 나열
+          let y = 50;
+
+          if (ep === '.' || ep === ',') y = 49;
+          if (ep === '"' || ep === "'" || ep === '”' || ep === '’') y = 41;
+
+          svgHtml += `
+            <text x="${x}" y="${y}"
+                  dominant-baseline="central"
+                  text-anchor="middle"
+                  font-size="${TRIPLE_CHAR_SIZE}"
+                  class="font-serif-fixed fill-current text-slate-800 font-medium">
+              ${ep}
+            </text>
+          `;
+        });
+      }
+
+    // ============================================================
+    // 2) 온점 + 닫는 따옴표 조합
+    // 예: .”
+    // ============================================================
+    } else if (cellData.isPeriodQuoteCombo) {
+
+      const p1 = escapeHTML(cellData.char);          // 온점
+      const p2 = escapeHTML(cellData.squeezedPunct); // 닫는 따옴표
+
+      svgHtml += `
+        <text x="25" y="54"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-bold">
+          ${p1}
+        </text>
+      `;
+
+      svgHtml += `
+        <text x="78" y="45"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p2}
+        </text>
+      `;
+
+    // ============================================================
+    // 3) 온점 + 여는 따옴표 조합
+    // 예: .“
+    // ============================================================
+    } else if (cellData.isPeriodOpeningQuoteCombo) {
+
+      const p1 = escapeHTML(cellData.char);
+      const p2 = escapeHTML(cellData.squeezedPunct);
+
+      svgHtml += `
+        <text x="25" y="54"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-bold">
+          ${p1}
+        </text>
+      `;
+
+      svgHtml += `
+        <text x="64" y="45"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p2}
+        </text>
+      `;
+
+    // ============================================================
+    // 4) 기호가 먼저 오는 조합
+    // 예: )”
+    // ============================================================
+    } else if (cellData.isSymbolFirstCombo) {
+
+      const p1 = escapeHTML(cellData.char);
+      const p2 = escapeHTML(cellData.squeezedPunct);
+
+      svgHtml += `
+        <text x="30" y="50"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p1}
+        </text>
+      `;
+
+      svgHtml += `
+        <text x="74" y="41"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p2}
+        </text>
+      `;
+
+    // ============================================================
+    // 5) 여는 따옴표가 먼저 오는 조합
+    // 예: “?
+    // ============================================================
+    } else if (cellData.isQuoteFirstCombo) {
+
+      const p1 = escapeHTML(cellData.char);
+      const p2 = escapeHTML(cellData.squeezedPunct);
+
+      svgHtml += `
+        <text x="28" y="41"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p1}
+        </text>
+      `;
+
+      svgHtml += `
+        <text x="68" y="50"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${DOUBLE_CHAR_SIZE}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p2}
+        </text>
+      `;
+
+    // ============================================================
+    // 6) 문장부호 2개 조합 (기본)
+    // ============================================================
+    } else if (cellData.isDoublePunct) {
+
+      const p1 = escapeHTML(cellData.char);
+      const p2 = escapeHTML(cellData.squeezedPunct);
+
+      let y1 = 50;
+      let y2 = 50;
+      let fontSize = DOUBLE_CHAR_SIZE;
+
+      if (p1 === '.' || p1 === ',') y1 = 54;
+      if (p2 === '.' || p2 === ',') y2 = 54;
+
+      if (p1 === '"' || p1 === "'" || p1 === '”' || p1 === '’') y1 = 45;
+      if (p2 === '"' || p2 === "'" || p2 === '”' || p2 === '’') y2 = 45;
+
+      if (p1 === '“' || p1 === '‘') y1 = 45;
+      if (p2 === '“' || p2 === '‘') y2 = 45;
+
+      svgHtml += `
+        <text x="32" y="${y1}"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${fontSize}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p1}
+        </text>
+      `;
+
+      svgHtml += `
+        <text x="68" y="${y2}"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${fontSize}"
+              class="font-serif-fixed fill-current text-slate-800 font-medium">
+          ${p2}
+        </text>
+      `;
+
+    // ============================================================
+    // 7) 단일 문장부호 기본 렌더링
+    // ============================================================
+    } else {
+
+      const char = escapeHTML(cellData.char);
+
+      if (char === '.' || char === ',') {
+        svgHtml += `
+          <text x="25" y="54"
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${SINGLE_CHAR_SIZE}"
+                class="font-serif-fixed fill-current text-slate-800 font-bold">
+            ${char}
+          </text>
+        `;
+      } else if (char === '“' || char === '‘') {
+        svgHtml += `
+          <text x="75" y="45"
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${SINGLE_CHAR_SIZE}"
+                class="font-serif-fixed fill-current text-slate-800 font-medium">
+            ${char}
+          </text>
+        `;
+      } else if (char === '”' || char === '’') {
+        svgHtml += `
+          <text x="25" y="45"
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${SINGLE_CHAR_SIZE}"
+                class="font-serif-fixed fill-current text-slate-800 font-medium">
+            ${char}
+          </text>
+        `;
+      } else {
+        svgHtml += `
+          <text x="50" y="50"
+                dominant-baseline="central"
+                text-anchor="middle"
+                font-size="${SINGLE_CHAR_SIZE}"
+                class="font-serif-fixed fill-current text-slate-800 font-medium">
+            ${char}
+          </text>
+        `;
+      }
+    }
+
+    // SVG 종료
+    svgHtml += `</g></svg>`;
+    cell.innerHTML = svgHtml;
+
+  // ============================================================
+  // 일반 문자 렌더링 (SVG 사용 안 함)
+  // ============================================================
+  } else {
+
+    // 칸 너비(mm) 계산
+    const cellWidthMm =
+      (AppState.orientation === 'portrait' ? 170 : 257) / colsNum;
+
+    // 일반 문자 span 생성
+    const charSpan = document.createElement('span');
+
+    charSpan.className =
+      "font-serif-fixed text-slate-800 trace-text-node select-none absolute inset-0 flex items-center justify-center w-full h-full pointer-events-none cell-char-span";
+
+    // mm 단위로 폰트 크기 설정
+    charSpan.style.fontSize = `${cellWidthMm * 0.62}mm`;
+    charSpan.style.lineHeight = "1";
+    charSpan.textContent = cellData.char;
+
+    cell.replaceChildren(charSpan);
+  }
+}
+
+
+    // 7. [책임 분리] 줄 노트 전용 렌더러
+    function renderLinePageContent(wrapper, spec, linesData, optRows) {
+      const startLineIdx = spec.pageIdx * optRows;
+      const pageLines = linesData.slice(startLineIdx, startLineIdx + optRows);
+      
+      let hash = 0;
+      pageLines.forEach(l => {
+        const text = l.text || "";
+        for (let i = 0; i < text.length; i++) {
+          hash = (hash * 31 + text.charCodeAt(i)) | 0;
+        }
+        hash = (hash * 31 + (l.isFirstLine ? 1 : 0)) | 0;
+        hash = (hash * 31 + (l.isLastLineOfPara ? 1 : 0)) | 0;
+      });
+      const pageContentHash = spec.currentMode + "_" + hash;
+      
+      if (wrapper.dataset.pageContentState === pageContentHash) {
+        return; 
+      }
+      wrapper.dataset.pageContentState = pageContentHash;
+
+      const rowDivs = wrapper.querySelectorAll('.manuscript-grid-border > div');
+
+      for (let r = 0; r < optRows; r++) {
+        const lineIdx = startLineIdx + r;
+        const lineObj = linesData[lineIdx] || { text: "", isFirstLine: false, isLastLineOfPara: true };
+        const lineText = lineObj.text;
+        const rowDiv = rowDivs[r];
+        if (!rowDiv) continue;
+
+        let nextState = "EMPTY";
+        if (spec.currentMode === 'guide' && lineText) {
+          nextState = lineText + "_" + lineObj.isFirstLine + "_" + lineObj.isLastLineOfPara;
+        }
+
+        if (rowDiv.dataset.lineState === nextState) continue;
+
+        if (nextState === "EMPTY") {
+          rowDiv.replaceChildren();
+        } else {
+          const textSpan = document.createElement('div');
+          textSpan.textContent = lineText; 
+          textSpan.className = "font-serif-fixed text-slate-300 font-medium select-none absolute left-[2mm] right-[2mm] bottom-[1.8mm] leading-none pb-0 whitespace-pre line-note-text-span";
+          textSpan.style.textAlign = "justify";
+          textSpan.style.textJustify = "inter-character";
+
+          if (lineObj.isLastLineOfPara) {
+            textSpan.style.textAlignLast = "left";
+          } else {
+            textSpan.style.textAlignLast = "justify";
+          }
+
+          textSpan.style.textIndent = lineObj.isFirstLine ? "1.2em" : "0"; 
+
+          const baseFontSizeMm = (AppState.orientation === 'portrait') ? 5.2 : 6.2;
+          const fontSizeNum = 12; 
+          const adjustedFontSizeMm = baseFontSizeMm * (fontSizeNum / 12);
+          textSpan.style.fontSize = `${adjustedFontSizeMm}mm`;
+          rowDiv.replaceChildren(textSpan);
+        }
+        rowDiv.dataset.lineState = nextState;
+      }
+    }
+
+    // IntersectionObserver를 통한 쪽 감지 스캐너
+    let pageObserver = null;
+    function setupIntersectionObserver() {
+      if (pageObserver) {
+        pageObserver.disconnect();
+      }
+      
+      const options = {
+        root: document.querySelector('main'),
+        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+      };
+      
+      const visibilityMap = new Map();
+      
+      pageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          visibilityMap.set(entry.target, entry.intersectionRatio);
+        });
+        
+        let maxRatio = -1;
+        let activeTarget = null;
+        
+        visibilityMap.forEach((ratio, target) => {
+          if (ratio > maxRatio) {
+            maxRatio = ratio;
+            activeTarget = target;
+          }
+        });
+        
+        if (activeTarget) {
+          const wrappers = Array.from(document.querySelectorAll('.page-scale-wrapper'));
+          const currentPageNum = wrappers.indexOf(activeTarget) + 1;
+          const totalPages = wrappers.length;
+          updatePageBadge(currentPageNum, totalPages);
+        }
+      }, options);
+      
+      document.querySelectorAll('.page-scale-wrapper').forEach(wrapper => {
+        pageObserver.observe(wrapper);
+      });
+    }
+
+    function updatePageBadge(current, total) {
+      const pagesBadge = document.getElementById('total-pages-badge');
+      const inputField = document.getElementById('pages-badge-input');
+      if (pagesBadge && (!inputField || inputField.classList.contains('hidden'))) {
+        pagesBadge.textContent = `📄 ${current} / ${total}`;
+      }
+    }
+
+    function cachePageDimensions() {
+      const firstPage = document.querySelector('.print-page');
+      if (firstPage) {
+        cachedPageWidth = firstPage.offsetWidth;
+        cachedPageHeight = firstPage.offsetHeight;
+      }
+    }
+
+    let scaleRequestPending = false;
+    function adjustPreviewScale() {
+      if (scaleRequestPending) return;
+      scaleRequestPending = true;
+
+      window.requestAnimationFrame(() => {
+        scaleRequestPending = false;
+        
+        const wrappers = document.querySelectorAll('.page-scale-wrapper');
+        if (wrappers.length === 0) return;
+        
+        const mainArea = document.querySelector('main');
+        if (!mainArea) return;
+        
+        const availableWidth = mainArea.offsetWidth - 48; 
+        const isNarrowLayout = window.innerWidth < 1024;
+        const availableHeight = isNarrowLayout 
+          ? (window.innerHeight - 80) 
+          : (mainArea.offsetHeight - 48);
+        
+        if (cachedPageWidth === 0 || cachedPageHeight === 0) {
+          cachePageDimensions();
+        }
+
+        const pageNaturalWidth = cachedPageWidth || 794; 
+        const pageNaturalHeight = cachedPageHeight || 1123;
+        
+        let scale = 1;
+
+        if (AppState.previewZoomMode === 'width') {
+          if (availableWidth > 0 && pageNaturalWidth > 0) {
+            scale = availableWidth / pageNaturalWidth;
+          }
+        } else if (AppState.previewZoomMode === 'page') {
+          if (availableWidth > 0 && availableHeight > 0 && pageNaturalWidth > 0 && pageNaturalHeight > 0) {
+            const scaleW = availableWidth / pageNaturalWidth;
+            const scaleH = availableHeight / pageNaturalHeight;
+            scale = Math.min(scaleW, scaleH);
+          }
+        } else {
+          scale = AppState.previewZoomValue / 100;
+        }
+
+        AppState.lastComputedScale = scale;
+
+        wrappers.forEach(wrapper => {
+          const page = wrapper.querySelector('.print-page');
+          if (!page) return;
+          page.style.transform = `scale(${scale})`;
+          page.style.transformOrigin = 'top center';
+          wrapper.style.height = `${pageNaturalHeight * scale}px`;
+        });
+        
+        const indicator = document.getElementById('zoom-indicator-text');
+        if (indicator) {
+          if (AppState.previewZoomMode === 'width') {
+            indicator.textContent = '폭 맞춤';
+          } else if (AppState.previewZoomMode === 'page') {
+            indicator.textContent = '쪽 맞춤';
+          } else {
+            indicator.textContent = `${AppState.previewZoomValue}%`;
+          }
+        }
+
+        updateZoomButtonsState(scale);
+        updateZoomModeUI();
+      });
+    }
+
+    function updateZoomButtonsState(calculatedScale) {
+      const btnOut = document.getElementById('btn-zoom-out');
+      const btnIn = document.getElementById('btn-zoom-in');
+      if (!btnOut || !btnIn) return;
+
+      let currentVal = AppState.previewZoomValue;
+      if (AppState.previewZoomMode !== 'manual' && calculatedScale) {
+        currentVal = Math.round(calculatedScale * 100);
+      }
+
+      if (currentVal <= 30) {
+        btnOut.classList.add('opacity-30', 'pointer-events-none');
+        btnOut.classList.remove('hover:bg-slate-800', 'active:scale-95');
+      } else {
+        btnOut.classList.remove('opacity-30', 'pointer-events-none');
+        btnOut.classList.add('hover:bg-slate-800', 'active:scale-95');
+      }
+
+      if (currentVal >= 200) {
+        btnIn.classList.add('opacity-30', 'pointer-events-none');
+        btnIn.classList.remove('hover:bg-slate-800', 'active:scale-95');
+      } else {
+        btnIn.classList.remove('opacity-30', 'pointer-events-none');
+        btnIn.classList.add('hover:bg-slate-800', 'active:scale-95');
+      }
+    }
+
+    function zoomIn() {
+      let currentVal = AppState.previewZoomValue;
+      if (AppState.previewZoomMode !== 'manual') {
+        currentVal = Math.round((AppState.lastComputedScale || 1.0) * 100);
+      }
+      
+      const nextVal = Math.floor(currentVal / 10) * 10 + 10;
+      AppState.previewZoomValue = Math.min(200, nextVal);
+      AppState.previewZoomMode = 'manual';
+      updateZoomModeUI();
+      adjustPreviewScale();
+    }
+
+    function zoomOut() {
+      let currentVal = AppState.previewZoomValue;
+      if (AppState.previewZoomMode !== 'manual') {
+        currentVal = Math.round((AppState.lastComputedScale || 1.0) * 100);
+      }
+      
+      const nextVal = Math.ceil(currentVal / 10) * 10 - 10;
+      AppState.previewZoomValue = Math.max(30, nextVal);
+      AppState.previewZoomMode = 'manual';
+      updateZoomModeUI();
+      adjustPreviewScale();
+    }
+
+    function setZoomMode(mode) {
+      AppState.previewZoomMode = mode;
+      updateZoomModeUI();
+      adjustPreviewScale();
+    }
+
+    function updateZoomModeUI() {
+      const btnWidth = document.getElementById('btn-zoom-width');
+      const btnPage = document.getElementById('btn-zoom-page');
+      if (!btnWidth || !btnPage) return;
+
+      const activeClass = "bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer";
+      const inactiveClass = "bg-slate-800 text-slate-500 pointer-events-none cursor-default";
+      const baseBtnClass = "text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all active:scale-95 shadow-sm";
+
+      if (AppState.previewZoomMode === 'width') {
+        btnWidth.className = `${baseBtnClass} ${inactiveClass}`;
+        btnPage.className = `${baseBtnClass} ${activeClass}`;
+      } else if (AppState.previewZoomMode === 'page') {
+        btnWidth.className = `${baseBtnClass} ${activeClass}`;
+        btnPage.className = `${baseBtnClass} ${inactiveClass}`;
+      } else {
+        btnWidth.className = `${baseBtnClass} ${activeClass}`;
+        btnPage.className = `${baseBtnClass} ${activeClass}`;
+      }
+    }
+
+    function enableZoomInput() {
+      const textSpan = document.getElementById('zoom-indicator-text');
+      const inputField = document.getElementById('zoom-input-field');
+      if (!textSpan || !inputField) return;
+
+      let currentVal = AppState.previewZoomValue;
+      if (AppState.previewZoomMode !== 'manual') {
+        currentVal = Math.round((AppState.lastComputedScale || 1.0) * 100);
+      }
+
+      inputField.value = currentVal;
+      textSpan.classList.add('hidden');
+      inputField.classList.remove('hidden');
+      inputField.focus();
+      inputField.select();
+    }
+
+    function disableZoomInput(val) {
+      const textSpan = document.getElementById('zoom-indicator-text');
+      const inputField = document.getElementById('zoom-input-field');
+      if (!textSpan || !inputField) return;
+
+      let num = parseInt(val);
+      if (isNaN(num)) {
+        num = AppState.previewZoomValue;
+      }
+      
+      num = Math.max(30, Math.min(200, num));
+      
+      AppState.previewZoomValue = num;
+      AppState.previewZoomMode = 'manual';
+
+      inputField.classList.add('hidden');
+      textSpan.classList.remove('hidden');
+
+      updateZoomModeUI();
+      adjustPreviewScale();
+    }
+
+    document.getElementById('zoom-input-field').addEventListener('input', (e) => {
+      let num = parseInt(e.target.value);
+      if (!isNaN(num)) {
+        num = Math.max(30, Math.min(200, num));
+        AppState.previewZoomValue = num;
+        AppState.previewZoomMode = 'manual';
+        updateZoomModeUI();
+        adjustPreviewScale();
+      }
+    });
+
+    function enablePageInput(e) {
+      const textSpan = document.getElementById('total-pages-badge');
+      const inputField = document.getElementById('pages-badge-input');
+      if (!textSpan || !inputField) return;
+
+      if (!inputField.classList.contains('hidden')) return;
+
+      const text = textSpan.textContent;
+      const match = text.match(/📄\s*(\d+)\s*\/\s*(\d+)/);
+      let currentPage = 1;
+      if (match) {
+        currentPage = parseInt(match[1]);
+      }
+
+      inputField.value = currentPage;
+      textSpan.classList.add('hidden');
+      inputField.classList.remove('hidden');
+      inputField.focus();
+      inputField.select();
+    }
+
+    function disablePageInput(val) {
+      const textSpan = document.getElementById('total-pages-badge');
+      const inputField = document.getElementById('pages-badge-input');
+      if (!textSpan || !inputField) return;
+
+      let num = parseInt(val);
+      const pages = document.querySelectorAll('.page-scale-wrapper');
+      const total = pages.length;
+
+      if (!isNaN(num) && total > 0) {
+        num = Math.max(1, Math.min(total, num));
+
+        const targetWrapper = pages[num - 1];
+        if (targetWrapper) {
+          targetWrapper.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }
+
+      inputField.classList.add('hidden');
+      textSpan.classList.remove('hidden');
+    }
+
+    // Ctrl+P / Cmd+P 바인딩
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        window.print();
+      }
+    });
+
+    // 시스템 이니셜라이저
+    async function initApp() {
+      loadFromLocalStorage();
+      applyLoadedDataToUI();
+
+      const presetGridColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
+      const presetGuideColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
+
+      // 전역 CSS 속성 바인딩, 버튼 체크 표시 활성화 및 커스텀 원형 동적 매핑
+      setGridColor(AppState.currentGridColor, !presetGridColors.includes(AppState.currentGridColor), false);
+      setGuideColor(AppState.currentGuideColor, !presetGuideColors.includes(AppState.currentGuideColor), false);
+
+      document.documentElement.style.setProperty('--guide-display', AppState.hideGridGuides ? 'none' : 'block');
+
+      // 개별 슬라이더 수치 복원 및 DOM 슬라이더 일치 작업
+      updateGridOpacity(AppState.gridOpacity * 100);
+      updateGuideOpacity(AppState.guideOpacity * 100);
+      updateCharYOffset(AppState.charYOffset);
+
+      updatePageStyleSheet();
+
+
+      if (document.fonts) {
+  await Promise.all([
+    document.fonts.load('400 16px "Noto Sans KR"'),
+    document.fonts.load('400 16px "Noto Serif KR"'),
+    document.fonts.load('400 16px "Noto Sans JP"'),
+    document.fonts.load('400 16px "Noto Serif JP"'),
+    document.fonts.ready
+  ]);
+}
+
+renderPages();
+
+cachePageDimensions();
+adjustPreviewScale();
+
+const loadingEl = document.getElementById('font-loading');
+if (loadingEl) {
+  loadingEl.remove();
+}
+
+const pagesContainer = document.getElementById('pages-container');
+if (pagesContainer) {
+  pagesContainer.classList.remove('opacity-0');
+}
+
+    }
+
+    initApp();
+
+    let resizeTimeout = null;
+    window.addEventListener('resize', () => {
+      if (resizeTimeout) {
+        window.cancelAnimationFrame(resizeTimeout);
+      }
+      resizeTimeout = window.requestAnimationFrame(() => {
+        adjustPreviewScale();
+      });
+    });
+
+    window.addEventListener('load', () => {
+      cachePageDimensions();
+      adjustPreviewScale();
+    });
+  </script>
+</body>
+</html>
