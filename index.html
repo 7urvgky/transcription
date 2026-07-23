@@ -354,6 +354,7 @@
       </div>
       <div>
         <h1 class="text-lg font-bold tracking-tight">필사 용지 만들기</h1>
+        <div class="text-[10px] text-slate-400 font-medium tracking-wide">Ver.0.072305</div>
       </div>
     </div>
   </header>
@@ -599,8 +600,20 @@
     <!-- 미리보기 프레임 처리 구역 -->
     <main class="flex-1 bg-slate-100 p-4 md:p-8 flex flex-col items-center relative">
       <div id="print-area-wrapper" class="w-full flex flex-col items-center">
+        <div id="font-loading"
+     class="flex flex-col items-center justify-center py-16 text-slate-400">
+  <div class="text-lg font-semibold">
+    폰트 로딩 중...
+  </div>
+  <div class="text-xs mt-2">
+    필사용 글꼴을 준비하고 있습니다.
+  </div>
+</div>
+
         <!-- 동적으로 페이지들이 얹어질 프리뷰 컨테이너 -->
-        <div id="pages-container" class="flex flex-col items-center"></div>
+        <div id="pages-container"
+     class="flex flex-col items-center opacity-0">
+</div>
       </div>
 
       <!-- 플로팅 컨트롤러 -->
@@ -1696,7 +1709,7 @@
 
     function getMaxLines(fontSizePt, pageIdx) {
       if (AppState.orientation === 'portrait') {
-        const baseLines = (pageIdx === 0) ? 28 : 30;
+        const baseLines = (pageIdx === 0) ? 27 : 30;
         return Math.floor(baseLines * (10 / fontSizePt));
       } else { 
         const baseLinesPerCol = (pageIdx === 0) ? 16 : 18;
@@ -3231,7 +3244,7 @@ function drawCellContent(cell, cellData, nextState, colsNum) {
     });
 
     // 시스템 이니셜라이저
-    function initApp() {
+    async function initApp() {
       loadFromLocalStorage();
       applyLoadedDataToUI();
 
@@ -3250,14 +3263,33 @@ function drawCellContent(cell, cellData, nextState, colsNum) {
       updateCharYOffset(AppState.charYOffset);
 
       updatePageStyleSheet();
-      renderPages();
+
 
       if (document.fonts) {
-        document.fonts.ready.then(() => {
-          cachePageDimensions();
-          renderPages();
-        });
-      }
+  await Promise.all([
+    document.fonts.load('400 16px "Noto Sans KR"'),
+    document.fonts.load('400 16px "Noto Serif KR"'),
+    document.fonts.load('400 16px "Noto Sans JP"'),
+    document.fonts.load('400 16px "Noto Serif JP"'),
+    document.fonts.ready
+  ]);
+}
+
+renderPages();
+
+cachePageDimensions();
+adjustPreviewScale();
+
+const loadingEl = document.getElementById('font-loading');
+if (loadingEl) {
+  loadingEl.remove();
+}
+
+const pagesContainer = document.getElementById('pages-container');
+if (pagesContainer) {
+  pagesContainer.classList.remove('opacity-0');
+}
+
     }
 
     initApp();
