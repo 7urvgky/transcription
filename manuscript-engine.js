@@ -200,7 +200,11 @@ function(cols) {
       return Math.floor(usableHeightMm / cellWidthMm);
     }
 
-    function estimateLinesForSegments(segments, fontSizePt) {
+    ManuscriptEngine.estimateLinesForSegments =
+function(
+  segments,
+  fontSizePt
+) {
       const charWidthMm = fontSizePt * 0.3527; 
       const maxLineWidthMm = (AppState.orientation === 'portrait') ? 155 : 112; 
 
