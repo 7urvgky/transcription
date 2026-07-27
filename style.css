@@ -1,4 +1,8 @@
-    :root {
+/*
+ * 필사 용지 만들기
+ */
+
+:root {
       /* 동적 변수 설정 - 자간 점선 표시 가이드 및 투명도 제어 */
       --guide-display: block;
       --guide-color: rgba(255, 140, 140, 0.35); 
