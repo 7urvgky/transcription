@@ -1653,9 +1653,15 @@ else {
         
         const availableWidth = mainArea.offsetWidth - 48; 
         const isNarrowLayout = window.innerWidth < 1024;
-        const availableHeight = isNarrowLayout 
-          ? (window.innerHeight - 80) 
-          : (mainArea.offsetHeight - 48);
+const header = document.querySelector('header');
+
+const headerHeight =
+  header ? header.offsetHeight : 0;
+
+const availableHeight = Math.max(
+  200,
+  window.innerHeight - headerHeight - 48
+);
         
         if (cachedPageWidth === 0 || cachedPageHeight === 0) {
           cachePageDimensions();
