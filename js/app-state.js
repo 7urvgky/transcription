@@ -17,6 +17,7 @@ const DEFAULT_APP_STATE = {
 별 하나에 동경과
 별 하나에 시와
 별 하나에 어머니, 어머니`,
+  hideInputTitle: false,
   articleTitle: "별 헤는 밤",
 
   gridCols: "20",
@@ -57,6 +58,7 @@ const DEFAULT_APP_STATE = {
 // 단일화된 전역 애플리케이션 상태 (AppState 아키텍처)
     const AppState = {
   sourceText: DEFAULT_APP_STATE.sourceText,
+  hideInputTitle: DEFAULT_APP_STATE.hideInputTitle,
   articleTitle: DEFAULT_APP_STATE.articleTitle,
 
   gridCols: DEFAULT_APP_STATE.gridCols,

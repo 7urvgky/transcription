@@ -27,6 +27,7 @@
   return (
     AppState.sourceText === DEFAULT_APP_STATE.sourceText &&
     AppState.articleTitle === DEFAULT_APP_STATE.articleTitle &&
+    AppState.hideInputTitle === DEFAULT_APP_STATE.hideInputTitle &&
     AppState.gridCols === DEFAULT_APP_STATE.gridCols &&
 
     AppState.hideStudentInfo === DEFAULT_APP_STATE.hideStudentInfo &&

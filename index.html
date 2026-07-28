@@ -85,6 +85,16 @@
         <!-- 2. 글 제목 -->
         <div>
           <label class="block text-slate-700 font-bold mb-2 text-sm">2. 글 제목</label>
+          <label class="flex items-center cursor-pointer mb-3">
+            <input
+              type="checkbox"
+              id="hide-input-title"
+              class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
+            >
+            <span class="ml-2.5 text-xs text-slate-700 font-bold">
+              감추기
+            </span>
+          </label>
           <input type="text" id="input-title" value="별 헤는 밤" class="w-full p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium" placeholder="필사할 글의 제목을 적어주세요.">
         </div>
 
@@ -122,7 +132,7 @@
             <div class="space-y-2 pt-1 border-t border-slate-200/60">
               <label class="flex items-center cursor-pointer">
                 <input type="checkbox" id="hide-manuscript-header" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
-                <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지 페이지에 이름 등 표시 안 함</span>
+                <span class="ml-2.5 text-xs text-slate-700 font-bold">원고지에 헤더 표시 안 함</span>
               </label>
               <label class="flex items-center cursor-pointer">
                 <input type="checkbox" id="hide-char-count" class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
@@ -406,6 +416,7 @@
     // Hydrated 상태를 UI 뷰에 정적 매핑
     function applyLoadedDataToUI() {
       document.getElementById('source-text').value = AppState.sourceText;
+      document.getElementById('hide-input-title').checked = AppState.hideInputTitle;
       document.getElementById('input-title').value = AppState.articleTitle;
       document.getElementById('hide-student-info').checked = AppState.hideStudentInfo;
       document.getElementById('input-school').value = AppState.schoolName;
@@ -735,8 +746,11 @@
       });
       
       document.querySelectorAll('.title-placeholder').forEach(el => {
-        el.textContent = AppState.articleTitle ? AppState.articleTitle : '';
-      });
+  el.textContent =
+    AppState.hideInputTitle
+      ? ''
+      : (AppState.articleTitle || '');
+});
     }
 
     function syncMetadata(className, value, activeElement) {
@@ -757,6 +771,7 @@
 
     // 빈 페이지 뼈대 빌드 엔진
     function buildSkeletonPage(spec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage) {
+      const titleText = AppState.hideInputTitle ? '' : AppState.articleTitle;
       const wrapper = document.createElement('div');
       wrapper.className = "page-scale-wrapper mb-10";
       wrapper.dataset.pageType = spec.type;
@@ -780,7 +795,7 @@
           const pageOneTitle = document.createElement('div');
           pageOneTitle.className = "mt-4 mb-2 w-full text-left shrink-0";
           pageOneTitle.innerHTML = `
-            <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(AppState.articleTitle)}</h2>
+            <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(titleText)}</h2>
           `;
           innerDiv.appendChild(pageOneTitle);
         } else {
@@ -788,7 +803,7 @@
           pageOneHeader.className = "pb-2 border-b border-dashed custom-grid-border grid grid-cols-3 items-center text-xs custom-grid-text opacity-80 font-serif-fixed shrink-0 w-full mb-4";
           pageOneHeader.innerHTML = `
             <span class="mini-header-left text-left tracking-wider opacity-90 text-[11px] font-medium" contenteditable="true">${escapeHTML(AppState.headerLeftText)}</span>
-            <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${escapeHTML(AppState.articleTitle)}</span>
+            <span class="mini-header-center text-center font-bold tracking-widest text-slate-800 text-[13px] px-2 break-keep whitespace-normal leading-tight" contenteditable="true" style="word-break: keep-all;">${escapeHTML(titleText)}</span>
             <span class="text-right"></span>
           `;
           innerDiv.appendChild(pageOneHeader);
@@ -880,7 +895,7 @@
           const borderClass = isLineNote ? "" : "border-b custom-grid-border pb-1";
           gridPageTitle.innerHTML = `
             <div class="${borderClass}">
-              <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(AppState.articleTitle)}</h2>
+              <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(titleText)}</h2>
             </div>
           `;
           innerDiv.appendChild(gridPageTitle);

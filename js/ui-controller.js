@@ -22,6 +22,13 @@ function bindUIEvents() {
       debouncedRender();
       markStateChanged();
     });
+
+    document.getElementById('hide-input-title').addEventListener('change', e => {
+      AppState.hideInputTitle = e.target.checked;
+      markStateChanged();
+      renderPages();
+    });
+
     document.getElementById('input-title').addEventListener('input', (e) => {
       AppState.articleTitle = e.target.value;
       document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
@@ -73,7 +80,7 @@ function bindUIEvents() {
       markStateChanged();
     });
 
-        document.getElementById('zoom-input-field').addEventListener('input', (e) => {
+    document.getElementById('zoom-input-field').addEventListener('input', (e) => {
       let num = parseInt(e.target.value);
       if (!isNaN(num)) {
         num = Math.max(30, Math.min(200, num));
