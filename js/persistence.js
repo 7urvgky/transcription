@@ -22,6 +22,30 @@
       el.textContent = `${year}. ${month}. ${date}. ${hours}:${minutes}:${seconds} 로컬에 임시 저장 되었습니다.\n` + `(인터넷에는 어떠한 입력 데이터도 송신 되지 않습니다.)`;
     }
 
+    //기본 상태 확인
+function isDefaultState() {
+  return (
+    AppState.sourceText === DEFAULT_APP_STATE.sourceText &&
+    AppState.articleTitle === DEFAULT_APP_STATE.articleTitle &&
+    AppState.gridCols === DEFAULT_APP_STATE.gridCols &&
+    AppState.schoolName === DEFAULT_APP_STATE.schoolName &&
+    AppState.gradeInfo === DEFAULT_APP_STATE.gradeInfo &&
+    AppState.studentName === DEFAULT_APP_STATE.studentName &&
+
+    AppState.currentGridColor === DEFAULT_APP_STATE.currentGridColor &&
+    AppState.currentGuideColor === DEFAULT_APP_STATE.currentGuideColor &&
+    AppState.gridOpacity === DEFAULT_APP_STATE.gridOpacity &&
+    AppState.guideOpacity === DEFAULT_APP_STATE.guideOpacity &&
+
+    AppState.hideGridGuides === DEFAULT_APP_STATE.hideGridGuides &&
+    AppState.patternGuide === DEFAULT_APP_STATE.patternGuide &&
+    AppState.patternEmpty === DEFAULT_APP_STATE.patternEmpty &&
+    AppState.charYOffset === DEFAULT_APP_STATE.charYOffset &&
+
+    AppState.previewZoomMode === DEFAULT_APP_STATE.previewZoomMode &&
+    AppState.previewZoomValue === DEFAULT_APP_STATE.previewZoomValue
+  );
+}
     // 로컬 스토리지 상태 보존
     function saveToLocalStorage() {
       AppState.lastSavedTime = new Date().toISOString();
