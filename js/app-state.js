@@ -21,9 +21,11 @@ const DEFAULT_APP_STATE = {
 
   gridCols: "20",
 
+  hideStudentInfo: false,
   schoolName: "건국초등학교",
   gradeInfo: "",
   studentName: "",
+  
 
   excludeFirstPage: false,
   hideManuscriptHeader: false,
@@ -59,6 +61,7 @@ const DEFAULT_APP_STATE = {
 
   gridCols: DEFAULT_APP_STATE.gridCols,
 
+  hideStudentInfo: DEFAULT_APP_STATE.hideStudentInfo,
   schoolName: DEFAULT_APP_STATE.schoolName,
   gradeInfo: DEFAULT_APP_STATE.gradeInfo,
   studentName: DEFAULT_APP_STATE.studentName,

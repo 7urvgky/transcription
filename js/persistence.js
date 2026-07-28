@@ -29,6 +29,7 @@
     AppState.articleTitle === DEFAULT_APP_STATE.articleTitle &&
     AppState.gridCols === DEFAULT_APP_STATE.gridCols &&
 
+    AppState.hideStudentInfo === DEFAULT_APP_STATE.hideStudentInfo &&
     AppState.schoolName === DEFAULT_APP_STATE.schoolName &&
     AppState.gradeInfo === DEFAULT_APP_STATE.gradeInfo &&
     AppState.studentName === DEFAULT_APP_STATE.studentName &&

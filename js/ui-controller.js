@@ -36,6 +36,12 @@ function bindUIEvents() {
       renderPages();
     });
 
+    document.getElementById('hide-student-info').addEventListener('change', e => {
+      AppState.hideStudentInfo = e.target.checked;
+      markStateChanged();
+      renderPages();
+    });
+
     ['input-school', 'input-grade', 'input-name'].forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
         const val = e.target.value;
