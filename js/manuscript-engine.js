@@ -387,7 +387,7 @@ function(
     }
 
     ManuscriptEngine.getMaxLines =
-function(fontSizePt, pageIdx) {
+    function(fontSizePt, pageIdx) {
       if (AppState.orientation === 'portrait') {
         const baseLines = (pageIdx === 0) ? 27 : 30;
         return Math.floor(baseLines * (10 / fontSizePt));
