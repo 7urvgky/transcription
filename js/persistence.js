@@ -23,14 +23,27 @@
     }
 
     //기본 상태 확인
-function isDefaultState() {
+    function isDefaultState() {
   return (
     AppState.sourceText === DEFAULT_APP_STATE.sourceText &&
     AppState.articleTitle === DEFAULT_APP_STATE.articleTitle &&
     AppState.gridCols === DEFAULT_APP_STATE.gridCols &&
+
     AppState.schoolName === DEFAULT_APP_STATE.schoolName &&
     AppState.gradeInfo === DEFAULT_APP_STATE.gradeInfo &&
     AppState.studentName === DEFAULT_APP_STATE.studentName &&
+
+    AppState.excludeFirstPage === DEFAULT_APP_STATE.excludeFirstPage &&
+    AppState.hideManuscriptHeader === DEFAULT_APP_STATE.hideManuscriptHeader &&
+    AppState.hideCharCount === DEFAULT_APP_STATE.hideCharCount &&
+    AppState.hidePageNumbers === DEFAULT_APP_STATE.hidePageNumbers &&
+    AppState.orientation === DEFAULT_APP_STATE.orientation &&
+
+    AppState.headerLeftText === DEFAULT_APP_STATE.headerLeftText &&
+
+    AppState.customFooterSourceText === DEFAULT_APP_STATE.customFooterSourceText &&
+    AppState.customFooterGuideText === DEFAULT_APP_STATE.customFooterGuideText &&
+    AppState.customFooterEmptyText === DEFAULT_APP_STATE.customFooterEmptyText &&
 
     AppState.currentGridColor === DEFAULT_APP_STATE.currentGridColor &&
     AppState.currentGuideColor === DEFAULT_APP_STATE.currentGuideColor &&
@@ -40,16 +53,27 @@ function isDefaultState() {
     AppState.hideGridGuides === DEFAULT_APP_STATE.hideGridGuides &&
     AppState.patternGuide === DEFAULT_APP_STATE.patternGuide &&
     AppState.patternEmpty === DEFAULT_APP_STATE.patternEmpty &&
-    AppState.charYOffset === DEFAULT_APP_STATE.charYOffset &&
 
-    AppState.previewZoomMode === DEFAULT_APP_STATE.previewZoomMode &&
-    AppState.previewZoomValue === DEFAULT_APP_STATE.previewZoomValue
+    AppState.charYOffset === DEFAULT_APP_STATE.charYOffset
   );
 }
+
+
     // 로컬 스토리지 상태 보존
     function saveToLocalStorage() {
+
+      if (isDefaultState()) {
+        localStorage.removeItem('manuscriptPaperData');
+        return;
+      }
+
       AppState.lastSavedTime = new Date().toISOString();
-      localStorage.setItem('manuscriptPaperData', JSON.stringify(AppState));
+
+      localStorage.setItem(
+        'manuscriptPaperData',
+        JSON.stringify(AppState)
+      );
+
       updateAutoSaveStatus();
     }
     

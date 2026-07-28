@@ -1,4 +1,8 @@
 'use strict';
+function markStateChanged() {
+  debouncedSave();
+}
+
 function bindUIEvents() {
 // 이벤트 리스너 바인딩
     document.getElementById('source-text').addEventListener('input', (e) => {
@@ -16,44 +20,51 @@ function bindUIEvents() {
       }
       
       debouncedRender();
+      markStateChanged();
     });
-document.getElementById('input-title').addEventListener('input', (e) => {
+    document.getElementById('input-title').addEventListener('input', (e) => {
       AppState.articleTitle = e.target.value;
       document.title = AppState.articleTitle ? AppState.articleTitle : "필사 용지 만들기";
       updateHeaderAndTitle();
+
+      markStateChanged();
     });
 
     document.getElementById('grid-cols-select').addEventListener('change', (e) => {
       AppState.gridCols = e.target.value;
-      saveToLocalStorage();
+      markStateChanged();
       renderPages();
     });
 
     ['input-school', 'input-grade', 'input-name'].forEach(id => {
       document.getElementById(id).addEventListener('input', (e) => {
         const val = e.target.value;
+
         if (id === 'input-school') AppState.schoolName = val;
         if (id === 'input-grade') AppState.gradeInfo = val;
         if (id === 'input-name') AppState.studentName = val;
+
         updateHeaderAndTitle();
+
+        markStateChanged();
       });
     });
 
 
-    document.getElementById('pattern-guide').addEventListener('change', (e) => { AppState.patternGuide = e.target.checked; saveToLocalStorage(); renderPages(); });
-    document.getElementById('pattern-empty').addEventListener('change', (e) => { AppState.patternEmpty = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('pattern-guide').addEventListener('change', (e) => { AppState.patternGuide = e.target.checked; markStateChanged(); renderPages(); });
+    document.getElementById('pattern-empty').addEventListener('change', (e) => { AppState.patternEmpty = e.target.checked; markStateChanged(); renderPages(); });
     document.getElementById('exclude-first-page').addEventListener('change', (e) => {
       AppState.excludeFirstPage = !e.target.checked;
-      saveToLocalStorage();
+      markStateChanged();
       renderPages();
     });
-    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; saveToLocalStorage(); renderPages(); });
-    document.getElementById('hide-char-count').addEventListener('change', (e) => { AppState.hideCharCount = e.target.checked; saveToLocalStorage(); renderPages(); });
-    document.getElementById('hide-page-numbers').addEventListener('change', (e) => { AppState.hidePageNumbers = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; markStateChanged(); renderPages(); });
+    document.getElementById('hide-char-count').addEventListener('change', (e) => { AppState.hideCharCount = e.target.checked; markStateChanged(); renderPages(); });
+    document.getElementById('hide-page-numbers').addEventListener('change', (e) => { AppState.hidePageNumbers = e.target.checked; markStateChanged(); renderPages(); });
     document.getElementById('hide-grid-guides').addEventListener('change', (e) => {
       AppState.hideGridGuides = e.target.checked;
       updateGridGuides();
-      saveToLocalStorage();
+      markStateChanged();
     });
 
         document.getElementById('zoom-input-field').addEventListener('input', (e) => {

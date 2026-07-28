@@ -892,7 +892,7 @@
 
     document.getElementById('grid-cols-select').addEventListener('change', (e) => {
       AppState.gridCols = e.target.value;
-      saveToLocalStorage();
+      markStateChanged();
       renderPages();
     });
 
@@ -906,20 +906,20 @@
       });
     });
 
-    document.getElementById('pattern-guide').addEventListener('change', (e) => { AppState.patternGuide = e.target.checked; saveToLocalStorage(); renderPages(); });
-    document.getElementById('pattern-empty').addEventListener('change', (e) => { AppState.patternEmpty = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('pattern-guide').addEventListener('change', (e) => { AppState.patternGuide = e.target.checked; markStateChanged(); renderPages(); });
+    document.getElementById('pattern-empty').addEventListener('change', (e) => { AppState.patternEmpty = e.target.checked; markStateChanged(); renderPages(); });
     document.getElementById('exclude-first-page').addEventListener('change', (e) => {
       AppState.excludeFirstPage = !e.target.checked;
-      saveToLocalStorage();
+      markStateChanged();
       renderPages();
     });
-    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; saveToLocalStorage(); renderPages(); });
-    document.getElementById('hide-char-count').addEventListener('change', (e) => { AppState.hideCharCount = e.target.checked; saveToLocalStorage(); renderPages(); });
-    document.getElementById('hide-page-numbers').addEventListener('change', (e) => { AppState.hidePageNumbers = e.target.checked; saveToLocalStorage(); renderPages(); });
+    document.getElementById('hide-manuscript-header').addEventListener('change', (e) => { AppState.hideManuscriptHeader = e.target.checked; markStateChanged(); renderPages(); });
+    document.getElementById('hide-char-count').addEventListener('change', (e) => { AppState.hideCharCount = e.target.checked; markStateChanged(); renderPages(); });
+    document.getElementById('hide-page-numbers').addEventListener('change', (e) => { AppState.hidePageNumbers = e.target.checked; markStateChanged(); renderPages(); });
     document.getElementById('hide-grid-guides').addEventListener('change', (e) => {
       AppState.hideGridGuides = e.target.checked;
       updateGridGuides();
-      saveToLocalStorage();
+      markStateChanged();
     });
 
     function hexToRgba(hex, alpha = 0.35) {
@@ -965,7 +965,7 @@
       }
 
       if (shouldSave) {
-        saveToLocalStorage();
+        markStateChanged();
       }
     }
 
@@ -998,7 +998,7 @@
       }
 
       if (shouldSave) {
-        saveToLocalStorage();
+        markStateChanged();
       }
     }
 
@@ -1017,7 +1017,7 @@
       }
       
       document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(AppState.currentGridColor, AppState.gridOpacity));
-      saveToLocalStorage();
+      markStateChanged();
     }
 
     function updateGuideOpacity(val) {
@@ -1030,7 +1030,7 @@
       }
       
       updateGridGuides();
-      saveToLocalStorage();
+      markStateChanged();
     }
 
     function updateCharYOffset(val) {
@@ -1044,7 +1044,7 @@
       }
       
       document.documentElement.style.setProperty('--char-y-offset', val + '%');
-      saveToLocalStorage();
+      markStateChanged();
     }
 
     // 설정 JSON 파일 추출
@@ -1121,7 +1121,7 @@
         updateGuideOpacity(AppState.guideOpacity * 100);
         updateCharYOffset(AppState.charYOffset);
 
-        saveToLocalStorage();
+        markStateChanged();
         renderPages();
       };
       reader.readAsText(file);

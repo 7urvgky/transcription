@@ -9,14 +9,14 @@
   <!-- Google Fonts: Noto Sans/Serif JP & KR -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
 
-<!-- Version: 0.072704 -->
-<link rel="stylesheet" href="style.css?v=0.072704">
-<script src="js/app-state.js?v=0.072704"></script>
-<script src="js/persistence.js?v=0.072704"></script>
-<script src="js/ui-controller.js?v=0.072704"></script>
-<script src="js/renderer.js?v=0.072704"></script>
-<script src="js/manuscript-engine.js?v=0.072704"></script>
-<script src="js/source-page-engine.js?v=0.072704"></script>
+<!-- Version: 0.072803 -->
+<link rel="stylesheet" href="style.css?v=0.072803">
+<script src="js/app-state.js?v=0.072803"></script>
+<script src="js/persistence.js?v=0.072803"></script>
+<script src="js/ui-controller.js?v=0.072803"></script>
+<script src="js/renderer.js?v=0.072803"></script>
+<script src="js/manuscript-engine.js?v=0.072803"></script>
+<script src="js/source-page-engine.js?v=0.072803"></script>
 
 </head>
 <body class="min-h-screen flex flex-col">
@@ -30,7 +30,7 @@
       </div>
       <div>
         <h1 class="text-lg font-bold tracking-tight">필사 용지 만들기</h1>
-        <div class="text-[10px] text-slate-400 font-medium tracking-wide">Ver.0.072704</div>
+        <div class="text-[10px] text-slate-400 font-medium tracking-wide">Ver.0.072803</div>
       </div>
     </div>
   </header>
@@ -501,7 +501,7 @@
       }
 
       if (shouldSave) {
-        saveToLocalStorage();
+        markStateChanged();
       }
     }
 
@@ -534,7 +534,7 @@
       }
 
       if (shouldSave) {
-        saveToLocalStorage();
+        markStateChanged();
       }
     }
 
@@ -553,7 +553,7 @@
       }
       
       document.documentElement.style.setProperty('--manuscript-grid-color', hexToRgba(AppState.currentGridColor, AppState.gridOpacity));
-      saveToLocalStorage();
+      markStateChanged();
     }
 
     function updateGuideOpacity(val) {
@@ -566,7 +566,7 @@
       }
       
       updateGridGuides();
-      saveToLocalStorage();
+      markStateChanged();
     }
 
     function updateCharYOffset(val) {
@@ -580,7 +580,7 @@
       }
       
       document.documentElement.style.setProperty('--char-y-offset', val + '%');
-      saveToLocalStorage();
+      markStateChanged();
     }
 
     function setOrientation(mode) {
@@ -596,7 +596,7 @@
         btnPortrait.className = "py-2.5 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-sm transition-all flex items-center justify-center space-x-2";
         btnLandscape.className = "py-2.5 px-4 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-800 font-bold text-sm transition-all flex items-center justify-center space-x-2";
       }
-
+      markStateChanged();
       updatePageStyleSheet();
       renderPages();
       
@@ -1314,36 +1314,30 @@ const availableHeight = Math.max(
       inputField.select();
     }
 
-    function disablePageInput(val) {
-      const textSpan = document.getElementById('total-pages-badge');
-      const inputField = document.getElementById('pages-badge-input');
-      if (!textSpan || !inputField) return;
 
-      let num = parseInt(val);
-      const pages = document.querySelectorAll('.page-scale-wrapper');
-      const total = pages.length;
-
-      if (!isNaN(num) && total > 0) {
-        num = Math.max(1, Math.min(total, num));
-
-        const targetWrapper = pages[num - 1];
-        if (targetWrapper) {
-          targetWrapper.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      }
-
-      inputField.classList.add('hidden');
-      textSpan.classList.remove('hidden');
-    }
 
     
 
     // 시스템 이니셜라이저
     async function initApp() {
+
+  const savedData =
+    localStorage.getItem('manuscriptPaperData');
+
+  if (savedData) {
+
+    const restore = window.confirm(
+      '임시 저장된 내용이 있습니다.\n불러 올까요?'
+    );
+
+    if (restore) {
       loadFromLocalStorage();
+    } else {
+      localStorage.removeItem('manuscriptPaperData');
+    }
+  }
+
+
       applyLoadedDataToUI();
 
       const presetGridColors = ['#000000', '#69afa0', '#ff8c8c', '#2563eb', '#991b1b'];
