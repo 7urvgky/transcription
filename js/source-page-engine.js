@@ -1,7 +1,5 @@
 // 원문 보기 엔진 분리
 'use strict';
-const NEWLINE_SPLIT_REGEX = /\r?\n/;
-const WORD_SPLIT_REGEX = /(\s+)/;
 
 const SourcePageEngine = {};
 
@@ -107,8 +105,9 @@ function(paragraphs) {
 SourcePageEngine.splitTextForLineNote =
 function(text, maxNonSpace) {
       const lines = [];
-      const paragraphs = text.split(NEWLINE_SPLIT_REGEX);
-      const isPunctuation = (c) => PUNCTUATION_SET.has(c);
+      const paragraphs = text.split('\n');
+      const isPunctuation = (c) => /[.,!?'"ным“('_~);:]/.test(c) || /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
+
       paragraphs.forEach((p) => {
         if (p.trim() === "") {
           lines.push({ text: "", isFirstLine: false, isLastLineOfPara: true });

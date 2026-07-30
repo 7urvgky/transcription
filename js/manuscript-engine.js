@@ -1,26 +1,5 @@
 // 원고지 엔진 분리
 'use strict';
-// manuscript-engine.js 최상단 (class 선언문 밖)
-
-// ============================================================
-// 1. O(1) 고속 문장부호 탐색용 Lookup Tables (Set)
-// ============================================================
-const PUNCTUATION_SET = new Set([
-  '.', ',', '!', '?', '\'', '"', '“', '‘', '”', '’', 
-  '(', ')', '[', ']', '{', '}', '<', '>', '~', ';', ':', '：', '；', '！？'
-]);
-
-const PERIOD_COMMA_SET = new Set(['.', ',']);
-const OPEN_QUOTES_SET = new Set(['“', '‘', '"', "'"]);
-const CLOSE_QUOTES_SET = new Set(['”', '’', '"', "'"]);
-
-// ============================================================
-// 2. Pre-compiled Regular Expressions (1회만 컴파일)
-// ============================================================
-const ALPHANUMERIC_REGEX = /[0-9a-zA-Z]/;
-const HANGUL_REGEX = /[가-힣ㄱ-ㅎㅏ-ㅣ]/;
-const WHITESPACE_REGEX = /\s/;
-
 
 const ManuscriptEngine = {};
 
@@ -81,16 +60,28 @@ const DOUBLE_PUNCT_2_X = 70;
 // =====================================================
 
 function getPunctY(p) {
-  if (PERIOD_COMMA_SET.has(p)) {
+
+  if (
+    p === '.' ||
+    p === ','
+  ) {
     return PERIOD_Y;
   }
 
-  if (OPEN_QUOTES_SET.has(p) || CLOSE_QUOTES_SET.has(p)) {
-    return QUOTE_Y;
-  }
-
-  return CENTER_Y;
+  if (
+  p === '“' ||
+  p === '‘' ||
+  p === '"' ||
+  p === "'" ||
+  p === '”' ||
+  p === '’'
+) {
+  return QUOTE_Y;
 }
+
+  return CENTER_Y ;
+}
+
 
 ManuscriptEngine.cachedParsedCells = null;
 ManuscriptEngine.lastParsedText = "";
@@ -103,11 +94,11 @@ function(text, cols) {
       }
 
       const cells = [];
-      const isAlphanumeric = (c) => ALPHANUMERIC_REGEX.test(c);
-      const isPunctuation = (c) => PUNCTUATION_SET.has(c);
-
-      const isPeriodOrComma = (c) => PERIOD_COMMA_SET.has(c);
-      const isQuote = (c) => OPEN_QUOTES_SET.has(c) || CLOSE_QUOTES_SET.has(c);
+      const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
+      const isPunctuation = (c) => /[.,!?'"ным“('_~);:]/.test(c) || /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
+      
+      const isPeriodOrComma = (c) => c === '.' || c === ',';
+      const isQuote = (c) => /[“‘”’"']/.test(c);
       const isSymbol = (c) => /[!?！？]/.test(c); 
 
       const paragraphs = text.split('\n');
@@ -300,10 +291,10 @@ function(
       let totalLines = 0;
 
       function getCharWidthMm(char) {
-      if (ALPHANUMERIC_REGEX.test(char)) return charWidthMm * 0.58; 
-      if (char === ' ') return charWidthMm * 0.35; 
-      if (PUNCTUATION_SET.has(char)) return charWidthMm * 0.5; 
-      return charWidthMm; 
+        if (/[0-9a-zA-Z]/.test(char)) return charWidthMm * 0.58; 
+        if (char === ' ') return charWidthMm * 0.35; 
+        if (/[.,!?'"ным“('_~);:]/.test(char)) return charWidthMm * 0.5; 
+        return charWidthMm; 
       }
 
       const paragraphsToCalculate = [];
