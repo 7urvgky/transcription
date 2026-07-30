@@ -31,25 +31,17 @@ function drawCellContent(
   nextState,
   colsNum
 ) {
-
   // ============================================================
   // 특수 문장부호 여부 판정
   // ============================================================
+  const isSpecialPunct = nextState.includes("_S_");
 
-  const isSpecialPunct =
-    nextState.includes("_S_");
-
-  const layout =
-    ManuscriptEngine.getCellLayout(
-      cellData
-    );
+  const layout = ManuscriptEngine.getCellLayout(cellData);
 
   // ============================================================
-  // SVG 렌더링
+  // 1. 특수 문장부호 (SVG 렌더링)
   // ============================================================
-
   if (isSpecialPunct) {
-
     let svgHtml = `
       <svg viewBox="0 0 100 100"
            class="w-full h-full select-none absolute inset-0 pointer-events-none"
@@ -57,125 +49,76 @@ function drawCellContent(
         <g class="trace-text-node">
     `;
 
-    // ============================================================
-    // layout 기반 렌더링
-    // ============================================================
-
     if (layout) {
+      svgHtml = appendLayoutTexts(svgHtml, layout);
+    } else {
+      const char = escapeHTML(cellData.char);
+      let x = SINGLE_NORMAL_X;
+      let y = CENTER_Y;
 
-      svgHtml =
-        appendLayoutTexts(
-          svgHtml,
-          layout
-        );
+      // 마침표, 쉼표
+      if (char === '.' || char === ',') {
+        x = SINGLE_PERIOD_X;
+        y = PERIOD_Y;
+      }
+      // 여는 따옴표
+      else if (char === '“' || char === '‘') {
+        x = SINGLE_OPEN_QUOTE_X;
+        y = QUOTE_Y;
+      }
+      // 닫는 따옴표
+      else if (char === '”' || char === '’') {
+        x = SINGLE_CLOSE_QUOTE_X;
+        y = QUOTE_Y;
+      }
 
+      svgHtml += `
+        <text x="${x}"
+              y="${y}"
+              dominant-baseline="central"
+              text-anchor="middle"
+              font-size="${100 * ManuscriptEngine.CHAR_SCALE}"
+              class="font-serif-fixed fill-current text-slate-800">
+          ${char}
+        </text>
+      `;
     }
 
-// ============================================================
-// 단일 문장부호 렌더링
-// ============================================================
-
-else {
-
-  const char =
-    escapeHTML(
-      cellData.char
-    );
-
-  let x = SINGLE_NORMAL_X;
-  let y = CENTER_Y;
-
-  // 마침표, 쉼표
-  if (
-    char === '.' ||
-    char === ','
-  ) {
-
-    x = SINGLE_PERIOD_X;
-    y = PERIOD_Y;
-
-  }
-
-  // 여는 따옴표
-  else if (
-    char === '“' ||
-    char === '‘'
-  ) {
-
-    x = SINGLE_OPEN_QUOTE_X;
-    y = QUOTE_Y;
-
-  }
-
-  // 닫는 따옴표
-  else if (
-    char === '”' ||
-    char === '’'
-  ) {
-
-    x = SINGLE_CLOSE_QUOTE_X;
-    y = QUOTE_Y;
-
-  }
-
-  svgHtml += `
-    <text x="${x}"
-          y="${y}"
-          dominant-baseline="central"
-          text-anchor="middle"
-          font-size="${100 * ManuscriptEngine.CHAR_SCALE}"
-          class="font-serif-fixed fill-current text-slate-800">
-      ${char}
-    </text>
-  `;
-
-}
-
-    // ============================================================
-    // SVG 종료
-    // ============================================================
-
     svgHtml += `</g></svg>`;
-
     cell.innerHTML = svgHtml;
-
+    return;
   }
 
+// ============================================================
+  // 2. 일반 문자 렌더링 (DOM 노드 재사용 극대화)
   // ============================================================
-  // 일반 문자 렌더링
-  // ============================================================
+  const cellWidthMm = (AppState.orientation === 'portrait' ? 170 : 257) / colsNum;
+  const targetFontSize = `${cellWidthMm * ManuscriptEngine.CHAR_SCALE}mm`;
+  
+  let charSpan = cell.firstElementChild;
 
-  else {
-
-    const cellWidthMm =
-      (
-        AppState.orientation === 'portrait'
-          ? 170
-          : 257
-      ) / colsNum;
-
-    const charSpan =
-      document.createElement(
-        'span'
-      );
-
+  // 셀 내부에 이미 <span> 태그가 존재하는지 확인
+  if (charSpan && charSpan.tagName === 'SPAN') {
+    // ✅ dataset 속성을 이용해 DOM 레이아웃 연산 없이 빠른 문자열 비교 (Read 리플로우 방지)
+    if (charSpan.dataset.fontSize !== targetFontSize) {
+      charSpan.dataset.fontSize = targetFontSize;
+      charSpan.style.fontSize = targetFontSize;
+    }
+  } else {
+    // <span> 태그가 없거나 SVG 등 다른 태그가 있는 경우에만 1회 생성
+    charSpan = document.createElement('span');
     charSpan.className =
       "font-serif-fixed text-slate-800 trace-text-node select-none absolute inset-0 flex items-center justify-center w-full h-full pointer-events-none cell-char-span";
-
-    charSpan.style.fontSize =
-      `${cellWidthMm * ManuscriptEngine.CHAR_SCALE}mm`;
-
+    
+    charSpan.dataset.fontSize = targetFontSize; // ✅ dataset에 저장
+    charSpan.style.fontSize = targetFontSize;
     charSpan.style.lineHeight = "1";
 
-    charSpan.textContent =
-      cellData.char;
-
-    cell.replaceChildren(
-      charSpan
-    );
-
+    cell.replaceChildren(charSpan);
   }
 
+  // DOM 파괴/생성 없이 텍스트 속성만 고속 최적화 변경 ($O(1)$)
+  charSpan.textContent = cellData.char;
 }
 
 // 5. 원문 읽기 전용 렌더러
@@ -417,31 +360,39 @@ wrapper.dataset.sourceFrameState = sourceFrameState;
 
 // 3. 고성능 Flyweight 엘리먼트 풀 유지보수기
 function adjustDOMWrappersPool(container, pageSpecs, currentLayoutSignature) {
-      const existingWrappers = Array.from(container.querySelectorAll('.page-scale-wrapper'));
+  const existingWrappers = Array.from(container.querySelectorAll('.page-scale-wrapper'));
+  
+  // 1. 넘치는 기존 래퍼 엘리먼트 메모리 해제
+  while (existingWrappers.length > pageSpecs.length) {
+    const popped = existingWrappers.pop();
+    container.removeChild(popped);
+  }
+
+  const pageClass = AppState.orientation === 'portrait' 
+    ? 'a4-page print-page portrait-page' 
+    : 'a4-page print-page landscape-page';
+  const placeholders = getBlankPlaceholders();
+  const headerHTML = buildHeaderHTML(placeholders);
+  const optRows = ManuscriptEngine.calculateOptimalRows(AppState.gridCols);
+  const isLineNote = (AppState.gridCols === 'line');
+  const cellsPerPage = isLineNote ? optRows : (parseInt(AppState.gridCols) * optRows);
+
+  // 2. 부족한 분량 주입 시 DocumentFragment를 활용한 단일 Reflow 처리
+  if (existingWrappers.length < pageSpecs.length) {
+    const fragment = document.createDocumentFragment();
+
+    while (existingWrappers.length < pageSpecs.length) {
+      const newSpec = pageSpecs[existingWrappers.length];
+      const newWrapper = buildSkeletonPage(newSpec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage);
       
-      // 넘치는 기존 래퍼 엘리먼트 메모리 해제
-      while (existingWrappers.length > pageSpecs.length) {
-        const popped = existingWrappers.pop();
-        container.removeChild(popped);
-      }
+      // 실제 DOM 트리가 아닌 가상 메모리 Fragment에 래퍼 축적
+      fragment.appendChild(newWrapper);
+      existingWrappers.push(newWrapper);
+    }
 
-      const pageClass = AppState.orientation === 'portrait' ? 'a4-page print-page portrait-page' : 'a4-page print-page landscape-page';
-      const placeholders = getBlankPlaceholders();
-      const headerHTML = buildHeaderHTML(placeholders);
-      const optRows =
-  ManuscriptEngine.calculateOptimalRows(
-    AppState.gridCols
-  );
-      const isLineNote = (AppState.gridCols === 'line');
-      const cellsPerPage = isLineNote ? optRows : (parseInt(AppState.gridCols) * optRows);
-
-      // 부족한 분량만 최소 가상 객체 주입
-      while (existingWrappers.length < pageSpecs.length) {
-        const newSpec = pageSpecs[existingWrappers.length];
-        const newWrapper = buildSkeletonPage(newSpec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage);
-        container.appendChild(newWrapper);
-        existingWrappers.push(newWrapper);
-      }
+    // 단 1회의 appendChild 호출로 전체 지면을 일괄 주입 ($N$회 Reflow -> 1회)
+    container.appendChild(fragment);
+  }
 }
 
 // 2. 페이지 스펙 모델링 생성부
@@ -535,10 +486,14 @@ function renderPages() {
     const totalPages = container.querySelectorAll('.page-scale-wrapper').length;
     updatePageBadge(1, totalPages);
     
-    cachePageDimensions();
-    adjustPreviewScale();
+    // ✅ DOM 렌더링이 완전히 끝난 후 다음 프레임에서 측정이 이루어지도록 분리 (Layout Thrashing 방지)
+    requestAnimationFrame(() => {
+      cachePageDimensions(); // Read Phase
+      adjustPreviewScale();  // Write Phase
+    });
 
     setupIntersectionObserver();
     debouncedSave();
 }
+
 

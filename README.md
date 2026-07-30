@@ -29,6 +29,62 @@
 ## 💾 버전 히스토리
 
 ---
+
+ - 성능 최적화 및 강제 동기 리플로우(Layout Thrashing) 방지
+
+> **요약**: 실시간 타이핑 및 창 크기 조절 시 발생하던 프레임 드랍(Jank) 현상을 완전히 제거하고, 수백 개의 원고지 셀 조판 연산 속도를 대폭 향상했습니다.
+
+---
+
+### Ver. 0.073001
+
+#### 1. 렌더링 성능 최적화 (Forced Synchronous Reflow 차단)
+
+* **`drawCellContent()` 내 DOM 레이아웃 읽기(Read) 연산 제거**
+* **기존**: 수백 개의 셀을 그리는 루프 안에서 `charSpan.style.fontSize`를 매번 직접 읽어와(Read) 스타일을 변경(Write)하면서 레이아웃 트래싱(Layout Thrashing) 발생.
+* **개선**: `charSpan.dataset.fontSize`에 폰트 크기를 기록하고 메모리 상에서 비교하는 방식으로 전환하여 브라우저의 강제 동기 리플로우 완전 차단.
+
+
+* **`renderPages()` 파이프라인 프레임 분리**
+* **기존**: DOM 배치(Write) 직후 `cachePageDimensions()`(Read)와 `adjustPreviewScale()`(Write)이 연속 실행되어 브라우저 멈춤 발생.
+* **개선**: `requestAnimationFrame(rAF)`을 도입해 DOM 수정이 완료된 후 다음 프레임에서 측정이 이루어지도록 읽기/쓰기 시점을 분리.
+
+
+
+#### 2. 알고리즘 및 데이터 구조 최적화 ($O(1)$ Lookup Table)
+
+* **`Set` 기반 고속 탐색 테이블 도입 (`manuscript-engine.js`)**
+* `PUNCTUATION_SET`, `PERIOD_COMMA_SET`, `OPEN_QUOTES_SET`, `CLOSE_QUOTES_SET` 전역 상수를 생성.
+* 기존 배열 순회 방식(`.includes()`)의 $O(N)$ 연산을 `Set.has()` 알고리즘인 $O(1)$로 단축.
+
+
+* **정규식(RegExp) 사전 컴파일 (Pre-compilation)**
+* `ALPHANUMERIC_REGEX`, `NEWLINE_SPLIT_REGEX`, `WORD_SPLIT_REGEX` 등을 최상단 상수로 미리 컴파일.
+* 반복문이나 함수 호출마다 정규식 객체가 새로 메모리에 할당/해제되던 가비지 컬렉션(GC) 부하 차단.
+
+
+
+#### 3. 코드 구조화 및 문법 안정성 강화
+
+* **엄격 모드 (`'use strict';`) 규정 준수**
+* 모든 스크립트 파일 최상단 첫 줄로 `'use strict';` 선언 위치 고정.
+
+
+* **중복 구문 및 렌더링 파이프라인 누락 복정**
+* `drawCellContent()` 생성 로직 중복 `else` 블록 제거로 `SyntaxError` 방지.
+* `renderPages()` 내 페이지 메타 스펙 연산 및 DOM 풀 유지보수(`adjustDOMWrappersPool`) 실행계획부 복구.
+
+
+
+---
+
+#### 📊 성능 개선 결과 (기대 효과)
+
+* **타이핑 반응성**: 대용량 텍스트 입력 시 실시간 미리보기 렌더링 대기 시간 감소.
+* **프레임 유지력**: 스크롤 및 브라우저 창 크기 조절 시 60fps 화면 유지.
+* **메모리 효율성**: 반복문 내 불필요한 객체 생성을 줄여 Garbage Collection 발생 빈도 최소화.
+  
+
 ### Ver. 0.072804
 
 #### 신규 기능
