@@ -26,7 +26,6 @@ const DEFAULT_APP_STATE = {
   schoolName: "건국초등학교",
   gradeInfo: "",
   studentName: "",
-  
 
   excludeFirstPage: false,
   hideManuscriptHeader: false,
@@ -52,11 +51,11 @@ const DEFAULT_APP_STATE = {
   charYOffset: 0,
 
   previewZoomMode: "width",
-  previewZoomValue: 100
+  previewZoomValue: 100,
 };
 
 // 단일화된 전역 애플리케이션 상태 (AppState 아키텍처)
-    const AppState = {
+const AppState = {
   sourceText: DEFAULT_APP_STATE.sourceText,
   hideInputTitle: DEFAULT_APP_STATE.hideInputTitle,
   articleTitle: DEFAULT_APP_STATE.articleTitle,
@@ -95,5 +94,5 @@ const DEFAULT_APP_STATE = {
   previewZoomValue: DEFAULT_APP_STATE.previewZoomValue,
 
   lastComputedScale: 1.0,
-  lastSavedTime: null
+  lastSavedTime: null,
 };
