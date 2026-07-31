@@ -9,14 +9,14 @@
   <!-- Google Fonts: Noto Sans/Serif JP & KR -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap" rel="stylesheet">
 
-<!-- Version: 0.073103 -->
-<link rel="stylesheet" href="style.css?v=0.073103">
-<script src="js/app-state.js?v=0.073103"></script>
-<script src="js/persistence.js?v=0.073103"></script>
-<script src="js/ui-controller.js?v=0.073103"></script>
-<script src="js/renderer.js?v=0.073103"></script>
-<script src="js/manuscript-engine.js?v=0.073103"></script>
-<script src="js/source-page-engine.js?v=0.073103"></script>
+<!-- Version: 0.073104 -->
+<link rel="stylesheet" href="style.css?v=0.073104">
+<script src="js/app-state.js?v=0.073104"></script>
+<script src="js/persistence.js?v=0.073104"></script>
+<script src="js/ui-controller.js?v=0.073104"></script>
+<script src="js/renderer.js?v=0.073104"></script>
+<script src="js/manuscript-engine.js?v=0.073104"></script>
+<script src="js/source-page-engine.js?v=0.073104"></script>
 
 </head>
 <body class="min-h-screen flex flex-col">
@@ -30,7 +30,7 @@
       </div>
       <div>
         <h1 class="text-lg font-bold tracking-tight">필사 용지 만들기</h1>
-        <div class="text-[10px] text-slate-400 font-medium tracking-wide">Ver.0.073103</div>
+        <div class="text-[10px] text-slate-400 font-medium tracking-wide">Ver.0.073104</div>
       </div>
     </div>
   </header>
@@ -781,21 +781,447 @@
 
     
 
-    // 빈 페이지 뼈대 빌드 엔진
-    function buildSkeletonPage(spec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage) {
-      const titleText = AppState.hideInputTitle ? '' : AppState.articleTitle;
-      const wrapper = document.createElement('div');
-      wrapper.className = "page-scale-wrapper mb-10";
-      wrapper.dataset.pageType = spec.type;
-      wrapper.dataset.pageMode = spec.currentMode || 'none';
+// Header / Footer    
+    function createGridFooter(
+    spec,
+    isLineNote
+) {
 
-      const pageDiv = document.createElement('div');
-      pageDiv.className = pageClass;
+    const footerDiv =
+        document.createElement('div');
 
-      const innerDiv = document.createElement('div');
-      innerDiv.className = "print-page-inner";
-      pageDiv.appendChild(innerDiv);
-      wrapper.appendChild(pageDiv);
+    footerDiv.className =
+      "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
+
+    let currentFooterLabel = "";
+    let currentFooterClass = "";
+
+    if (isLineNote) {
+
+        if (spec.currentMode === 'guide') {
+
+            currentFooterLabel =
+                AppState.customFooterGuideText !== null
+                ? AppState.customFooterGuideText
+                : (footerGuideText + " - 줄 노트");
+
+            currentFooterClass =
+                "footer-label-guide";
+
+        } else {
+
+            currentFooterLabel =
+                AppState.customFooterEmptyText !== null
+                ? AppState.customFooterEmptyText
+                : (footerEmptyText + " - 줄 노트");
+
+            currentFooterClass =
+                "footer-label-empty";
+        }
+
+    } else {
+
+        if (spec.currentMode === 'guide') {
+
+            currentFooterLabel =
+                AppState.customFooterGuideText !== null
+                ? AppState.customFooterGuideText
+                : (footerGuideText + " - 가로 " + AppState.gridCols + "칸");
+
+            currentFooterClass =
+                "footer-label-guide";
+
+        } else {
+
+            currentFooterLabel =
+                AppState.customFooterEmptyText !== null
+                ? AppState.customFooterEmptyText
+                : (footerEmptyText + " - 가로 " + AppState.gridCols + "칸");
+
+            currentFooterClass =
+                "footer-label-empty";
+        }
+    }
+
+    footerDiv.innerHTML = `
+      <span class="tracking-wide text-slate-400">
+        <span class="${currentFooterClass}" contenteditable="true">
+          ${escapeHTML(currentFooterLabel)}
+        </span>
+      </span>
+
+      <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">
+        - ${spec.pageIdx + 1} / ${spec.totalGridPages} -
+      </span>
+    `;
+
+    return footerDiv;
+}
+
+function createPageHeader(
+    headerHTML,
+    titleText,
+    isLineNote
+) {
+
+    const elements = [];
+
+    if (!AppState.hideManuscriptHeader) {
+
+        const gridPageHeader =
+            document.createElement('div');
+
+        gridPageHeader.className =
+            "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
+
+        gridPageHeader.innerHTML =
+            headerHTML;
+
+        elements.push(gridPageHeader);
+
+        const gridPageTitle =
+            document.createElement('div');
+
+        gridPageTitle.className =
+            "mt-3 mb-1 w-full text-left shrink-0";
+
+        gridPageTitle.style.marginBottom =
+            "2mm";
+
+        const borderClass =
+            isLineNote
+                ? ""
+                : "border-b custom-grid-border pb-1";
+
+        gridPageTitle.innerHTML = `
+            <div class="${borderClass}">
+                <h2
+                    class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal"
+                    contenteditable="true"
+                    style="word-break: keep-all;">
+                    ${escapeHTML(titleText)}
+                </h2>
+            </div>
+        `;
+
+        elements.push(gridPageTitle);
+
+    } else {
+
+        if (!isLineNote) {
+
+            const singleLine =
+                document.createElement('div');
+
+            singleLine.className =
+                "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
+
+            elements.push(singleLine);
+        }
+    }
+
+    return elements;
+}
+
+// Line Note
+function createLineNote(optRows) {
+
+    const usableWidthMm =
+        (AppState.orientation === 'portrait')
+            ? 162
+            : 249;
+
+    const relativeContainer =
+        document.createElement('div');
+
+    relativeContainer.className =
+        "relative mx-auto";
+
+    relativeContainer.style.width =
+        `${usableWidthMm}mm`;
+
+    relativeContainer.style.height =
+        `${optRows * 10}mm`;
+
+    const noteContainer =
+        document.createElement('div');
+
+    noteContainer.className =
+        "w-full h-full border-t-2 manuscript-grid-border flex flex-col justify-start relative";
+
+    for (let r = 0; r < optRows; r++) {
+
+        const rowDiv =
+            document.createElement('div');
+
+        const isLastRow =
+            (r === optRows - 1);
+
+        const borderThicknessClass =
+            isLastRow
+                ? "border-b-[3px]"
+                : "border-b";
+
+        rowDiv.className =
+            `${borderThicknessClass} manuscript-grid-border w-full shrink-0 relative`;
+
+        rowDiv.style.height =
+            "10mm";
+
+        noteContainer.appendChild(rowDiv);
+    }
+
+    relativeContainer.appendChild(
+        noteContainer
+    );
+
+    return relativeContainer;
+}
+
+// Grid Helpers
+function createCharCountLabels(
+    relativeContainer,
+    spec,
+    optRows,
+    colsNum,
+    cellsPerPage
+) {
+
+    const pageOffset =
+        spec.pageIdx * cellsPerPage;
+
+    for (let r = 0; r < optRows; r++) {
+
+        const rowStartCell =
+            pageOffset + r * colsNum;
+
+        const rowEndCell =
+            pageOffset + (r + 1) * colsNum;
+
+        const currentMaxMultiplesCount =
+            Math.floor(rowEndCell / 100);
+
+        for (
+            let k = 1;
+            k <= currentMaxMultiplesCount;
+            k++
+        ) {
+
+            const targetBaseValue =
+                100 * k;
+
+            if (
+                targetBaseValue > rowStartCell &&
+                targetBaseValue <= rowEndCell
+            ) {
+
+                const labelVal =
+                    rowEndCell;
+
+                const label =
+                    document.createElement('div');
+
+                label.className =
+                    "absolute text-[10px] custom-grid-text font-mono font-bold opacity-75 flex items-center justify-start pointer-events-none";
+
+                label.style.right =
+                    "-32px";
+
+                label.style.width =
+                    "25px";
+
+                label.style.height =
+                    `${100 / optRows}%`;
+
+                label.style.top =
+                    `${(r * 100) / optRows}%`;
+
+                label.textContent =
+                    labelVal;
+
+                relativeContainer.appendChild(
+                    label
+                );
+
+                break;
+            }
+        }
+    }
+}
+
+function createGridBody(
+    colsNum,
+    optRows
+) {
+
+    const gridBody =
+        document.createElement('div');
+
+    gridBody.className =
+        "grid gap-0 border-2 manuscript-grid-border w-full h-full";
+
+    gridBody.style.gridTemplateColumns =
+        `repeat(${colsNum}, minmax(0, 1fr))`;
+
+    gridBody.style.gridTemplateRows =
+        `repeat(${optRows}, minmax(0, 1fr))`;
+
+    for (let r = 0; r < optRows; r++) {
+
+        for (let c = 0; c < colsNum; c++) {
+
+            const cell =
+                document.createElement('div');
+
+            cell.className =
+                "grid-cell-guide border-b border-r manuscript-grid-border flex items-center justify-center relative aspect-square";
+
+            if (c === colsNum - 1) {
+                cell.classList.remove('border-r');
+            }
+
+            if (r === optRows - 1) {
+                cell.classList.remove('border-b');
+            }
+
+            gridBody.appendChild(cell);
+        }
+    }
+
+    return gridBody;
+}
+
+function createGrid(
+    spec,
+    optRows,
+    cellsPerPage
+) {
+
+    const colsNum =
+        parseInt(AppState.gridCols);
+
+    let usableWidthMm =
+        (AppState.orientation === 'portrait')
+            ? 170
+            : 257;
+
+// 22칸, 24칸은 CSS Grid의 서브픽셀 계산으로
+// 원고지 선이 일부 어긋나는 현상이 있어
+// 출력 폭을 조정하여 셀 크기를 안정화한다.
+    if (AppState.orientation === 'portrait') {
+
+        switch (colsNum) {
+
+            case 22:
+                usableWidthMm = 165;
+                break;
+
+            case 24:
+                usableWidthMm = 168;
+                break;
+        }
+    }
+
+    const cellWidthMm =
+        usableWidthMm / colsNum;
+
+    const relativeContainer =
+        document.createElement('div');
+
+    relativeContainer.className =
+        "relative mx-auto block";
+
+    relativeContainer.style.width =
+        `${usableWidthMm}mm`;
+
+    relativeContainer.style.height =
+        `${optRows * cellWidthMm}mm`;
+
+    const gridBody =
+        createGridBody(
+            colsNum,
+            optRows
+        );
+
+    relativeContainer.appendChild(
+        gridBody
+    );
+
+    if (!AppState.hideCharCount) {
+
+        createCharCountLabels(
+            relativeContainer,
+            spec,
+            optRows,
+            colsNum,
+            cellsPerPage
+        );
+    }
+
+    return relativeContainer;
+}
+
+// Page Builder Helpers
+function createPageShell(
+    pageClass,
+    spec
+) {
+
+    const wrapper =
+        document.createElement('div');
+
+    wrapper.className =
+        "page-scale-wrapper mb-10";
+
+    wrapper.dataset.pageType =
+        spec.type;
+
+    wrapper.dataset.pageMode =
+        spec.currentMode || 'none';
+
+    const pageDiv =
+        document.createElement('div');
+
+    pageDiv.className =
+        pageClass;
+
+    const innerDiv =
+        document.createElement('div');
+
+    innerDiv.className =
+        "print-page-inner";
+
+    pageDiv.appendChild(
+        innerDiv
+    );
+
+    wrapper.appendChild(
+        pageDiv
+    );
+
+    return {
+        wrapper,
+        pageDiv,
+        innerDiv
+    };
+}
+
+// Main Page Builder
+function buildSkeletonPage(spec, pageClass, headerHTML, optRows, isLineNote, cellsPerPage) {
+
+  const titleText =
+    AppState.hideInputTitle
+      ? ''
+      : AppState.articleTitle;
+
+  const {
+    wrapper,
+    pageDiv,
+    innerDiv
+  } = createPageShell(
+    pageClass,
+    spec
+  );
 
       if (spec.type === 'source') {
         if (spec.sIdx === 0) {
@@ -894,123 +1320,35 @@
           innerDiv.appendChild(pageOneFooter);
         }
       } else {
-        if (!AppState.hideManuscriptHeader) {
-          const gridPageHeader = document.createElement('div');
-          gridPageHeader.className = "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
-          gridPageHeader.innerHTML = headerHTML;
-          innerDiv.appendChild(gridPageHeader);
+        const headerElements =
+            createPageHeader(
+                headerHTML,
+                titleText,
+                isLineNote
+            );
 
-          const gridPageTitle = document.createElement('div');
-          gridPageTitle.className = "mt-3 mb-1 w-full text-left shrink-0";
-          gridPageTitle.style.marginBottom = "2mm"; 
-          
-          const borderClass = isLineNote ? "" : "border-b custom-grid-border pb-1";
-          gridPageTitle.innerHTML = `
-            <div class="${borderClass}">
-              <h2 class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(titleText)}</h2>
-            </div>
-          `;
-          innerDiv.appendChild(gridPageTitle);
-        } else {
-          if (!isLineNote) {
-            const singleLine = document.createElement('div');
-            singleLine.className = "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
-            innerDiv.appendChild(singleLine);
-          }
-        }
-
+        headerElements.forEach(el => {
+            innerDiv.appendChild(el);
+        });
         const gridWrapper = document.createElement('div');
         gridWrapper.className = AppState.hideManuscriptHeader ? "w-full flex items-center justify-center" : "w-full my-0 flex items-center justify-center"; 
         innerDiv.appendChild(gridWrapper);
 
         if (isLineNote) {
-          const usableWidthMm = (AppState.orientation === 'portrait') ? 162 : 249;
-          const relativeContainer = document.createElement('div');
-          relativeContainer.className = "relative mx-auto";
-          relativeContainer.style.width = `${usableWidthMm}mm`;
-          relativeContainer.style.height = `${optRows * 10}mm`;
 
-          const noteContainer = document.createElement('div');
-          noteContainer.className = "w-full h-full border-t-2 manuscript-grid-border flex flex-col justify-start relative";
-          
-          for (let r = 0; r < optRows; r++) {
-            const rowDiv = document.createElement('div');
-            const isLastRow = (r === optRows - 1);
-            const borderThicknessClass = isLastRow ? "border-b-[3px]" : "border-b";
-            rowDiv.className = `${borderThicknessClass} manuscript-grid-border w-full shrink-0 relative`;
-            rowDiv.style.height = "10mm";
-            noteContainer.appendChild(rowDiv);
-          }
-          relativeContainer.appendChild(noteContainer);
-          gridWrapper.appendChild(relativeContainer);
+          gridWrapper.appendChild(
+            createLineNote(optRows)
+          );
+
         } else {
-          const colsNum = parseInt(AppState.gridCols);
-          let usableWidthMm =
-            (AppState.orientation === 'portrait')
-              ? 170
-              : 257;
-          // 22칸, 24칸의 경우 폭을 조정하여 글자 간격을 최적화(원고지 어긋남 버그 해결) 
-          if (AppState.orientation === 'portrait') {
 
-            switch (colsNum) {
-              case 22:
-                usableWidthMm = 154;
-                break;
-
-              case 24:
-                usableWidthMm = 168;
-                break;
-            }
-          }
-
-          const cellWidthMm = usableWidthMm / colsNum;
-          
-          const relativeContainer = document.createElement('div');
-          relativeContainer.className = "relative mx-auto block";
-          relativeContainer.style.width = `${usableWidthMm}mm`;
-          relativeContainer.style.height = `${optRows * cellWidthMm}mm`;
-
-          const gridBody = document.createElement('div');
-          gridBody.className = "grid gap-0 border-2 manuscript-grid-border w-full h-full";
-          gridBody.style.gridTemplateColumns = `repeat(${colsNum}, minmax(0, 1fr))`;
-          gridBody.style.gridTemplateRows = `repeat(${optRows}, minmax(0, 1fr))`;
-
-          for (let r = 0; r < optRows; r++) {
-            for (let c = 0; c < colsNum; c++) {
-              const cell = document.createElement('div');
-              cell.className = "grid-cell-guide border-b border-r manuscript-grid-border flex items-center justify-center relative aspect-square";
-              if (c === colsNum - 1) cell.classList.remove('border-r');
-              if (r === optRows - 1) cell.classList.remove('border-b');
-              gridBody.appendChild(cell);
-            }
-          }
-          relativeContainer.appendChild(gridBody);
-
-          if (!AppState.hideCharCount) {
-            const pageOffset = spec.pageIdx * cellsPerPage;
-            for (let r = 0; r < optRows; r++) {
-              const rowStartCell = pageOffset + r * colsNum;
-              const rowEndCell = pageOffset + (r + 1) * colsNum;
-              const currentMaxMultiplesCount = Math.floor(rowEndCell / 100);
-              
-              for (let k = 1; k <= currentMaxMultiplesCount; k++) {
-                const targetBaseValue = 100 * k;
-                if (targetBaseValue > rowStartCell && targetBaseValue <= rowEndCell) {
-                  const labelVal = rowEndCell; 
-                  const label = document.createElement('div');
-                  label.className = "absolute text-[10px] custom-grid-text font-mono font-bold opacity-75 flex items-center justify-start pointer-events-none";
-                  label.style.right = "-32px";
-                  label.style.width = "25px";
-                  label.style.height = `${100 / optRows}%`;
-                  label.style.top = `${(r * 100) / optRows}%`;
-                  label.textContent = labelVal;
-                  relativeContainer.appendChild(label);
-                  break; 
-                }
-              }
-            }
-          }
-          gridWrapper.appendChild(relativeContainer);
+          gridWrapper.appendChild(
+            createGrid(
+              spec,
+              optRows,
+              cellsPerPage
+            )
+          );
         }
 
         if (!isLineNote) {
@@ -1026,53 +1364,20 @@
         }
 
         if (!AppState.hidePageNumbers) {
-        
-          const footerDiv = document.createElement('div');
-          footerDiv.className = "absolute bottom-[18mm] left-[20mm] right-[20mm] pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
-          
-          let currentFooterLabel = "";
-          let currentFooterClass = "";
-          
-          if (isLineNote) {
-            if (spec.currentMode === 'guide') {
-              currentFooterLabel = AppState.customFooterGuideText !== null ? AppState.customFooterGuideText : (footerGuideText + " - 줄 노트");
-              currentFooterClass = "footer-label-guide";
-            } else {
-              currentFooterLabel = AppState.customFooterEmptyText !== null ? AppState.customFooterEmptyText : (footerEmptyText + " - 줄 노트");
-              currentFooterClass = "footer-label-empty";
-            }
-          } else {
-            if (spec.currentMode === 'guide') {
-              currentFooterLabel = AppState.customFooterGuideText !== null ? AppState.customFooterGuideText : (footerGuideText + " - 가로 " + AppState.gridCols + "칸");
-              currentFooterClass = "footer-label-guide";
-            } else {
-              currentFooterLabel = AppState.customFooterEmptyText !== null ? AppState.customFooterEmptyText : (footerEmptyText + " - 가로 " + AppState.gridCols + "칸");
-              currentFooterClass = "footer-label-empty";
-            }
-          }
 
-          footerDiv.innerHTML = `
-            <span class="tracking-wide text-slate-400"><span class="${currentFooterClass}" contenteditable="true">${escapeHTML(currentFooterLabel)}</span></span>
-            <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">- ${spec.pageIdx + 1} / ${spec.totalGridPages} -</span>
-          `;
-          innerDiv.appendChild(footerDiv);
+    innerDiv.appendChild(
+        createGridFooter(
+            spec,
+            isLineNote
+        )
+    );
+
         }
       }
 
       return wrapper;
     }
 
-/**
- * 원고지 한 칸(cell)에 들어갈 내용을 렌더링하는 함수.
- *
- * - 일반 문자: <span>으로 렌더링
- * - 특수 문장부호 조합: SVG로 렌더링 (문자+부호를 한 칸에 배치)
- *
- * @param {HTMLElement} cell - 실제 DOM 셀 요소
- * @param {Object} cellData - { char, squeezedPunct, isSqueezed, ... } 등 문자 정보
- * @param {String} nextState - 상태 문자열, "_S_" 포함 시 특수 렌더링
- * @param {Number} colsNum - 전체 칸 수 (가로 칸 수)
- */
 
  function appendLayoutTexts(
   svgHtml,
