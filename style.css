@@ -33,38 +33,47 @@
       box-sizing: border-box;
     }
     .grid-cell-guide::before {
-      content: "";
-      display: var(--guide-display) !important;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 50%;
-      border-left: 1px dashed var(--guide-color) !important;
-      transform: translateX(-50%);
-      pointer-events: none;
-      z-index: 1;
-    }
-    .grid-cell-guide::after {
-      content: "";
-      display: var(--guide-display) !important;
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 50%;
-      border-top: 1px dashed var(--guide-color) !important;
-      transform: translateY(-50%);
-      pointer-events: none;
-      z-index: 1;
-    }
+  content: "";
+  display: var(--guide-display) !important;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+
+  left: calc(50% - 0.5px);
+
+  border-left: 1px dashed var(--guide-color) !important;
+
+  pointer-events: none;
+  z-index: 1;
+}
+
+.grid-cell-guide::after {
+  content: "";
+  display: var(--guide-display) !important;
+  position: absolute;
+  left: 0;
+  right: 0;
+
+  top: calc(50% - 0.5px);
+
+  border-top: 1px dashed var(--guide-color) !important;
+
+  pointer-events: none;
+  z-index: 1;
+}
 
     /* GPU 가속을 이용한 글자 상하 미세정렬 규칙 일괄 적용 */
-    .grid-cell-guide svg g, 
-    .line-note-text-span,
-    .cell-char-span {
-      transform: translate3d(0, var(--char-y-offset, 0%), 0) !important;
-      transform-origin: center !important;
-      will-change: transform;
-    }
+    .grid-cell-guide svg g,
+.line-note-text-span,
+.cell-char-span {
+  transform: translateY(var(--char-y-offset, 0%)) !important;
+  transform-origin: center !important;
+  will-change: auto;
+}
+.manuscript-grid-border,
+.grid-cell-guide {
+  box-sizing: border-box;
+}
 
     /* 따라 쓰기 연한 글씨 투명도 고정 수치 반영 */
     .trace-text-node {
