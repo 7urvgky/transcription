@@ -949,12 +949,20 @@
             (AppState.orientation === 'portrait')
               ? 170
               : 257;
-          if (
-            AppState.orientation === 'portrait' &&
-            colsNum === 24
-          ) {
-            usableWidthMm = 168;
+          // 22칸, 24칸의 경우 폭을 조정하여 글자 간격을 최적화(원고지 어긋남 버그 해결) 
+          if (AppState.orientation === 'portrait') {
+
+            switch (colsNum) {
+              case 22:
+                usableWidthMm = 154;
+                break;
+
+              case 24:
+                usableWidthMm = 168;
+                break;
+            }
           }
+
           const cellWidthMm = usableWidthMm / colsNum;
           
           const relativeContainer = document.createElement('div');
