@@ -681,31 +681,11 @@
       function createGrid(spec, optRows, cellsPerPage) {
         const colsNum = parseInt(AppState.gridCols);
 
-        let usableWidthMm = AppState.orientation === "portrait" ? 170 : 257;
-
         // 10칸, 20칸, 22칸, 24칸은 CSS Grid의 서브픽셀 계산으로
         // 원고지 선이 일부 어긋나는 현상이 있어
         // 출력 폭을 조정하여 셀 크기를 안정화한다.
-        // TODO: 근본적인 해결책은 CSS Grid 대신 SVG Canvas 기반 렌더링으로 전환하는 것임. 
-        
-        if (AppState.orientation === "portrait") {
-          switch (colsNum) {
-            case 10:
-              usableWidthMm = 168;
-              break;
-            case 20:
-              usableWidthMm = 169;
-              break;
-
-            case 22:
-              usableWidthMm = 165;
-              break;
-
-            case 24:
-              usableWidthMm = 168;
-              break;
-          }
-        }
+        // TODO: 근본적인 해결책은 CSS Grid 대신 SVG Canvas 기반 렌더링으로 전환하는 것임.
+        const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
 
         const cellWidthMm = usableWidthMm / colsNum;
 

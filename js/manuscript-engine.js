@@ -5,6 +5,26 @@ const ManuscriptEngine = {};
 
 ManuscriptEngine.CHAR_SCALE = 0.62; //원고지 칸 크기 대비 문자 크기
 
+ManuscriptEngine.getUsableGridWidthMm = function (colsNum) {
+  colsNum = parseInt(colsNum);
+  if (AppState.orientation !== "portrait") {
+    return 257;
+  }
+
+  switch (colsNum) {
+    case 10:
+      return 168;
+    case 20:
+      return 169;
+    case 22:
+      return 165;
+    case 24:
+      return 168;
+    default:
+      return 170;
+  }
+};
+
 // =====================================================
 // 공통 좌표 상수
 // =====================================================
@@ -281,7 +301,7 @@ ManuscriptEngine.calculateOptimalRows = function (cols) {
     return 25;
   }
 
-  const usableWidthMm = AppState.orientation === "portrait" ? 170 : 257;
+  const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
   const cellWidthMm = usableWidthMm / colsNum;
 
   const usableHeightMm =

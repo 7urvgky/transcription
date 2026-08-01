@@ -106,8 +106,7 @@ function drawCellContent(cell, cellData, nextState, colsNum) {
   // 일반 문자 렌더링
   // ============================================================
   else {
-    const cellWidthMm =
-      (AppState.orientation === "portrait" ? 170 : 257) / colsNum;
+    const cellWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum) / colsNum;
 
     const charSpan = document.createElement("span");
 
