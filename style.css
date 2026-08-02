@@ -39,6 +39,7 @@ body {
   position: relative;
   box-sizing: border-box;
 }
+/*
 .grid-cell-guide::before {
   content: "";
   display: var(--guide-display) !important;
@@ -68,6 +69,14 @@ body {
   pointer-events: none;
   z-index: 1;
 }
+*/
+
+/* SVG 가이드 사용 시 기존 CSS 점선 비활성화 */
+.grid-cell-guide::before,
+.grid-cell-guide::after {
+  display: none !important;
+}
+
 
 /* GPU 가속을 이용한 글자 상하 미세정렬 규칙 일괄 적용 */
 .grid-cell-guide svg g,
@@ -375,4 +384,5 @@ body {
     overflow-y: visible !important;
     touch-action: pan-y;
   }
+
 }

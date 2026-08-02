@@ -4,6 +4,9 @@
       const footerSourceText = "원문 읽기";
       const footerGuideText = "따라 쓰기";
       const footerEmptyText = "원고지";
+      const HORIZONTAL_LINE_EXTRA_WIDTH = 2; // 원고지 위 아래 실선 길이 조절
+      const GRID_LINE_MARGIN = 2.5; // 원고지 위 아래 실선 간격
+      const TITLE_LINE_MARGIN = 1; // 원고지 제목과 위 실선 간격
 
       // Layout Thrashing 최적화용 치수 캐시
       let cachedPageWidth = 0;
@@ -177,6 +180,7 @@
 
         if (shouldSave) {
           markStateChanged();
+          renderPages();
         }
       }
 
@@ -218,6 +222,7 @@
 
         if (shouldSave) {
           markStateChanged();
+          renderPages();
         }
       }
 
@@ -230,6 +235,7 @@
           "--guide-color",
           hexToRgba(AppState.currentGuideColor, AppState.guideOpacity),
         );
+        renderPages();
       }
 
       function updateGridOpacity(val) {
@@ -246,6 +252,7 @@
           hexToRgba(AppState.currentGridColor, AppState.gridOpacity),
         );
         markStateChanged();
+        renderPages();
       }
 
       function updateGuideOpacity(val) {
@@ -259,6 +266,7 @@
 
         updateGridGuides();
         markStateChanged();
+        renderPages();
       }
 
       function updateCharYOffset(val) {
@@ -526,11 +534,10 @@
 
           gridPageTitle.className = "mt-3 mb-1 w-full text-left shrink-0";
 
-          gridPageTitle.style.marginBottom = "2mm";
+          gridPageTitle.style.marginBottom = `${GRID_LINE_MARGIN}mm`;
 
-          const borderClass = isLineNote
-            ? ""
-            : "border-b custom-grid-border pb-1";
+          const borderClass = "";
+            
 
           gridPageTitle.innerHTML = `
               <div class="${borderClass}">
@@ -539,19 +546,63 @@
                       contenteditable="true"
                       style="word-break: keep-all;">
                       ${escapeHTML(titleText)}
-                  </h2>
-              </div>
+              
+                      </h2>
+              
+                  </div>
           `;
+
+          if (!isLineNote) {
+  const titleLine =
+    document.createElement("div");
+
+  const colsNum =
+    parseInt(AppState.gridCols);
+
+  const usableWidthMm =
+    ManuscriptEngine.getUsableGridWidthMm(
+      colsNum
+    );
+
+ const extraWidth = HORIZONTAL_LINE_EXTRA_WIDTH;
+
+titleLine.className =
+  "custom-grid-border";
+
+titleLine.style.borderTop =
+  "1px solid currentColor";
+
+titleLine.style.width =
+  `${usableWidthMm + extraWidth}mm`;
+
+titleLine.style.marginTop =
+  `${TITLE_LINE_MARGIN}mm`;
+
+titleLine.style.position =
+  "relative";
+
+titleLine.style.left =
+  `${-extraWidth / 2}mm`;
+
+gridPageTitle.appendChild(
+  titleLine
+);
+}
 
           elements.push(gridPageTitle);
         } else {
           if (!isLineNote) {
             const singleLine = document.createElement("div");
 
-            singleLine.className =
-              "w-full border-t border-solid custom-grid-border mb-[3mm] shrink-0";
+singleLine.className =
+  "w-full border-t border-solid custom-grid-border shrink-0";
 
-            elements.push(singleLine);
+singleLine.style.marginBottom =
+  `${GRID_LINE_MARGIN}mm`;
+
+styleBottomLine(singleLine);
+
+elements.push(singleLine);
           }
         }
 
@@ -649,7 +700,7 @@
         const gridBody = document.createElement("div");
 
         gridBody.className =
-          "grid gap-0 border-2 manuscript-grid-border w-full h-full";
+          "grid gap-0 w-full h-full";
 
         gridBody.style.gridTemplateColumns = `repeat(${colsNum}, minmax(0, 1fr))`;
 
@@ -661,15 +712,16 @@
             const cell = document.createElement("div");
 
             cell.className =
-              "grid-cell-guide border-b border-r manuscript-grid-border flex items-center justify-center relative aspect-square";
+  "grid-cell-guide flex items-center justify-center relative aspect-square";
 
-            if (c === colsNum - 1) {
+           /* if (c === colsNum - 1) {
               cell.classList.remove("border-r");
             }
 
             if (r === optRows - 1) {
               cell.classList.remove("border-b");
             }
+              */
 
             gridBody.appendChild(cell);
           }
@@ -678,34 +730,285 @@
         return gridBody;
       }
 
+function createGridSvg(colsNum, optRows) {
+
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const svg = document.createElementNS(svgNS, "svg");
+
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "100%");
+
+  const usableWidthMm =
+    ManuscriptEngine.getUsableGridWidthMm(colsNum);
+
+  const cellWidthMm =
+    usableWidthMm / colsNum;
+
+  // 선 두께, 점선 길이, 점선 간격을 mm 단위로 정의하고, 이를 cellWidthMm로 나누어 상대적인 stroke-width와 dasharray를 계산합니다.
+  const borderMm = 0.5; // 외곽선 두께 (mm 단위)
+
+  const borderWidth =
+    borderMm / cellWidthMm;
+  
+  const gridLineMm = 0.25; // 원고지 가로/세로 선 두께 (mm 단위)
+
+  const gridStrokeWidth =
+    gridLineMm / cellWidthMm;
+
+  const guideLineMm = 0.25; // 가이드선 두께 (mm 단위)
+
+  const guideStrokeWidth =
+    guideLineMm / cellWidthMm;
+
+  const dashMm = 0.6; // 점선 길이 (mm 단위)
+  const gapMm = 0.3926; // 점선 간격 (mm 단위)
+
+  const dashLength =
+    dashMm / cellWidthMm;
+
+  const gapLength =
+    gapMm / cellWidthMm;
+
+
+svg.setAttribute(
+  "viewBox",
+  `0 0 ${colsNum} ${optRows}`
+);
+
+  svg.style.position = "absolute";
+  svg.style.left = "0";
+  svg.style.top = "0";
+  svg.style.width = "100%";
+  svg.style.height = "100%";
+  svg.style.pointerEvents = "none";
+  svg.style.overflow = "visible";
+
+  const gridColor =
+  getComputedStyle(document.documentElement)
+    .getPropertyValue("--manuscript-grid-color")
+    .trim();
+
+const guideColor =
+  getComputedStyle(document.documentElement)
+    .getPropertyValue("--guide-color")
+    .trim();
+
+
+  for (let x = 1; x < colsNum; x++) {
+    const line =
+      document.createElementNS(svgNS, "line");
+
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", 0);
+
+    line.setAttribute("x2", x);
+    line.setAttribute("y2", optRows);
+
+    line.setAttribute("stroke", gridColor);
+    line.setAttribute("stroke-width", gridStrokeWidth);
+
+    svg.appendChild(line);
+  }
+
+    for (let y = 1; y < optRows; y++) {
+    const line =
+      document.createElementNS(svgNS, "line");
+
+    line.setAttribute("x1", 0);
+    line.setAttribute("y1", y);
+
+    line.setAttribute("x2", colsNum);
+    line.setAttribute("y2", y);
+
+    line.setAttribute("stroke", gridColor);
+    line.setAttribute("stroke-width", gridStrokeWidth);
+
+    svg.appendChild(line);
+  }
+
+// =====================
+// 외곽선 전용 rect
+// =====================
+
+    // 위쪽
+    const topBorder =
+      document.createElementNS(svgNS, "rect");
+
+    topBorder.setAttribute(
+      "x",
+      -borderWidth
+    );
+
+    topBorder.setAttribute(
+      "y",
+      -borderWidth
+    );
+
+    topBorder.setAttribute(
+      "width",
+      colsNum + borderWidth * 2
+    );
+
+    topBorder.setAttribute(
+      "height",
+      borderWidth
+    );
+
+    topBorder.setAttribute(
+      "fill",
+      gridColor
+    );
+
+    svg.appendChild(topBorder);
+
+
+    // 아래쪽
+    const bottomBorder =
+      document.createElementNS(svgNS, "rect");
+
+    bottomBorder.setAttribute(
+      "x",
+      -borderWidth
+    );
+
+    bottomBorder.setAttribute(
+      "y",
+      optRows
+    );
+
+    bottomBorder.setAttribute(
+      "width",
+      colsNum + borderWidth * 2
+    );
+
+    bottomBorder.setAttribute(
+      "height",
+      borderWidth
+    );
+
+    bottomBorder.setAttribute(
+      "fill",
+      gridColor
+    );
+
+    svg.appendChild(bottomBorder);
+
+
+    // 왼쪽
+    const leftBorder =
+      document.createElementNS(svgNS, "rect");
+
+    leftBorder.setAttribute(
+      "x",
+      -borderWidth
+    );
+
+    leftBorder.setAttribute(
+      "y",
+      -borderWidth
+    );
+
+    leftBorder.setAttribute(
+      "width",
+      borderWidth
+    );
+
+    leftBorder.setAttribute(
+      "height",
+      optRows + borderWidth * 2
+    );
+
+    leftBorder.setAttribute(
+      "fill",
+      gridColor
+    );
+
+    svg.appendChild(leftBorder);
+
+
+    // 오른쪽
+    const rightBorder =
+      document.createElementNS(svgNS, "rect");
+
+    rightBorder.setAttribute(
+      "x",
+      colsNum
+    );
+
+    rightBorder.setAttribute(
+      "y",
+      -borderWidth
+    );
+
+    rightBorder.setAttribute(
+      "width",
+      borderWidth
+    );
+
+    rightBorder.setAttribute(
+      "height",
+      optRows + borderWidth * 2
+    );
+
+    rightBorder.setAttribute(
+      "fill",
+      gridColor
+    );
+
+    svg.appendChild(rightBorder);
+
+
+
+
+
+    if (!AppState.hideGridGuides) {
+    for (let row = 0; row < optRows; row++) {
+      for (let col = 0; col < colsNum; col++) {
+
+        const h =
+          document.createElementNS(svgNS, "line");
+
+        h.setAttribute("x1", col);
+        h.setAttribute("y1", row + 0.5);
+
+        h.setAttribute("x2", col + 1);
+        h.setAttribute("y2", row + 0.5);
+
+        h.setAttribute("stroke", guideColor);
+        h.setAttribute("stroke-width",guideStrokeWidth);
+        h.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
+        // h.setAttribute("stroke-linecap", "round"); // 가이드선 끝 모양을 둥글게 설정
+        svg.appendChild(h);
+
+        const v =
+          document.createElementNS(svgNS, "line");
+
+        v.setAttribute("x1", col + 0.5);
+        v.setAttribute("y1", row);
+
+        v.setAttribute("x2", col + 0.5);
+        v.setAttribute("y2", row + 1);
+
+        v.setAttribute("stroke", guideColor);
+        v.setAttribute("stroke-width", guideStrokeWidth);
+        v.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
+        // v.setAttribute("stroke-linecap", "round"); // 가이드선 끝 모양을 둥글게 설정
+        svg.appendChild(v);
+      }
+    }
+  }
+
+  return svg;
+}
+
+
+
+
       function createGrid(spec, optRows, cellsPerPage) {
         const colsNum = parseInt(AppState.gridCols);
 
-        let usableWidthMm = AppState.orientation === "portrait" ? 170 : 257;
-
-        // 10칸, 20칸, 22칸, 24칸은 CSS Grid의 서브픽셀 계산으로
-        // 원고지 선이 일부 어긋나는 현상이 있어
-        // 출력 폭을 조정하여 셀 크기를 안정화한다.
-        // TODO: 근본적인 해결책은 CSS Grid 대신 SVG Canvas 기반 렌더링으로 전환하는 것임. 
-        
-        if (AppState.orientation === "portrait") {
-          switch (colsNum) {
-            case 10:
-              usableWidthMm = 168;
-              break;
-            case 20:
-              usableWidthMm = 169;
-              break;
-
-            case 22:
-              usableWidthMm = 165;
-              break;
-
-            case 24:
-              usableWidthMm = 168;
-              break;
-          }
-        }
+        const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
 
         const cellWidthMm = usableWidthMm / colsNum;
 
@@ -717,9 +1020,20 @@
 
         relativeContainer.style.height = `${optRows * cellWidthMm}mm`;
 
-        const gridBody = createGridBody(colsNum, optRows);
+        const svgGrid =
+  createGridSvg(colsNum, optRows);
 
-        relativeContainer.appendChild(gridBody);
+const gridBody =
+  createGridBody(colsNum, optRows);
+
+gridBody.style.position = "absolute";
+gridBody.style.left = "0";
+gridBody.style.top = "0";
+gridBody.style.width = "100%";
+gridBody.style.height = "100%";
+relativeContainer.appendChild(svgGrid);
+relativeContainer.appendChild(gridBody);
+
 
         if (!AppState.hideCharCount) {
           createCharCountLabels(
@@ -762,6 +1076,30 @@
           innerDiv,
         };
       }
+function styleBottomLine(singleBottomLine) {
+  const colsNum =
+    parseInt(AppState.gridCols);
+
+  const usableWidthMm =
+    ManuscriptEngine.getUsableGridWidthMm(colsNum);
+
+  const extraWidth = HORIZONTAL_LINE_EXTRA_WIDTH;
+
+  singleBottomLine.style.width =
+    `${usableWidthMm + extraWidth}mm`;
+
+  singleBottomLine.style.position =
+    "relative";
+
+  singleBottomLine.style.left =
+    `${-extraWidth / 2}mm`;
+
+  singleBottomLine.style.marginLeft =
+    "auto";
+
+  singleBottomLine.style.marginRight =
+    "auto";
+}
 
       // Main Page Builder
       function buildSkeletonPage(
@@ -904,19 +1242,40 @@
             gridWrapper.appendChild(createGrid(spec, optRows, cellsPerPage));
           }
 
-          if (!isLineNote) {
-            if (AppState.hideManuscriptHeader) {
-              const singleBottomLine = document.createElement("div");
-              singleBottomLine.className =
-                "w-full border-t border-solid custom-grid-border mt-[3mm] shrink-0";
-              innerDiv.appendChild(singleBottomLine);
-            } else {
-              const singleBottomLine = document.createElement("div");
-              singleBottomLine.className =
-                "w-full border-t border-solid custom-grid-border mt-[2mm] shrink-0";
-              innerDiv.appendChild(singleBottomLine);
-            }
-          }
+         if (!isLineNote) {
+
+  if (AppState.hideManuscriptHeader) {
+
+    const singleBottomLine =
+  document.createElement("div");
+
+singleBottomLine.className =
+  "w-full border-t border-solid custom-grid-border shrink-0";
+
+singleBottomLine.style.marginTop =
+  `${GRID_LINE_MARGIN}mm`;
+
+styleBottomLine(singleBottomLine);
+
+innerDiv.appendChild(singleBottomLine);
+
+  } else {
+
+    const singleBottomLine =
+      document.createElement("div");
+
+    singleBottomLine.className =
+      "w-full border-t border-solid custom-grid-border shrink-0";
+singleBottomLine.style.marginTop =
+
+`${GRID_LINE_MARGIN}mm`;
+    styleBottomLine(singleBottomLine);
+
+    innerDiv.appendChild(singleBottomLine);
+
+  }
+
+}
 
           if (!AppState.hidePageNumbers) {
             innerDiv.appendChild(createGridFooter(spec, isLineNote));

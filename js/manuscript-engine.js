@@ -1,9 +1,22 @@
-// 원고지 엔진 분리
 "use strict";
 
 const ManuscriptEngine = {};
 
+const GRID_USABLE_HEIGHT_PORTRAIT = 218; // 원고지 세로 길이(mm) - 여백 ; 헤더 표시 상태 (세로 모드)
+const GRID_USABLE_HEIGHT_PORTRAIT_NO_HEADER = 238; // 원고지 세로 길이(mm) - 여백 ; 헤더 숨김 상태
+
+const GRID_USABLE_HEIGHT_LANDSCAPE = 133; // 원고지 세로 길이(mm) - 여백 ; 헤더 표시 상태 (가로 모드)
+const GRID_USABLE_HEIGHT_LANDSCAPE_NO_HEADER = 158; // 원고지 세로 길이(mm) - 여백 ; 헤더 숨김 상태 (가로 모드)
+
 ManuscriptEngine.CHAR_SCALE = 0.62; //원고지 칸 크기 대비 문자 크기
+
+ManuscriptEngine.getUsableGridWidthMm = function (colsNum) {
+  colsNum = parseInt(colsNum);
+  if (AppState.orientation !== "portrait") {
+    return 257;
+  }
+  return 170; // 원고지 가로 길이(mm) - 여백
+};
 
 // =====================================================
 // 공통 좌표 상수
@@ -276,22 +289,17 @@ ManuscriptEngine.calculateOptimalRows = function (cols) {
     }
   }
   const colsNum = parseInt(cols);
-
-  if (colsNum === 20 && AppState.orientation === "portrait") {
-    return 25;
-  }
-
-  const usableWidthMm = AppState.orientation === "portrait" ? 170 : 257;
+  const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
   const cellWidthMm = usableWidthMm / colsNum;
 
-  const usableHeightMm =
+  const usableHeightMm = 
     AppState.orientation === "portrait"
       ? AppState.hideManuscriptHeader
-        ? 228
-        : 208
+        ? GRID_USABLE_HEIGHT_PORTRAIT_NO_HEADER
+        : GRID_USABLE_HEIGHT_PORTRAIT
       : AppState.hideManuscriptHeader
-        ? 158
-        : 133;
+        ? GRID_USABLE_HEIGHT_LANDSCAPE_NO_HEADER
+        : GRID_USABLE_HEIGHT_LANDSCAPE;
 
   return Math.floor(usableHeightMm / cellWidthMm);
 };
