@@ -516,6 +516,8 @@ function renderPages() {
     "_" +
     AppState.hidePageNumbers +
     "_" +
+    AppState.hideGridGuides +
+    "_" +
     AppState.excludeFirstPage +
     "_" +
     AppState.patternGuide +
