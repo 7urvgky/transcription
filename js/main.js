@@ -2,17 +2,20 @@
 
 // 레이아웃 관련 상수
 const LAYOUT = {
-  footerBottomMm: 18, // bottom-[18mm]
-  footerLeftRightMm: 20, // left-[20mm] right-[20mm]
+  pageTopPadding: 18, // 페이지 위 여백 mm
+  pageSidePadding: 20, // 페이지 좌우 여백 mm
+  pageBottomPadding: 23.5, // 페이지 아래 여백 mm TODO: 현재 본문 높이가 고정되어 있음. 추후 하단 라벨 높이에 따라 동적 조정 필요
 
-  sourceTitleTop: 4, // mt-4
-  sourceTitleBottom: 2, // mb-2
-  sourceBodyBottom: 15, // mb-[15mm]
+  footerBottomMm: 18, // 하단 꼬리말 여백 mm
+  footerLeftRightMm: 20, // 하단 꼬리말 좌우 여백 mm
 
-  gridHeaderBottom: 2, // mb-2
-  gridTitleTop: 3, // mt-3
+  sourceTitleTop: 4, // 원문 보기 헤더와 제목 사이 여백
+  sourceTitleBottom: 2, // 원문 보기 제목규ㅏ 본문 사이 여백
+  sourceBodyBottom: 15, // 원문 보기 본문 아래 여백
 
-  gridLineGap: 2.5, // 원고지 위 아래 실선 간격
+  gridHeaderBottom: 5, // 원고지 헤더와 원고지 제목 간격
+
+  gridLineGap: 2.5, // 원고지와 위 아래 실선 간격
   titleLineGap: 1, // 원고지 제목과 위 실선 간격
 
   horizontalLineExtraWidth: 2, // 원고지 위 아래 실선 길이 조절
@@ -29,10 +32,6 @@ function applyFooterPosition(el) {
 const footerSourceText = "원문 읽기";
 const footerGuideText = "따라 쓰기";
 const footerEmptyText = "원고지";
-
-const HORIZONTAL_LINE_EXTRA_WIDTH = LAYOUT.horizontalLineExtraWidth;
-const GRID_LINE_MARGIN = LAYOUT.gridLineGap;
-const TITLE_LINE_MARGIN = LAYOUT.titleLineGap;
 
 // Layout Thrashing 최적화용 치수 캐시
 let cachedPageWidth = 0;
@@ -528,7 +527,9 @@ function createPageHeader(headerHTML, titleText, isLineNote) {
 
   if (AppState.hideManuscriptHeader) {
     if (!isLineNote) {
-      elements.push(createHorizontalLine(GRID_LINE_MARGIN, GRID_LINE_MARGIN));
+      elements.push(
+        createHorizontalLine(LAYOUT.gridLineGap, LAYOUT.gridLineGap),
+      );
     }
 
     return elements;
@@ -883,6 +884,11 @@ function createPageShell(pageClass, spec) {
 
   const innerDiv = document.createElement("div");
 
+  innerDiv.style.padding = `${LAYOUT.pageTopPadding}mm
+   ${LAYOUT.pageSidePadding}mm
+   ${LAYOUT.pageBottomPadding}mm
+   ${LAYOUT.pageSidePadding}mm`;
+
   innerDiv.className = "print-page-inner";
 
   pageDiv.appendChild(innerDiv);
@@ -900,7 +906,7 @@ function styleBottomLine(singleBottomLine) {
 
   const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
 
-  const extraWidth = HORIZONTAL_LINE_EXTRA_WIDTH;
+  const extraWidth = LAYOUT.horizontalLineExtraWidth;
 
   singleBottomLine.style.width = `${usableWidthMm + extraWidth}mm`;
 
@@ -918,7 +924,7 @@ function createTitleLine() {
 
   const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
 
-  const extraWidth = HORIZONTAL_LINE_EXTRA_WIDTH;
+  const extraWidth = LAYOUT.horizontalLineExtraWidth;
 
   const titleLine = document.createElement("div");
 
@@ -928,7 +934,7 @@ function createTitleLine() {
 
   titleLine.style.width = `${usableWidthMm + extraWidth}mm`;
 
-  titleLine.style.marginTop = `${TITLE_LINE_MARGIN}mm`;
+  titleLine.style.marginTop = `${LAYOUT.titleLineGap}mm`;
 
   titleLine.style.position = "relative";
 
@@ -941,7 +947,9 @@ function createGridHeader(headerHTML) {
   const header = document.createElement("div");
 
   header.className =
-    "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
+    "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0";
+
+  header.style.marginBottom = `${LAYOUT.gridHeaderBottom}mm`;
 
   header.innerHTML = headerHTML;
 
@@ -951,9 +959,9 @@ function createGridHeader(headerHTML) {
 function createGridTitle(titleText, isLineNote) {
   const title = document.createElement("div");
 
-  title.className = "mt-3 mb-1 w-full text-left shrink-0";
+  title.className = "mb-1 w-full text-left shrink-0";
 
-  title.style.marginBottom = `${GRID_LINE_MARGIN}mm`;
+  title.style.marginBottom = `${LAYOUT.gridLineGap}mm`;
 
   title.innerHTML = `
     <div>
@@ -1000,7 +1008,11 @@ function createSourceHeader(innerDiv, spec, headerHTML, titleText) {
     innerDiv.appendChild(pageOneHeader);
 
     const pageOneTitle = document.createElement("div");
-    pageOneTitle.className = "mt-4 mb-2 w-full text-left shrink-0";
+    pageOneTitle.className = "w-full text-left shrink-0";
+
+    pageOneTitle.style.marginTop = `${LAYOUT.sourceTitleTop}mm`;
+
+    pageOneTitle.style.marginBottom = `${LAYOUT.sourceTitleBottom}mm`;
     pageOneTitle.innerHTML = `
               <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(titleText)}</h2>
             `;
@@ -1054,8 +1066,9 @@ function createSourceFooter(innerDiv, spec) {
 }
 function createSourceBody(innerDiv, spec) {
   const pageOneBody = document.createElement("div");
-  pageOneBody.className =
-    "w-full flex flex-col justify-start items-center mb-[15mm]";
+  pageOneBody.className = "w-full flex flex-col justify-start items-center";
+
+  pageOneBody.style.marginBottom = `${LAYOUT.sourceBodyBottom}mm`;
 
   if (AppState.orientation === "portrait") {
     pageOneBody.style.maxHeight = spec.sIdx === 0 ? "175mm" : "195mm";
@@ -1146,7 +1159,7 @@ function buildGridPage(
   } else {
     gridWrapper.appendChild(createGrid(spec, optRows, cellsPerPage));
 
-    innerDiv.appendChild(createHorizontalLine(GRID_LINE_MARGIN));
+    innerDiv.appendChild(createHorizontalLine(LAYOUT.gridLineGap));
   }
 
   if (!AppState.hidePageNumbers) {

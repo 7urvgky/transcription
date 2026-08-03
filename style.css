@@ -77,7 +77,6 @@ body {
   display: none !important;
 }
 
-
 /* GPU 가속을 이용한 글자 상하 미세정렬 규칙 일괄 적용 */
 .grid-cell-guide svg g,
 .line-note-text-span,
@@ -131,7 +130,6 @@ body {
 .print-page-inner {
   width: 100%;
   height: 100%;
-  padding: 18mm 20mm 23.5mm 20mm;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -384,5 +382,4 @@ body {
     overflow-y: visible !important;
     touch-action: pan-y;
   }
-
 }
