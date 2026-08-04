@@ -1,3 +1,15 @@
+/**
+ * 필사 용지 만들기 기본 설정
+ *
+ * 레이아웃
+ * 기본 문서 템플릿
+ * 원고지 설정
+ * 원문 보기 설정
+ * 푸터 설정
+ *
+ * 변경 시 앱 전체에 적용됨
+ */
+
 "use strict";
 
 const SETTINGS = {
@@ -16,7 +28,7 @@ const SETTINGS = {
     sourceTitleTop: 4, // 원문 보기 헤더와 제목 사이 여백 mm
     sourceTitleBottom: 2, // 원문 보기 제목과 본문 사이 여백 mm
     sourceBodyBottom: 15, // 원문 보기 본문 아래 여백 mm
-    headerLeftText: "ㅁㄴㅇㄹㅇㅁㄴ", // 원문 보기 2페이지 이후 왼쪽 상단 머리말
+    headerLeftText: "", // 원문 보기 2페이지 이후 왼쪽 상단 머리말
 
     // 원고지 여백 설정
     gridHeaderBottom: 5, // 원고지 헤더와 원고지 제목 간격 mm
@@ -71,7 +83,7 @@ const SETTINGS = {
   // 기본 입력 내용 설정
   defaults: {
     // 원고지 칸 수, 방향 설정
-    gridCols: "10", // 원고지 기본 칸 수 10칸, 12칸, 14칸, 16칸, 18칸, 20칸, 22칸, 24칸
+    gridCols: "20", // 원고지 기본 칸 수 10칸, 12칸, 14칸, 16칸, 18칸, 20칸, 22칸, 24칸
     orientation: "portrait", // 기본 세로 모드 portrait, 가로 모드 landscape
     // 학생 정보 설정
     schoolName: "건국초등학교",
