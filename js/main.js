@@ -51,7 +51,11 @@ function applyLoadedDataToUI() {
   document.getElementById("hide-char-count").checked = AppState.hideCharCount;
   document.getElementById("hide-page-numbers").checked =
     AppState.hidePageNumbers;
-  document.getElementById("hide-grid-guides").checked = AppState.hideGridGuides;
+  document.getElementById("lefttriangle-guide").checked =
+    AppState.lefttriangleGuide;
+  document.getElementById("top-triangle-guide").checked =
+    AppState.topTriangleGuide;
+  document.getElementById("show-grid-guides").checked = AppState.showGridGuides;
   document.getElementById("pattern-guide").checked = AppState.patternGuide;
   document.getElementById("pattern-empty").checked = AppState.patternEmpty;
   document.getElementById("exclude-first-page").checked =
@@ -169,9 +173,78 @@ function setGridColor(val, isCustom = false, shouldSave = true) {
     renderPages();
   }
 }
+function setlefttriangleGuideColor(val, shouldSave = true) {
+  AppState.lefttriangleGuideColor = val;
 
+  const checks = document.querySelectorAll(".lefttriangle-guide-color-check");
+
+  checks.forEach((el) => el.classList.add("hidden"));
+
+  const matchedBtn = document.querySelector(
+    `button[onclick*="${val}"] .lefttriangle-guide-color-check`,
+  );
+
+  if (matchedBtn) {
+    matchedBtn.classList.remove("hidden");
+  }
+
+  const picker = document.getElementById("lefttriangle-guide-color-picker");
+
+  if (picker) {
+    picker.value = val;
+  }
+
+  if (shouldSave) {
+    markStateChanged();
+    renderPages();
+  }
+}
+
+function updatelefttriangleGuideOpacity(val) {
+  AppState.lefttriangleGuideOpacity = Number(val) / 100;
+
+  document.getElementById("lefttriangleGuideOpacityVal").innerText = val + "%";
+
+  markStateChanged();
+  renderPages();
+}
+function setTopTriangleGuideColor(val, shouldSave = true) {
+  AppState.topTriangleGuideColor = val;
+
+  const checks = document.querySelectorAll(".top-triangle-guide-color-check");
+
+  checks.forEach((el) => el.classList.add("hidden"));
+
+  const matchedBtn = document.querySelector(
+    `button[onclick*="${val}"] .top-triangle-guide-color-check`,
+  );
+
+  if (matchedBtn) {
+    matchedBtn.classList.remove("hidden");
+  }
+
+  const picker = document.getElementById("top-triangle-guide-color-picker");
+
+  if (picker) {
+    picker.value = val;
+  }
+
+  if (shouldSave) {
+    markStateChanged();
+    renderPages();
+  }
+}
+function updateTopTriangleGuideOpacity(val) {
+  AppState.topTriangleGuideOpacity = Number(val) / 100;
+
+  document.getElementById("topTriangleGuideOpacityVal").innerText = val + "%";
+
+  markStateChanged();
+  renderPages();
+}
 function setGuideColor(val, isCustom = false, shouldSave = true) {
   AppState.currentGuideColor = val;
+
   updateGridGuides();
 
   const checks = document.querySelectorAll(".guide-color-check");
@@ -213,7 +286,7 @@ function setGuideColor(val, isCustom = false, shouldSave = true) {
 function updateGridGuides() {
   document.documentElement.style.setProperty(
     "--guide-display",
-    AppState.hideGridGuides ? "none" : "block",
+    AppState.showGridGuides ? "none" : "block",
   );
   document.documentElement.style.setProperty(
     "--guide-color",
@@ -679,6 +752,14 @@ function createGridSvg(colsNum, optRows) {
   const guideColor = getComputedStyle(document.documentElement)
     .getPropertyValue("--guide-color")
     .trim();
+  const lefttriangleGuideColor = hexToRgba(
+    AppState.lefttriangleGuideColor,
+    AppState.lefttriangleGuideOpacity,
+  );
+  const topTriangleGuideColor = hexToRgba(
+    AppState.topTriangleGuideColor,
+    AppState.topTriangleGuideOpacity,
+  );
 
   for (let x = 1; x < colsNum; x++) {
     const line = document.createElementNS(svgNS, "line");
@@ -774,9 +855,12 @@ function createGridSvg(colsNum, optRows) {
 
   svg.appendChild(rightBorder);
 
-  if (!AppState.hideGridGuides) {
-    for (let row = 0; row < optRows; row++) {
-      for (let col = 0; col < colsNum; col++) {
+  for (let row = 0; row < optRows; row++) {
+    for (let col = 0; col < colsNum; col++) {
+      // =====================
+      // 십자 가이드
+      // =====================
+      if (AppState.showGridGuides) {
         const h = document.createElementNS(svgNS, "line");
 
         h.setAttribute("x1", col);
@@ -804,6 +888,76 @@ function createGridSvg(colsNum, optRows) {
         v.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
 
         svg.appendChild(v);
+      }
+
+      // =====================
+      // 왼쪽 삼각형 가이드
+      // =====================
+      if (AppState.lefttriangleGuide) {
+        const d1 = document.createElementNS(svgNS, "line");
+
+        d1.setAttribute("x1", col + 1);
+        d1.setAttribute("y1", row);
+
+        d1.setAttribute("x2", col);
+        d1.setAttribute("y2", row + 0.5);
+
+        d1.setAttribute("stroke", lefttriangleGuideColor);
+        d1.setAttribute("stroke-width", guideStrokeWidth);
+        d1.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
+
+        svg.appendChild(d1);
+
+        const d2 = document.createElementNS(svgNS, "line");
+
+        d2.setAttribute("x1", col + 1);
+        d2.setAttribute("y1", row + 1);
+
+        d2.setAttribute("x2", col);
+        d2.setAttribute("y2", row + 0.5);
+
+        d2.setAttribute("stroke", lefttriangleGuideColor);
+        d2.setAttribute("stroke-width", guideStrokeWidth);
+        d2.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
+
+        svg.appendChild(d2);
+      }
+
+      // =====================
+      // 위쪽 삼각형 가이드
+      // =====================
+      if (AppState.topTriangleGuide) {
+        const d1 = document.createElementNS(svgNS, "line");
+
+        d1.setAttribute("x1", col);
+        d1.setAttribute("y1", row + 1);
+
+        d1.setAttribute("x2", col + 0.5);
+        d1.setAttribute("y2", row);
+
+        d1.setAttribute("stroke", topTriangleGuideColor);
+
+        d1.setAttribute("stroke-width", guideStrokeWidth);
+
+        d1.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
+
+        svg.appendChild(d1);
+
+        const d2 = document.createElementNS(svgNS, "line");
+
+        d2.setAttribute("x1", col + 1);
+        d2.setAttribute("y1", row + 1);
+
+        d2.setAttribute("x2", col + 0.5);
+        d2.setAttribute("y2", row);
+
+        d2.setAttribute("stroke", topTriangleGuideColor);
+
+        d2.setAttribute("stroke-width", guideStrokeWidth);
+
+        d2.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
+
+        svg.appendChild(d2);
       }
     }
   }
@@ -1543,14 +1697,14 @@ async function initApp() {
   const presetGridColors = [
     "#000000",
     "#69afa0",
-    "#ff8c8c",
+    "#ff0000",
     "#2563eb",
     "#991b1b",
   ];
   const presetGuideColors = [
     "#000000",
     "#69afa0",
-    "#ff8c8c",
+    "#ff0000",
     "#2563eb",
     "#991b1b",
   ];
@@ -1566,12 +1720,20 @@ async function initApp() {
     !presetGuideColors.includes(AppState.currentGuideColor),
     false,
   );
-
+  setlefttriangleGuideColor(AppState.lefttriangleGuideColor, false);
   document.documentElement.style.setProperty(
     "--guide-display",
-    AppState.hideGridGuides ? "none" : "block",
+    AppState.showGridGuides ? "none" : "block",
   );
+  document
+    .getElementById("top-triangle-guide")
+    .addEventListener("change", (e) => {
+      AppState.topTriangleGuide = e.target.checked;
 
+      markStateChanged();
+      renderPages();
+    });
+  setTopTriangleGuideColor(AppState.topTriangleGuideColor, false);
   // 개별 슬라이더 수치 복원 및 DOM 슬라이더 일치 작업
   updateGridOpacity(AppState.gridOpacity * 100);
   updateGuideOpacity(AppState.guideOpacity * 100);
@@ -1594,6 +1756,14 @@ async function initApp() {
   initializeControllers();
   cachePageDimensions();
   adjustPreviewScale();
+  document
+    .getElementById("lefttriangle-guide")
+    .addEventListener("change", (e) => {
+      AppState.lefttriangleGuide = e.target.checked;
+
+      markStateChanged();
+      renderPages();
+    });
 
   const pagesInput = document.getElementById("pages-badge-input");
   if (pagesInput) {

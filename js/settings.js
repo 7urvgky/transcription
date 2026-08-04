@@ -67,12 +67,18 @@ const SETTINGS = {
   guide: {
     dashMm: 0.6, // 따라 쓰기 점선 mm
     gapMm: 0.3926, // 따라 쓰기 점선 간격 mm
+
+    lefttriangleGuideColor: "#ff0000",
+    lefttriangleGuideOpacity: 0.35,
+
+    topTriangleGuideColor: "#ff0000",
+    topTriangleGuideOpacity: 0.35,
   },
 
   // 원고지 기본 색상 및 투명도 설정
   defaultColors: {
     grid: "#69afa0",
-    guide: "#ff8c8c",
+    guide: "#ff0000",
   },
 
   defaultOpacity: {

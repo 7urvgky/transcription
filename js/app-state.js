@@ -24,10 +24,22 @@ const DEFAULT_APP_STATE = {
 
   currentGridColor: SETTINGS.defaultColors.grid,
   currentGuideColor: SETTINGS.defaultColors.guide,
+
+  lefttriangleGuide: SETTINGS.guide.lefttriangleGuide,
+  lefttriangleGuideColor: SETTINGS.guide.lefttriangleGuideColor,
+  lefttriangleGuideOpacity: SETTINGS.guide.lefttriangleGuideOpacity,
+
+  topTriangleGuide: SETTINGS.guide.topTriangleGuide,
+  topTriangleGuideColor: SETTINGS.guide.topTriangleGuideColor,
+  topTriangleGuideOpacity: SETTINGS.guide.topTriangleGuideOpacity,
+
   gridOpacity: SETTINGS.defaultOpacity.grid,
   guideOpacity: SETTINGS.defaultOpacity.guide,
 
-  hideGridGuides: false,
+  showGridGuides: true,
+  lefttriangleGuide: false,
+  topTriangleGuide: false,
+
   patternGuide: true,
   patternEmpty: true,
 
@@ -64,10 +76,19 @@ const AppState = {
 
   currentGridColor: DEFAULT_APP_STATE.currentGridColor,
   currentGuideColor: DEFAULT_APP_STATE.currentGuideColor,
+
+  lefttriangleGuide: DEFAULT_APP_STATE.lefttriangleGuide,
+  lefttriangleGuideColor: DEFAULT_APP_STATE.lefttriangleGuideColor,
+  lefttriangleGuideOpacity: DEFAULT_APP_STATE.lefttriangleGuideOpacity,
+
+  topTriangleGuide: DEFAULT_APP_STATE.topTriangleGuide,
+  topTriangleGuideColor: DEFAULT_APP_STATE.topTriangleGuideColor,
+  topTriangleGuideOpacity: DEFAULT_APP_STATE.topTriangleGuideOpacity,
+
   gridOpacity: DEFAULT_APP_STATE.gridOpacity,
   guideOpacity: DEFAULT_APP_STATE.guideOpacity,
 
-  hideGridGuides: DEFAULT_APP_STATE.hideGridGuides,
+  showGridGuides: DEFAULT_APP_STATE.showGridGuides,
   patternGuide: DEFAULT_APP_STATE.patternGuide,
   patternEmpty: DEFAULT_APP_STATE.patternEmpty,
 

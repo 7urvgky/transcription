@@ -109,9 +109,9 @@ function bindUIEvents() {
       renderPages();
     });
   document
-    .getElementById("hide-grid-guides")
+    .getElementById("show-grid-guides")
     .addEventListener("change", (e) => {
-      AppState.hideGridGuides = e.target.checked;
+      AppState.showGridGuides = e.target.checked;
       updateGridGuides();
       markStateChanged();
     });
