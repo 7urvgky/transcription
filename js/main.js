@@ -1,37 +1,23 @@
+/**
+ * 필사 용지 만들기 기본 설정
+ *
+ * 레이아웃
+ * 기본 문서 템플릿
+ * 원고지 설정
+ * 원문 보기 설정
+ * 푸터 설정
+ *
+ * 변경 시 앱 전체에 적용됨
+ */
+
 "use strict";
-
-// 레이아웃 관련 상수
-const LAYOUT = {
-  pageTopPadding: 18, // 페이지 위 여백 mm
-  pageSidePadding: 20, // 페이지 좌우 여백 mm
-  pageBottomPadding: 23.5, // 페이지 아래 여백 mm TODO: 현재 본문 높이가 고정되어 있음. 추후 하단 라벨 높이에 따라 동적 조정 필요
-
-  footerBottomMm: 18, // 하단 꼬리말 여백 mm
-  footerLeftRightMm: 20, // 하단 꼬리말 좌우 여백 mm
-
-  sourceTitleTop: 4, // 원문 보기 헤더와 제목 사이 여백
-  sourceTitleBottom: 2, // 원문 보기 제목규ㅏ 본문 사이 여백
-  sourceBodyBottom: 15, // 원문 보기 본문 아래 여백
-
-  gridHeaderBottom: 5, // 원고지 헤더와 원고지 제목 간격
-
-  gridLineGap: 2.5, // 원고지와 위 아래 실선 간격
-  titleLineGap: 1, // 원고지 제목과 위 실선 간격
-
-  horizontalLineExtraWidth: 2, // 원고지 위 아래 실선 길이 조절
-};
 
 // 하단 라벨 위치 적용
 function applyFooterPosition(el) {
-  el.style.left = `${LAYOUT.footerLeftRightMm}mm`;
-  el.style.right = `${LAYOUT.footerLeftRightMm}mm`;
-  el.style.bottom = `${LAYOUT.footerBottomMm}mm`;
+  el.style.left = `${SETTINGS.layout.footerLeftRightMm}mm`;
+  el.style.right = `${SETTINGS.layout.footerLeftRightMm}mm`;
+  el.style.bottom = `${SETTINGS.layout.footerBottomMm}mm`;
 }
-
-// 하단 기본 라벨 상수
-const footerSourceText = "원문 읽기";
-const footerGuideText = "따라 쓰기";
-const footerEmptyText = "원고지";
 
 // Layout Thrashing 최적화용 치수 캐시
 let cachedPageWidth = 0;
@@ -397,12 +383,17 @@ function getBlankPlaceholders() {
     school:
       AppState.schoolName === " " || AppState.schoolName.trim()
         ? AppState.schoolName
-        : "",
+        : SETTINGS.defaults.emptySchoolPlaceholder,
+
     grade:
       AppState.gradeInfo === " " || AppState.gradeInfo.trim()
         ? AppState.gradeInfo
-        : "__________학년 __________반",
-    name: "",
+        : SETTINGS.defaults.emptyGradePlaceholder,
+
+    name:
+      AppState.studentName === " " || AppState.studentName.trim()
+        ? AppState.studentName
+        : SETTINGS.defaults.emptyNamePlaceholder,
   };
 }
 
@@ -478,14 +469,14 @@ function createGridFooter(spec, isLineNote) {
       currentFooterLabel =
         AppState.customFooterGuideText !== null
           ? AppState.customFooterGuideText
-          : footerGuideText + " - 줄 노트";
+          : SETTINGS.footer.guide + " - 줄 노트";
 
       currentFooterClass = "footer-label-guide";
     } else {
       currentFooterLabel =
         AppState.customFooterEmptyText !== null
           ? AppState.customFooterEmptyText
-          : footerEmptyText + " - 줄 노트";
+          : SETTINGS.footer.empty + " - 줄 노트";
 
       currentFooterClass = "footer-label-empty";
     }
@@ -494,14 +485,14 @@ function createGridFooter(spec, isLineNote) {
       currentFooterLabel =
         AppState.customFooterGuideText !== null
           ? AppState.customFooterGuideText
-          : footerGuideText + " - 가로 " + AppState.gridCols + "칸";
+          : SETTINGS.footer.guide + " - 가로 " + AppState.gridCols + "칸";
 
       currentFooterClass = "footer-label-guide";
     } else {
       currentFooterLabel =
         AppState.customFooterEmptyText !== null
           ? AppState.customFooterEmptyText
-          : footerEmptyText + " - 가로 " + AppState.gridCols + "칸";
+          : SETTINGS.footer.empty + " - 가로 " + AppState.gridCols + "칸";
 
       currentFooterClass = "footer-label-empty";
     }
@@ -528,7 +519,10 @@ function createPageHeader(headerHTML, titleText, isLineNote) {
   if (AppState.hideManuscriptHeader) {
     if (!isLineNote) {
       elements.push(
-        createHorizontalLine(LAYOUT.gridLineGap, LAYOUT.gridLineGap),
+        createHorizontalLine(
+          SETTINGS.layout.gridLineGap,
+          SETTINGS.layout.gridLineGap,
+        ),
       );
     }
 
@@ -659,21 +653,22 @@ function createGridSvg(colsNum, optRows) {
 
   const cellWidthMm = usableWidthMm / colsNum;
 
-  // 선 두께, 점선 길이, 점선 간격을 mm 단위로 정의하고, 이를 cellWidthMm로 나누어 상대적인 stroke-width와 dasharray를 계산합니다.
-  const borderMm = 0.5; // 외곽선 두께 (mm 단위)
+  // 원고지 선 두께, 점선 길이, 점선 간격을 mm 단위로 정의하고, 이를 cellWidthMm로 나누어 상대적인 stroke-width와 dasharray를 계산합니다.
+  const borderMm = SETTINGS.stroke.borderMm;
+
+  const gridLineMm = SETTINGS.stroke.gridLineMm;
+
+  const guideLineMm = SETTINGS.stroke.guideLineMm;
 
   const borderWidth = borderMm / cellWidthMm;
 
-  const gridLineMm = 0.25; // 원고지 가로/세로 선 두께 (mm 단위)
-
   const gridStrokeWidth = gridLineMm / cellWidthMm;
-
-  const guideLineMm = 0.25; // 가이드선 두께 (mm 단위)
 
   const guideStrokeWidth = guideLineMm / cellWidthMm;
 
-  const dashMm = 0.6; // 점선 길이 (mm 단위)
-  const gapMm = 0.3926; // 점선 간격 (mm 단위)
+  const dashMm = SETTINGS.guide.dashMm;
+
+  const gapMm = SETTINGS.guide.gapMm;
 
   const dashLength = dashMm / cellWidthMm;
 
@@ -884,10 +879,10 @@ function createPageShell(pageClass, spec) {
 
   const innerDiv = document.createElement("div");
 
-  innerDiv.style.padding = `${LAYOUT.pageTopPadding}mm
-   ${LAYOUT.pageSidePadding}mm
-   ${LAYOUT.pageBottomPadding}mm
-   ${LAYOUT.pageSidePadding}mm`;
+  innerDiv.style.padding = `${SETTINGS.layout.pageTopPadding}mm
+   ${SETTINGS.layout.pageSidePadding}mm
+   ${SETTINGS.layout.pageBottomPadding}mm
+   ${SETTINGS.layout.pageSidePadding}mm`;
 
   innerDiv.className = "print-page-inner";
 
@@ -906,7 +901,7 @@ function styleBottomLine(singleBottomLine) {
 
   const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
 
-  const extraWidth = LAYOUT.horizontalLineExtraWidth;
+  const extraWidth = SETTINGS.layout.horizontalLineExtraWidth;
 
   singleBottomLine.style.width = `${usableWidthMm + extraWidth}mm`;
 
@@ -924,7 +919,7 @@ function createTitleLine() {
 
   const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
 
-  const extraWidth = LAYOUT.horizontalLineExtraWidth;
+  const extraWidth = SETTINGS.layout.horizontalLineExtraWidth;
 
   const titleLine = document.createElement("div");
 
@@ -934,7 +929,7 @@ function createTitleLine() {
 
   titleLine.style.width = `${usableWidthMm + extraWidth}mm`;
 
-  titleLine.style.marginTop = `${LAYOUT.titleLineGap}mm`;
+  titleLine.style.marginTop = `${SETTINGS.layout.titleLineGap}mm`;
 
   titleLine.style.position = "relative";
 
@@ -949,7 +944,7 @@ function createGridHeader(headerHTML) {
   header.className =
     "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0";
 
-  header.style.marginBottom = `${LAYOUT.gridHeaderBottom}mm`;
+  header.style.marginBottom = `${SETTINGS.layout.gridHeaderBottom}mm`;
 
   header.innerHTML = headerHTML;
 
@@ -961,7 +956,7 @@ function createGridTitle(titleText, isLineNote) {
 
   title.className = "mb-1 w-full text-left shrink-0";
 
-  title.style.marginBottom = `${LAYOUT.gridLineGap}mm`;
+  title.style.marginBottom = `${SETTINGS.layout.gridLineGap}mm`;
 
   title.innerHTML = `
     <div>
@@ -1010,9 +1005,9 @@ function createSourceHeader(innerDiv, spec, headerHTML, titleText) {
     const pageOneTitle = document.createElement("div");
     pageOneTitle.className = "w-full text-left shrink-0";
 
-    pageOneTitle.style.marginTop = `${LAYOUT.sourceTitleTop}mm`;
+    pageOneTitle.style.marginTop = `${SETTINGS.layout.sourceTitleTop}mm`;
 
-    pageOneTitle.style.marginBottom = `${LAYOUT.sourceTitleBottom}mm`;
+    pageOneTitle.style.marginBottom = `${SETTINGS.layout.sourceTitleBottom}mm`;
     pageOneTitle.innerHTML = `
               <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(titleText)}</h2>
             `;
@@ -1045,7 +1040,7 @@ function createSourceFooter(innerDiv, spec) {
   const displaySourceFooter =
     AppState.customFooterSourceText !== null
       ? AppState.customFooterSourceText
-      : footerSourceText;
+      : SETTINGS.footer.source;
 
   pageOneFooter.innerHTML = `
     <span class="tracking-wide text-slate-400">
@@ -1068,14 +1063,20 @@ function createSourceBody(innerDiv, spec) {
   const pageOneBody = document.createElement("div");
   pageOneBody.className = "w-full flex flex-col justify-start items-center";
 
-  pageOneBody.style.marginBottom = `${LAYOUT.sourceBodyBottom}mm`;
+  pageOneBody.style.marginBottom = `${SETTINGS.layout.sourceBodyBottom}mm`;
 
   if (AppState.orientation === "portrait") {
-    pageOneBody.style.maxHeight = spec.sIdx === 0 ? "175mm" : "195mm";
+    pageOneBody.style.maxHeight =
+      spec.sIdx === 0
+        ? `${SETTINGS.sourcePage.portraitFirstPageHeight}mm`
+        : `${SETTINGS.sourcePage.portraitOtherPageHeight}mm`;
   } else {
-    const baseHeight = spec.sIdx === 0 ? 108 : 132;
-    pageOneBody.style.maxHeight = `${baseHeight}mm`;
+    pageOneBody.style.maxHeight =
+      spec.sIdx === 0
+        ? `${SETTINGS.sourcePage.landscapeFirstPageHeight}mm`
+        : `${SETTINGS.sourcePage.landscapeOtherPageHeight}mm`;
   }
+
   pageOneBody.style.minHeight = "0";
 
   const frameDiv = document.createElement("div");
@@ -1118,7 +1119,7 @@ function createSourceBody(innerDiv, spec) {
 
   if (AppState.orientation === "landscape") {
     pInnerContent.style.columnCount = "2";
-    pInnerContent.style.columnGap = "15mm";
+    pInnerContent.style.columnGap = `${SETTINGS.sourcePage.landscapeColumnGap}mm`;
     pInnerContent.style.columnFill = "auto";
     pInnerContent.style.height = `${maxContentHeightMm}mm`;
   } else {
@@ -1159,7 +1160,7 @@ function buildGridPage(
   } else {
     gridWrapper.appendChild(createGrid(spec, optRows, cellsPerPage));
 
-    innerDiv.appendChild(createHorizontalLine(LAYOUT.gridLineGap));
+    innerDiv.appendChild(createHorizontalLine(SETTINGS.layout.gridLineGap));
   }
 
   if (!AppState.hidePageNumbers) {

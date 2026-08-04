@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>별 헤는 밤</title>
+    <title>필사 용지 만들기</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Noto Sans/Serif JP & KR -->
@@ -14,6 +14,7 @@
 
     <!-- Version: 0.073105 -->
     <link rel="stylesheet" href="style.css?v=0.073105" />
+    <script src="js/settings.js?v=0.073105"></script>
     <script src="js/app-state.js?v=0.073105"></script>
     <script src="js/persistence.js?v=0.073105"></script>
     <script src="js/ui-controller.js?v=0.073105"></script>
@@ -103,7 +104,6 @@
           />
         </div>
 
-
         <!-- 셋팅 제어판 영역 -->
         <div class="flex-1 overflow-y-auto p-6 pt-4 space-y-6">
           <!-- 1. 용지 방향 -->
@@ -177,7 +177,6 @@
             <input
               type="text"
               id="input-title"
-              value="별 헤는 밤"
               class="w-full p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
               placeholder="필사할 글의 제목을 적어주세요."
             />
@@ -652,7 +651,6 @@
                   <input
                     type="text"
                     id="input-school"
-                    value="건국초등학교"
                     class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                     placeholder="학교 이름 입력"
                   />
