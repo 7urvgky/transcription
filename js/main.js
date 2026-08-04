@@ -1472,7 +1472,12 @@ function enablePageInput(e) {
   if (!textSpan || !inputField) return;
 
   if (!inputField.classList.contains("hidden")) return;
+  const wrappers = document.querySelectorAll(".page-scale-wrapper");
 
+  const totalPages = wrappers.length;
+
+  inputField.min = 1;
+  inputField.max = totalPages;
   const text = textSpan.textContent;
   const match = text.match(/📄\s*(\d+)\s*\/\s*(\d+)/);
   let currentPage = 1;
@@ -1590,6 +1595,60 @@ async function initApp() {
   cachePageDimensions();
   adjustPreviewScale();
 
+  const pagesInput = document.getElementById("pages-badge-input");
+  if (pagesInput) {
+    pagesInput.addEventListener("input", () => {
+      const wrappers = document.querySelectorAll(".page-scale-wrapper");
+
+      let pageNum = parseInt(pagesInput.value, 10);
+
+      if (isNaN(pageNum) || pageNum < 1 || pageNum > wrappers.length) {
+        return;
+      }
+
+      wrappers[pageNum - 1]?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+    if (pagesInput) {
+      pagesInput.addEventListener("keydown", (e) => {
+        const maxPage = document.querySelectorAll(".page-scale-wrapper").length;
+
+        let pageNum = parseInt(pagesInput.value, 10) || 1;
+
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+
+          pageNum = Math.min(maxPage, pageNum + 1);
+
+          pagesInput.value = pageNum;
+
+          document
+            .querySelectorAll(".page-scale-wrapper")
+            [pageNum - 1]?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+        }
+
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+
+          pageNum = Math.max(1, pageNum - 1);
+
+          pagesInput.value = pageNum;
+
+          document
+            .querySelectorAll(".page-scale-wrapper")
+            [pageNum - 1]?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+        }
+      });
+    }
+  }
   const loadingEl = document.getElementById("font-loading");
   if (loadingEl) {
     loadingEl.remove();
