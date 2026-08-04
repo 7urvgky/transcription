@@ -102,17 +102,39 @@ ManuscriptEngine.parseTextToManuscriptCells = function (text, cols) {
   ) {
     return ManuscriptEngine.cachedParsedCells;
   }
-
+  // 원고지 규칙 상수
   const cells = [];
   const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
   const isPunctuation = (c) =>
-    /[.,!?'"ным“('_~);:]/.test(c) ||
+    /[.,!?'"ным“('‘_~);:]/.test(c) ||
     /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
 
   const isPeriodOrComma = (c) => c === "." || c === ",";
   const isQuote = (c) => /[“‘”’"']/.test(c);
   const isSymbol = (c) => /[!?！？]/.test(c);
+  const isClosingMark = (c) => /[.,!?'"”’)\]}>]/.test(c); // 줄 첫 칸에 올 수 없는 닫는 문장부호. 앞줄 마지막 칸에 붙여 쓴다.
+  /*
+줄 끝 압축 테스트
 
+다.
+다,
+다!
+다?
+다"
+다”
+다)
+다]
+다}
+
+다."
+다!”
+다?”
+다.)
+다.]
+다.}
+다,]
+다,}
+*/
   const paragraphs = text.split("\n");
 
   paragraphs.forEach((pText, pIdx) => {
@@ -151,14 +173,11 @@ ManuscriptEngine.parseTextToManuscriptCells = function (text, cols) {
       const isAtRowEnd = colIndex === 0 && cells.length > 0;
 
       // 원고지 마지막 칸의 문자 + 기호일 때한 칸으로 합침
-      if (isPunctuation(char) && isAtRowEnd) {
+      if (isClosingMark(char) && isAtRowEnd) {
         let targetIdx = cells.length - 1;
-        if (
-          cells[targetIdx] &&
-          !cells[targetIdx].isParagraphFiller &&
-          !cells[targetIdx].squeezedPunct
-        ) {
-          cells[targetIdx].squeezedPunct = char;
+        if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller) {
+          cells[targetIdx].squeezedPunct =
+            (cells[targetIdx].squeezedPunct || "") + char;
           cells[targetIdx].isSqueezed = true;
           charIdx += 1;
           continue;
@@ -292,7 +311,7 @@ ManuscriptEngine.calculateOptimalRows = function (cols) {
   const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
   const cellWidthMm = usableWidthMm / colsNum;
 
-  const usableHeightMm = 
+  const usableHeightMm =
     AppState.orientation === "portrait"
       ? AppState.hideManuscriptHeader
         ? GRID_USABLE_HEIGHT_PORTRAIT_NO_HEADER
@@ -620,6 +639,31 @@ ManuscriptEngine.getCellLayout = function (cellData) {
             fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
           },
         ],
+      };
+    }
+
+    if (puncts.length >= 2) {
+      const chars = [
+        {
+          text: cellData.char,
+          x: 30,
+          y: CENTER_Y,
+          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+        },
+      ];
+
+      puncts.forEach((p, idx) => {
+        chars.push({
+          text: p,
+          x: 65 + idx * 15,
+          y: getPunctY(p),
+          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+        });
+      });
+
+      return {
+        type: "squeezedMulti",
+        chars,
       };
     }
 
