@@ -102,16 +102,18 @@ ManuscriptEngine.parseTextToManuscriptCells = function (text, cols) {
   ) {
     return ManuscriptEngine.cachedParsedCells;
   }
-  // 원고지 규칙 상수
+  // =====================================================
+  // 원고지 문자 종류
+  // =====================================================
   const cells = [];
-  const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c);
-  const isPunctuation = (c) =>
-    /[.,!?'"ным“('‘_~);:]/.test(c) ||
-    /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
-
-  const isPeriodOrComma = (c) => c === "." || c === ",";
-  const isQuote = (c) => /[“‘”’"']/.test(c);
-  const isSymbol = (c) => /[!?！？]/.test(c);
+  const isAlphanumeric = (c) => /[0-9a-zA-Z]/.test(c); // 숫자, 영문 판정
+  const isUppercase = (c) => /[A-Z]/.test(c); // 영문 대문자 판정
+  const isLowercase = (c) => /[a-z]/.test(c); // 영문 소문자 판정
+  const isDigit = (c) => /[0-9]/.test(c); // 숫자 판정
+  const isPunctuation = (c) => /[.,!?'"“”‘’()\[\]{}<>~;:：；！？…·―—–]/.test(c); // 문장 부호 판정
+  const isPeriodOrComma = (c) => c === "." || c === ","; // 구두점(마침표, 쉼표) 판정
+  const isQuote = (c) => /[“‘”’"']/.test(c); // 따옴표 판정
+  const isSymbol = (c) => /[!?！？]/.test(c); // 느낌표, 물음표 판정
   const isClosingMark = (c) => /[.,!?'"”’)\]}>]/.test(c); // 줄 첫 칸에 올 수 없는 닫는 문장부호. 앞줄 마지막 칸에 붙여 쓴다.
   /*
 줄 끝 압축 테스트
@@ -172,7 +174,7 @@ ManuscriptEngine.parseTextToManuscriptCells = function (text, cols) {
 
       const isAtRowEnd = colIndex === 0 && cells.length > 0;
 
-      // 원고지 마지막 칸의 문자 + 기호일 때한 칸으로 합침
+      // 원고지 마지막 칸의 문자 + 기호일 때 한 칸으로 합침
       if (isClosingMark(char) && isAtRowEnd) {
         let targetIdx = cells.length - 1;
         if (cells[targetIdx] && !cells[targetIdx].isParagraphFiller) {
@@ -268,14 +270,36 @@ ManuscriptEngine.parseTextToManuscriptCells = function (text, cols) {
       }
 
       if (isAlphanumeric(char)) {
-        let nextChar = pText[charIdx + 1];
+        const nextChar = pText[charIdx + 1];
+
+        // 대문자 + 대문자
+        if (isUppercase(char) && nextChar && isUppercase(nextChar)) {
+          cells.push({
+            char,
+            isAlphanumeric: true,
+          });
+
+          charIdx += 1;
+          continue;
+        }
+
+        // 소문자/숫자 조합은 2개씩
         if (nextChar && isAlphanumeric(nextChar)) {
-          cells.push({ char: char + nextChar, isAlphanumeric: true });
+          cells.push({
+            char: char + nextChar,
+            isAlphanumeric: true,
+          });
+
           charIdx += 2;
         } else {
-          cells.push({ char: char, isAlphanumeric: true });
+          cells.push({
+            char,
+            isAlphanumeric: true,
+          });
+
           charIdx += 1;
         }
+
         continue;
       }
 
