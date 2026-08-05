@@ -51,7 +51,7 @@ function isDefaultState() {
     AppState.currentGuideColor === DEFAULT_APP_STATE.currentGuideColor &&
     AppState.gridOpacity === DEFAULT_APP_STATE.gridOpacity &&
     AppState.guideOpacity === DEFAULT_APP_STATE.guideOpacity &&
-    AppState.showGridGuides === DEFAULT_APP_STATE.showGridGuides &&
+    AppState.crossGuide === DEFAULT_APP_STATE.crossGuide &&
     AppState.patternGuide === DEFAULT_APP_STATE.patternGuide &&
     AppState.patternEmpty === DEFAULT_APP_STATE.patternEmpty &&
     AppState.charYOffset === DEFAULT_APP_STATE.charYOffset

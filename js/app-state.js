@@ -23,8 +23,8 @@ const DEFAULT_APP_STATE = {
   customFooterGuideText: null,
   customFooterEmptyText: null,
 
-  currentGridColor: SETTINGS.defaultColors.grid,
-  currentGuideColor: SETTINGS.defaultColors.guide,
+  currentGridColor: SETTINGS.stroke.gridColor,
+  currentGuideColor: SETTINGS.guide.crossGuideColor,
 
   lefttriangleGuide: SETTINGS.guide.lefttriangleGuide,
   lefttriangleGuideColor: SETTINGS.guide.lefttriangleGuideColor,
@@ -43,10 +43,10 @@ const DEFAULT_APP_STATE = {
   squareGuideOpacity: SETTINGS.guide.squareGuideOpacity,
   squareGuideInset: SETTINGS.guide.squareGuideInset,
 
-  gridOpacity: SETTINGS.defaultOpacity.grid,
-  guideOpacity: SETTINGS.defaultOpacity.guide,
+  gridOpacity: SETTINGS.stroke.gridOpacity,
+  guideOpacity: SETTINGS.guide.crossGuideOpacity,
 
-  showGridGuides: true,
+  crossGuide: SETTINGS.guide.crossGuide,
   lefttriangleGuide: false,
   topTriangleGuide: false,
 
@@ -108,7 +108,7 @@ const AppState = {
   gridOpacity: DEFAULT_APP_STATE.gridOpacity,
   guideOpacity: DEFAULT_APP_STATE.guideOpacity,
 
-  showGridGuides: DEFAULT_APP_STATE.showGridGuides,
+  crossGuide: DEFAULT_APP_STATE.crossGuide,
   patternGuide: DEFAULT_APP_STATE.patternGuide,
   patternEmpty: DEFAULT_APP_STATE.patternEmpty,
 

@@ -108,13 +108,11 @@ function bindUIEvents() {
       markStateChanged();
       renderPages();
     });
-  document
-    .getElementById("show-grid-guides")
-    .addEventListener("change", (e) => {
-      AppState.showGridGuides = e.target.checked;
-      updateGridGuides();
-      markStateChanged();
-    });
+  document.getElementById("cross-guides").addEventListener("change", (e) => {
+    AppState.crossGuide = e.target.checked;
+    updateGridGuides();
+    markStateChanged();
+  });
 
   document.getElementById("zoom-input-field").addEventListener("input", (e) => {
     let num = parseInt(e.target.value);

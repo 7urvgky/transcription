@@ -58,7 +58,7 @@ function applyLoadedDataToUI() {
   document.getElementById("diamond-guide").checked = AppState.diamondGuide;
   document.getElementById("square-guide").checked = AppState.squareGuide;
 
-  document.getElementById("show-grid-guides").checked = AppState.showGridGuides;
+  document.getElementById("cross-guides").checked = AppState.crossGuide;
   document.getElementById("pattern-guide").checked = AppState.patternGuide;
   document.getElementById("pattern-empty").checked = AppState.patternEmpty;
   document.getElementById("exclude-first-page").checked =
@@ -376,7 +376,7 @@ function setGuideColor(val, isCustom = false, shouldSave = true) {
 function updateGridGuides() {
   document.documentElement.style.setProperty(
     "--guide-display",
-    AppState.showGridGuides ? "none" : "block",
+    AppState.crossGuide ? "none" : "block",
   );
   document.documentElement.style.setProperty(
     "--guide-color",
@@ -809,7 +809,7 @@ function createGridSvg(colsNum, optRows) {
 
   const gridLineMm = SETTINGS.stroke.gridLineMm;
 
-  const guideLineMm = SETTINGS.stroke.guideLineMm;
+  const guideLineMm = SETTINGS.guide.guideLineMm;
 
   const borderWidth = borderMm / cellWidthMm;
 
@@ -959,7 +959,7 @@ function createGridSvg(colsNum, optRows) {
       // =====================
       // 십자 가이드
       // =====================
-      if (AppState.showGridGuides) {
+      if (AppState.crossGuide) {
         const h = document.createElementNS(svgNS, "line");
 
         h.setAttribute("x1", col);
@@ -1864,7 +1864,7 @@ async function initApp() {
 
   document.documentElement.style.setProperty(
     "--guide-display",
-    AppState.showGridGuides ? "none" : "block",
+    AppState.crossGuide ? "none" : "block",
   );
   document.documentElement.style.setProperty(
     "--trace-opacity",
