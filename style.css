@@ -92,7 +92,7 @@ body {
 
 /* 따라 쓰기 연한 글씨 투명도 고정 수치 반영 */
 .trace-text-node {
-  opacity: 0.35 !important;
+  opacity: var(--trace-opacity, 0.2) !important;
 }
 
 /* 실시간 인쇄 지면 편집 영역 인디케이터 및 영역 유지 장치 */

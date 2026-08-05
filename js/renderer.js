@@ -86,7 +86,7 @@ function drawCellContent(cell, cellData, nextState, colsNum) {
           y="${y}"
           dominant-baseline="central"
           text-anchor="middle"
-          font-size="${100 * ManuscriptEngine.CHAR_SCALE}"
+          font-size="${100 * AppState.charScale}"
           class="font-serif-fixed fill-current text-slate-800">
       ${char}
     </text>
@@ -106,14 +106,15 @@ function drawCellContent(cell, cellData, nextState, colsNum) {
   // 일반 문자 렌더링
   // ============================================================
   else {
-    const cellWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum) / colsNum;
+    const cellWidthMm =
+      ManuscriptEngine.getUsableGridWidthMm(colsNum) / colsNum;
 
     const charSpan = document.createElement("span");
 
     charSpan.className =
       "font-serif-fixed text-slate-800 trace-text-node select-none absolute inset-0 flex items-center justify-center w-full h-full pointer-events-none cell-char-span";
 
-    charSpan.style.fontSize = `${cellWidthMm * ManuscriptEngine.CHAR_SCALE}mm`;
+    charSpan.style.fontSize = `${cellWidthMm * AppState.charScale}mm`;
 
     charSpan.style.lineHeight = "1";
 

@@ -13,7 +13,13 @@
 "use strict";
 
 const SETTINGS = {
+  manuscript: {
+    charScale: 0.8, // 원고지 글씨 크기 비율
+    traceOpacity: 0.2, // 원고지 글씨 투명도
+  },
+
   // 페이지 레이아웃, 원고지, 하단 라벨, 원고지 선 두께, 간격, 색상, 투명도 등 기본 설정
+
   layout: {
     // 페이지 기본 여백 설정
     pageTopPadding: 18, // 페이지 위 여백 mm
@@ -65,14 +71,25 @@ const SETTINGS = {
   },
 
   guide: {
-    dashMm: 0.6, // 따라 쓰기 점선 mm
-    gapMm: 0.3926, // 따라 쓰기 점선 간격 mm
+    dashMm: 0.6,
+    gapMm: 0.3926,
 
+    lefttriangleGuide: false,
     lefttriangleGuideColor: "#ff0000",
     lefttriangleGuideOpacity: 0.35,
 
+    topTriangleGuide: false,
     topTriangleGuideColor: "#ff0000",
     topTriangleGuideOpacity: 0.35,
+
+    diamondGuide: false,
+    diamondGuideColor: "#ff0000",
+    diamondGuideOpacity: 0.35,
+
+    squareGuide: false,
+    squareGuideColor: "#ff0000",
+    squareGuideOpacity: 0.35,
+    squareGuideInset: 0.1, // 네모 가이드 크기 조절. 0.1 = 상하좌우 10% 들어가기 = 크기는 80%
   },
 
   // 원고지 기본 색상 및 투명도 설정

@@ -8,8 +8,6 @@ const GRID_USABLE_HEIGHT_PORTRAIT_NO_HEADER = 238; // 원고지 세로 길이(mm
 const GRID_USABLE_HEIGHT_LANDSCAPE = 133; // 원고지 세로 길이(mm) - 여백 ; 헤더 표시 상태 (가로 모드)
 const GRID_USABLE_HEIGHT_LANDSCAPE_NO_HEADER = 158; // 원고지 세로 길이(mm) - 여백 ; 헤더 숨김 상태 (가로 모드)
 
-ManuscriptEngine.CHAR_SCALE = 0.62; //원고지 칸 크기 대비 문자 크기
-
 ManuscriptEngine.getUsableGridWidthMm = function (colsNum) {
   colsNum = parseInt(colsNum);
   if (AppState.orientation !== "portrait") {
@@ -24,7 +22,7 @@ ManuscriptEngine.getUsableGridWidthMm = function (colsNum) {
 
 // 원고지 중앙, 문장부호 Y 위치
 const CENTER_Y = 50;
-const PERIOD_Y = 55; // 마침표/쉼표 높이
+const PERIOD_Y = 43; // 마침표/쉼표 높이
 const QUOTE_Y = 45; // 따옴표 높이
 
 // =====================================================
@@ -506,14 +504,14 @@ ManuscriptEngine.getCellLayout = function (cellData) {
           text: cellData.char,
           x: PERIOD_QUOTE_CHAR_X,
           y: PERIOD_Y,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
 
         {
           text: cellData.squeezedPunct,
           x: PERIOD_QUOTE_PUNCT_X,
           y: QUOTE_Y,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
       ],
     };
@@ -527,14 +525,14 @@ ManuscriptEngine.getCellLayout = function (cellData) {
           text: cellData.char,
           x: QUOTE_FIRST_QUOTE_X,
           y: QUOTE_Y,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
 
         {
           text: cellData.squeezedPunct,
           x: QUOTE_FIRST_SYMBOL_X,
           y: CENTER_Y,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
       ],
     };
@@ -548,14 +546,14 @@ ManuscriptEngine.getCellLayout = function (cellData) {
           text: cellData.char,
           x: SYMBOL_FIRST_SYMBOL_X,
           y: CENTER_Y,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
 
         {
           text: cellData.squeezedPunct,
           x: SYMBOL_FIRST_QUOTE_X,
           y: QUOTE_Y,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
       ],
     };
@@ -569,14 +567,14 @@ ManuscriptEngine.getCellLayout = function (cellData) {
           text: cellData.char,
           x: PERIOD_OPENING_QUOTE_CHAR_X,
           y: PERIOD_Y,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
 
         {
           text: cellData.squeezedPunct,
           x: PERIOD_OPENING_QUOTE_PUNCT_X,
           y: QUOTE_Y,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
       ],
     };
@@ -620,14 +618,14 @@ ManuscriptEngine.getCellLayout = function (cellData) {
           text: p1,
           x: DOUBLE_PUNCT_1_X,
           y: y1,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
 
         {
           text: p2,
           x: DOUBLE_PUNCT_2_X,
           y: y2,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
       ],
     };
@@ -653,14 +651,14 @@ ManuscriptEngine.getCellLayout = function (cellData) {
             text: cellData.char,
             x: SQUEEZED_CHAR_X,
             y: CENTER_Y,
-            fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+            fontSize: 100 * AppState.charScale,
           },
 
           {
             text: p,
             x: punctX,
             y: punctY,
-            fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+            fontSize: 100 * AppState.charScale,
           },
         ],
       };
@@ -672,7 +670,7 @@ ManuscriptEngine.getCellLayout = function (cellData) {
           text: cellData.char,
           x: 30,
           y: CENTER_Y,
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         },
       ];
 
@@ -681,7 +679,7 @@ ManuscriptEngine.getCellLayout = function (cellData) {
           text: p,
           x: 65 + idx * 15,
           y: getPunctY(p),
-          fontSize: 100 * ManuscriptEngine.CHAR_SCALE,
+          fontSize: 100 * AppState.charScale,
         });
       });
 

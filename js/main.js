@@ -55,6 +55,9 @@ function applyLoadedDataToUI() {
     AppState.lefttriangleGuide;
   document.getElementById("top-triangle-guide").checked =
     AppState.topTriangleGuide;
+  document.getElementById("diamond-guide").checked = AppState.diamondGuide;
+  document.getElementById("square-guide").checked = AppState.squareGuide;
+
   document.getElementById("show-grid-guides").checked = AppState.showGridGuides;
   document.getElementById("pattern-guide").checked = AppState.patternGuide;
   document.getElementById("pattern-empty").checked = AppState.patternEmpty;
@@ -238,6 +241,93 @@ function updateTopTriangleGuideOpacity(val) {
   AppState.topTriangleGuideOpacity = Number(val) / 100;
 
   document.getElementById("topTriangleGuideOpacityVal").innerText = val + "%";
+
+  markStateChanged();
+  renderPages();
+}
+
+function setSquareGuideColor(val, shouldSave = true) {
+  AppState.squareGuideColor = val;
+
+  const checks = document.querySelectorAll(".square-guide-color-check");
+
+  checks.forEach((el) => el.classList.add("hidden"));
+
+  const matchedBtn = document.querySelector(
+    `button[onclick*="${val}"] .square-guide-color-check`,
+  );
+
+  if (matchedBtn) {
+    matchedBtn.classList.remove("hidden");
+  }
+
+  const picker = document.getElementById("square-guide-color-picker");
+
+  if (picker) {
+    picker.value = val;
+  }
+
+  if (shouldSave) {
+    markStateChanged();
+    renderPages();
+  }
+}
+
+function updateSquareGuideOpacity(val) {
+  AppState.squareGuideOpacity = Number(val) / 100;
+
+  document.getElementById("squareGuideOpacityVal").innerText = val + "%";
+
+  markStateChanged();
+  renderPages();
+}
+
+function updateSquareGuideSize(val) {
+  const sizeRatio = Number(val) / 100;
+
+  AppState.squareGuideInset = (1 - sizeRatio) / 2;
+
+  const el = document.getElementById("squareGuideSizeVal");
+
+  if (el) {
+    el.innerText = val + "%";
+  }
+
+  markStateChanged();
+  renderPages();
+}
+
+function setDiamondGuideColor(val, shouldSave = true) {
+  AppState.diamondGuideColor = val;
+
+  const checks = document.querySelectorAll(".diamond-guide-color-check");
+
+  checks.forEach((el) => el.classList.add("hidden"));
+
+  const matchedBtn = document.querySelector(
+    `button[onclick*="${val}"] .diamond-guide-color-check`,
+  );
+
+  if (matchedBtn) {
+    matchedBtn.classList.remove("hidden");
+  }
+
+  const picker = document.getElementById("diamond-guide-color-picker");
+
+  if (picker) {
+    picker.value = val;
+  }
+
+  if (shouldSave) {
+    markStateChanged();
+    renderPages();
+  }
+}
+
+function updateDiamondGuideOpacity(val) {
+  AppState.diamondGuideOpacity = Number(val) / 100;
+
+  document.getElementById("diamondGuideOpacityVal").innerText = val + "%";
 
   markStateChanged();
   renderPages();
@@ -752,6 +842,7 @@ function createGridSvg(colsNum, optRows) {
   const guideColor = getComputedStyle(document.documentElement)
     .getPropertyValue("--guide-color")
     .trim();
+
   const lefttriangleGuideColor = hexToRgba(
     AppState.lefttriangleGuideColor,
     AppState.lefttriangleGuideOpacity,
@@ -759,6 +850,14 @@ function createGridSvg(colsNum, optRows) {
   const topTriangleGuideColor = hexToRgba(
     AppState.topTriangleGuideColor,
     AppState.topTriangleGuideOpacity,
+  );
+  const diamondGuideColor = hexToRgba(
+    AppState.diamondGuideColor,
+    AppState.diamondGuideOpacity,
+  );
+  const squareGuideColor = hexToRgba(
+    AppState.squareGuideColor,
+    AppState.squareGuideOpacity,
   );
 
   for (let x = 1; x < colsNum; x++) {
@@ -958,6 +1057,60 @@ function createGridSvg(colsNum, optRows) {
         d2.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
 
         svg.appendChild(d2);
+      }
+      // =====================
+      // 마름모꼴 가이드
+      // =====================
+      if (AppState.diamondGuide) {
+        const segments = [
+          [col, row + 0.5, col + 0.5, row],
+          [col + 0.5, row, col + 1, row + 0.5],
+          [col + 1, row + 0.5, col + 0.5, row + 1],
+          [col + 0.5, row + 1, col, row + 0.5],
+        ];
+
+        segments.forEach((s) => {
+          const line = document.createElementNS(svgNS, "line");
+
+          line.setAttribute("x1", s[0]);
+          line.setAttribute("y1", s[1]);
+          line.setAttribute("x2", s[2]);
+          line.setAttribute("y2", s[3]);
+
+          line.setAttribute("stroke", diamondGuideColor);
+
+          line.setAttribute("stroke-width", guideStrokeWidth);
+
+          line.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
+
+          svg.appendChild(line);
+        });
+      }
+      // =====================
+      // 네모 가이드
+      // =====================
+      if (AppState.squareGuide) {
+        const inset = AppState.squareGuideInset;
+
+        const rect = document.createElementNS(svgNS, "rect");
+
+        rect.setAttribute("x", col + inset);
+
+        rect.setAttribute("y", row + inset);
+
+        rect.setAttribute("width", 1 - inset * 2);
+
+        rect.setAttribute("height", 1 - inset * 2);
+
+        rect.setAttribute("fill", "none");
+
+        rect.setAttribute("stroke", squareGuideColor);
+
+        rect.setAttribute("stroke-width", guideStrokeWidth);
+
+        rect.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
+
+        svg.appendChild(rect);
       }
     }
   }
@@ -1709,6 +1862,45 @@ async function initApp() {
     "#991b1b",
   ];
 
+  document.documentElement.style.setProperty(
+    "--guide-display",
+    AppState.showGridGuides ? "none" : "block",
+  );
+  document.documentElement.style.setProperty(
+    "--trace-opacity",
+    SETTINGS.manuscript.traceOpacity,
+  );
+  document
+    .getElementById("lefttriangle-guide")
+    .addEventListener("change", (e) => {
+      AppState.lefttriangleGuide = e.target.checked;
+
+      markStateChanged();
+      renderPages();
+    });
+
+  document
+    .getElementById("top-triangle-guide")
+    .addEventListener("change", (e) => {
+      AppState.topTriangleGuide = e.target.checked;
+
+      markStateChanged();
+      renderPages();
+    });
+
+  document.getElementById("diamond-guide").addEventListener("change", (e) => {
+    AppState.diamondGuide = e.target.checked;
+
+    markStateChanged();
+    renderPages();
+  });
+
+  document.getElementById("square-guide").addEventListener("change", (e) => {
+    AppState.squareGuide = e.target.checked;
+
+    markStateChanged();
+    renderPages();
+  });
   // 전역 CSS 속성 바인딩, 버튼 체크 표시 활성화 및 커스텀 원형 동적 매핑
   setGridColor(
     AppState.currentGridColor,
@@ -1720,20 +1912,14 @@ async function initApp() {
     !presetGuideColors.includes(AppState.currentGuideColor),
     false,
   );
-  setlefttriangleGuideColor(AppState.lefttriangleGuideColor, false);
-  document.documentElement.style.setProperty(
-    "--guide-display",
-    AppState.showGridGuides ? "none" : "block",
-  );
-  document
-    .getElementById("top-triangle-guide")
-    .addEventListener("change", (e) => {
-      AppState.topTriangleGuide = e.target.checked;
 
-      markStateChanged();
-      renderPages();
-    });
+  setlefttriangleGuideColor(AppState.lefttriangleGuideColor, false);
   setTopTriangleGuideColor(AppState.topTriangleGuideColor, false);
+  setDiamondGuideColor(AppState.diamondGuideColor, false);
+  setSquareGuideColor(AppState.squareGuideColor, false);
+
+  updateSquareGuideOpacity(AppState.squareGuideOpacity * 100);
+  updateSquareGuideSize(Math.round((1 - AppState.squareGuideInset * 2) * 100));
   // 개별 슬라이더 수치 복원 및 DOM 슬라이더 일치 작업
   updateGridOpacity(AppState.gridOpacity * 100);
   updateGuideOpacity(AppState.guideOpacity * 100);
@@ -1756,14 +1942,6 @@ async function initApp() {
   initializeControllers();
   cachePageDimensions();
   adjustPreviewScale();
-  document
-    .getElementById("lefttriangle-guide")
-    .addEventListener("change", (e) => {
-      AppState.lefttriangleGuide = e.target.checked;
-
-      markStateChanged();
-      renderPages();
-    });
 
   const pagesInput = document.getElementById("pages-badge-input");
   if (pagesInput) {

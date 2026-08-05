@@ -4,6 +4,7 @@ const DEFAULT_APP_STATE = {
   articleTitle: SETTINGS.defaults.articleTitle,
 
   gridCols: SETTINGS.defaults.gridCols,
+  charScale: SETTINGS.manuscript.charScale, // 원고지 안 글자 크기
 
   hideStudentInfo: false,
   schoolName: SETTINGS.defaults.schoolName,
@@ -33,6 +34,15 @@ const DEFAULT_APP_STATE = {
   topTriangleGuideColor: SETTINGS.guide.topTriangleGuideColor,
   topTriangleGuideOpacity: SETTINGS.guide.topTriangleGuideOpacity,
 
+  diamondGuide: SETTINGS.guide.diamondGuide,
+  diamondGuideColor: SETTINGS.guide.diamondGuideColor,
+  diamondGuideOpacity: SETTINGS.guide.diamondGuideOpacity,
+
+  squareGuide: SETTINGS.guide.squareGuide,
+  squareGuideColor: SETTINGS.guide.squareGuideColor,
+  squareGuideOpacity: SETTINGS.guide.squareGuideOpacity,
+  squareGuideInset: SETTINGS.guide.squareGuideInset,
+
   gridOpacity: SETTINGS.defaultOpacity.grid,
   guideOpacity: SETTINGS.defaultOpacity.guide,
 
@@ -56,6 +66,7 @@ const AppState = {
   articleTitle: DEFAULT_APP_STATE.articleTitle,
 
   gridCols: DEFAULT_APP_STATE.gridCols,
+  charScale: DEFAULT_APP_STATE.charScale,
 
   hideStudentInfo: DEFAULT_APP_STATE.hideStudentInfo,
   schoolName: DEFAULT_APP_STATE.schoolName,
@@ -84,6 +95,15 @@ const AppState = {
   topTriangleGuide: DEFAULT_APP_STATE.topTriangleGuide,
   topTriangleGuideColor: DEFAULT_APP_STATE.topTriangleGuideColor,
   topTriangleGuideOpacity: DEFAULT_APP_STATE.topTriangleGuideOpacity,
+
+  diamondGuide: DEFAULT_APP_STATE.diamondGuide,
+  diamondGuideColor: DEFAULT_APP_STATE.diamondGuideColor,
+  diamondGuideOpacity: DEFAULT_APP_STATE.diamondGuideOpacity,
+
+  squareGuide: DEFAULT_APP_STATE.squareGuide,
+  squareGuideColor: DEFAULT_APP_STATE.squareGuideColor,
+  squareGuideOpacity: DEFAULT_APP_STATE.squareGuideOpacity,
+  squareGuideInset: DEFAULT_APP_STATE.squareGuideInset,
 
   gridOpacity: DEFAULT_APP_STATE.gridOpacity,
   guideOpacity: DEFAULT_APP_STATE.guideOpacity,
