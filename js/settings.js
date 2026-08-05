@@ -1,124 +1,149 @@
 /**
  * 필사 용지 만들기 기본 설정
  *
- * 레이아웃
- * 기본 문서 템플릿
- * 원고지 설정
- * 원문 보기 설정
- * 푸터 설정
- *
- * 변경 시 앱 전체에 적용됨
+ * 변경 시 앱 전체에 적용
  */
 
 "use strict";
 
 const SETTINGS = {
-  manuscript: {
-    charScale: 0.8, // 원고지 글씨 크기 비율
-    traceOpacity: 0.2, // 원고지 글씨 투명도
-  },
-
-  // 페이지 레이아웃, 원고지, 하단 라벨, 원고지 선 두께, 간격, 색상, 투명도 등 기본 설정
-
+  // =====================================================
+  // 페이지 레이아웃(mm)
+  // =====================================================
   layout: {
-    // 페이지 기본 여백 설정
-    pageTopPadding: 18, // 페이지 위 여백 mm
-    pageSidePadding: 20, // 페이지 좌우 여백 mm
-    pageBottomPadding: 23.5, // 페이지 아래 여백 mm TODO: 현재 본문 높이가 고정되어 있음. 추후 하단 라벨 높이에 따라 동적 조정 필요
+    // 페이지 기본 여백
+    pageTopPadding: 18,
+    pageSidePadding: 20,
+    pageBottomPadding: 23.5, // 이슈: 현재 본문 높이가 고정되어 있음. TODO: 하단 라벨 높이에 따라 동적 조정 필요
 
     // 하단 꼬리말 위치
     footerBottomMm: 18, // 하단 꼬리말 여백 mm
     footerLeftRightMm: 20, // 하단 꼬리말 좌우 여백 mm
+  },
 
-    // 원문 보기 여백 설정
+  // =====================================================
+  // 하단 라벨
+  // =====================================================
+  footer: {
+    source: "원문 읽기",
+    guide: "따라 쓰기",
+    empty: "원고지",
+  },
+
+  // =====================================================
+  // 원문 보기 페이지 설정
+  // =====================================================
+  sourcePage: {
+    portraitFirstPageHeight: 175,
+    portraitOtherPageHeight: 195,
+
+    landscapeFirstPageHeight: 108,
+    landscapeOtherPageHeight: 132,
+
+    landscapeColumnGap: 15, // 가로 모드 열 간격 mm
+
+    // 여백
     sourceTitleTop: 4, // 원문 보기 헤더와 제목 사이 여백 mm
     sourceTitleBottom: 2, // 원문 보기 제목과 본문 사이 여백 mm
     sourceBodyBottom: 15, // 원문 보기 본문 아래 여백 mm
     headerLeftText: "", // 원문 보기 2페이지 이후 왼쪽 상단 머리말
+  },
 
-    // 원고지 여백 설정
+  // =====================================================
+  // 원고지 설정
+  // =====================================================
+  manuscript: {
+    // 글자
+    charScale: 0.8, // 원고지 칸 대비 글자 크기
+    traceOpacity: 0.2, // 따라쓰기 글자 투명도
+
+    // 여백
     gridHeaderBottom: 5, // 원고지 헤더와 원고지 제목 간격 mm
 
-    // 원고지 실선 간격 설정
     gridLineGap: 2.5, // 원고지와 위 아래 실선 간격 mm
-    titleLineGap: 1, // 원고지 제목과 위 실선 간격 mm
+    titleLineGap: 2, // 원고지 제목과 위 실선 간격 mm
     horizontalLineExtraWidth: 2, // 원고지 위 아래 실선 길이 조절
   },
 
-  // 하단 기본 라벨
-  footer: {
-    source: "원문 읽기", // 원문 보기 하단 라벨
-    guide: "따라 쓰기", // 따라 쓰기 하단 라벨
-    empty: "원고지", // 빈 원고지 하단 라벨
-  },
-
-  // 페이지 높이 설정
-  sourcePage: {
-    portraitFirstPageHeight: 175, // 세로 모드 첫 페이지 높이 mm
-    portraitOtherPageHeight: 195, // 세로 모드 다른 페이지 높이 mm
-
-    landscapeFirstPageHeight: 108, // 가로 모드 첫 페이지 높이 mm
-    landscapeOtherPageHeight: 132, // 가로 모드 다른 페이지 높이 mm
-
-    landscapeColumnGap: 15, // 가로 모드 열 간격 mm
-  },
-
-  // 원고지 선 두께, 간격 설정
   stroke: {
-    borderMm: 0.5, // 원고지 테두리 mm
-    gridLineMm: 0.25, // 원고지 격자 mm
-    guideLineMm: 0.25, // 따라 쓰기 가이드 mm
+    // 선 두께
+    borderMm: 0.5, // 원고지 외곽선
+    gridLineMm: 0.25, // 원고지 격자
+    guideLineMm: 0.25, // 가이드선
   },
 
+  // =====================================================
+  // 가이드 설정
+  // =====================================================
   guide: {
-    dashMm: 0.6,
-    gapMm: 0.3926,
+    // 점선
+    dashMm: 0.6, // 길이
+    gapMm: 0.3926, // 간격
 
+    // 왼쪽 삼각형
     lefttriangleGuide: false,
     lefttriangleGuideColor: "#ff0000",
     lefttriangleGuideOpacity: 0.35,
 
+    // 위쪽 삼각형
     topTriangleGuide: false,
     topTriangleGuideColor: "#ff0000",
     topTriangleGuideOpacity: 0.35,
 
+    // 마름모
     diamondGuide: false,
     diamondGuideColor: "#ff0000",
     diamondGuideOpacity: 0.35,
 
+    // 네모
     squareGuide: false,
     squareGuideColor: "#ff0000",
     squareGuideOpacity: 0.35,
-    squareGuideInset: 0.1, // 네모 가이드 크기 조절. 0.1 = 상하좌우 10% 들어가기 = 크기는 80%
+
+    // 네모 크기
+    // 0.1 = 상하좌우 10% 안쪽
+    // 실제 네모 크기 = 80%
+    squareGuideInset: 0.1,
   },
 
-  // 원고지 기본 색상 및 투명도 설정
+  // =====================================================
+  // 기본 색상
+  // =====================================================
   defaultColors: {
-    grid: "#69afa0",
-    guide: "#ff0000",
+    grid: "#69afa0", // 원고지 색
+    guide: "#ff0000", // 십자 가이드 색
   },
 
+  // =====================================================
+  // 기본 투명도
+  // =====================================================
   defaultOpacity: {
     grid: 1.0,
     guide: 0.35,
   },
 
-  // 기본 입력 내용 설정
+  // =====================================================
+  // 초기 문서 상태
+  // =====================================================
   defaults: {
-    // 원고지 칸 수, 방향 설정
+    // 원고지
     gridCols: "20", // 원고지 기본 칸 수 10칸, 12칸, 14칸, 16칸, 18칸, 20칸, 22칸, 24칸
-    orientation: "portrait", // 기본 세로 모드 portrait, 가로 모드 landscape
-    // 학생 정보 설정
+    orientation: "portrait",
+
+    // 학생 정보
     schoolName: "건국초등학교",
     gradeInfo: "",
     studentName: "",
-    // 학생 정보 비어 있을 때 처리 규칙
-    emptySchoolPlaceholder: "", // 빈 학교 이름 자리 처리
-    emptyGradePlaceholder: "__________학년 __________반", // 빈 학년/반 자리 처리
-    emptyNamePlaceholder: "", // 빈 이름 자리 처리
 
-    // 기본 원문 및 제목 설정
+    // 학생 정보 비어 있을 때
+    emptySchoolPlaceholder: "",
+    emptyGradePlaceholder: "__________학년 __________반",
+    emptyNamePlaceholder: "",
+
+    // 기본 제목
     articleTitle: "별 헤는 밤",
+
+    // 기본 원문
     sourceText: `계절이 지나가는 하늘에는
 가을로 가득 차 있습니다.
 

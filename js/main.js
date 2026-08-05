@@ -671,8 +671,8 @@ function createPageHeader(headerHTML, titleText, isLineNote) {
     if (!isLineNote) {
       elements.push(
         createHorizontalLine(
-          SETTINGS.layout.gridLineGap,
-          SETTINGS.layout.gridLineGap,
+          SETTINGS.manuscript.gridLineGap,
+          SETTINGS.manuscript.gridLineGap,
         ),
       );
     }
@@ -1196,7 +1196,7 @@ function styleBottomLine(singleBottomLine) {
 
   const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
 
-  const extraWidth = SETTINGS.layout.horizontalLineExtraWidth;
+  const extraWidth = SETTINGS.manuscript.horizontalLineExtraWidth;
 
   singleBottomLine.style.width = `${usableWidthMm + extraWidth}mm`;
 
@@ -1214,7 +1214,7 @@ function createTitleLine() {
 
   const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
 
-  const extraWidth = SETTINGS.layout.horizontalLineExtraWidth;
+  const extraWidth = SETTINGS.manuscript.horizontalLineExtraWidth;
 
   const titleLine = document.createElement("div");
 
@@ -1224,7 +1224,7 @@ function createTitleLine() {
 
   titleLine.style.width = `${usableWidthMm + extraWidth}mm`;
 
-  titleLine.style.marginTop = `${SETTINGS.layout.titleLineGap}mm`;
+  titleLine.style.marginTop = `${SETTINGS.manuscript.titleLineGap}mm`;
 
   titleLine.style.position = "relative";
 
@@ -1239,7 +1239,7 @@ function createGridHeader(headerHTML) {
   header.className =
     "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0";
 
-  header.style.marginBottom = `${SETTINGS.layout.gridHeaderBottom}mm`;
+  header.style.marginBottom = `${SETTINGS.manuscript.gridHeaderBottom}mm`;
 
   header.innerHTML = headerHTML;
 
@@ -1251,7 +1251,7 @@ function createGridTitle(titleText, isLineNote) {
 
   title.className = "mb-1 w-full text-left shrink-0";
 
-  title.style.marginBottom = `${SETTINGS.layout.gridLineGap}mm`;
+  title.style.marginBottom = `${SETTINGS.manuscript.gridLineGap}mm`;
 
   title.innerHTML = `
     <div>
@@ -1300,9 +1300,9 @@ function createSourceHeader(innerDiv, spec, headerHTML, titleText) {
     const pageOneTitle = document.createElement("div");
     pageOneTitle.className = "w-full text-left shrink-0";
 
-    pageOneTitle.style.marginTop = `${SETTINGS.layout.sourceTitleTop}mm`;
+    pageOneTitle.style.marginTop = `${SETTINGS.sourcePage.sourceTitleTop}mm`;
 
-    pageOneTitle.style.marginBottom = `${SETTINGS.layout.sourceTitleBottom}mm`;
+    pageOneTitle.style.marginBottom = `${SETTINGS.sourcePage.sourceTitleBottom}mm`;
     pageOneTitle.innerHTML = `
               <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(titleText)}</h2>
             `;
@@ -1358,7 +1358,7 @@ function createSourceBody(innerDiv, spec) {
   const pageOneBody = document.createElement("div");
   pageOneBody.className = "w-full flex flex-col justify-start items-center";
 
-  pageOneBody.style.marginBottom = `${SETTINGS.layout.sourceBodyBottom}mm`;
+  pageOneBody.style.marginBottom = `${SETTINGS.sourcePage.sourceBodyBottom}mm`;
 
   if (AppState.orientation === "portrait") {
     pageOneBody.style.maxHeight =
@@ -1455,7 +1455,7 @@ function buildGridPage(
   } else {
     gridWrapper.appendChild(createGrid(spec, optRows, cellsPerPage));
 
-    innerDiv.appendChild(createHorizontalLine(SETTINGS.layout.gridLineGap));
+    innerDiv.appendChild(createHorizontalLine(SETTINGS.manuscript.gridLineGap));
   }
 
   if (!AppState.hidePageNumbers) {

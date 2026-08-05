@@ -4,7 +4,7 @@ const DEFAULT_APP_STATE = {
   articleTitle: SETTINGS.defaults.articleTitle,
 
   gridCols: SETTINGS.defaults.gridCols,
-  charScale: SETTINGS.manuscript.charScale, // 원고지 안 글자 크기
+  charScale: SETTINGS.manuscript.charScale,
 
   hideStudentInfo: false,
   schoolName: SETTINGS.defaults.schoolName,
@@ -17,7 +17,7 @@ const DEFAULT_APP_STATE = {
   hidePageNumbers: false,
   orientation: SETTINGS.defaults.orientation,
 
-  headerLeftText: SETTINGS.defaults.headerLeftText,
+  headerLeftText: SETTINGS.sourcePage.headerLeftText,
 
   customFooterSourceText: null,
   customFooterGuideText: null,
