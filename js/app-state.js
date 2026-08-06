@@ -26,9 +26,9 @@ const DEFAULT_APP_STATE = {
   currentGridColor: SETTINGS.stroke.gridColor,
   currentGuideColor: SETTINGS.guide.crossGuideColor,
 
-  lefttriangleGuide: SETTINGS.guide.lefttriangleGuide,
-  lefttriangleGuideColor: SETTINGS.guide.lefttriangleGuideColor,
-  lefttriangleGuideOpacity: SETTINGS.guide.lefttriangleGuideOpacity,
+  leftTriangleGuide: SETTINGS.guide.leftTriangleGuide,
+  leftTriangleGuideColor: SETTINGS.guide.leftTriangleGuideColor,
+  leftTriangleGuideOpacity: SETTINGS.guide.leftTriangleGuideOpacity,
 
   topTriangleGuide: SETTINGS.guide.topTriangleGuide,
   topTriangleGuideColor: SETTINGS.guide.topTriangleGuideColor,
@@ -47,7 +47,7 @@ const DEFAULT_APP_STATE = {
   guideOpacity: SETTINGS.guide.crossGuideOpacity,
 
   crossGuide: SETTINGS.guide.crossGuide,
-  lefttriangleGuide: false,
+  leftTriangleGuide: false,
   topTriangleGuide: false,
 
   patternGuide: true,
@@ -88,9 +88,9 @@ const AppState = {
   currentGridColor: DEFAULT_APP_STATE.currentGridColor,
   currentGuideColor: DEFAULT_APP_STATE.currentGuideColor,
 
-  lefttriangleGuide: DEFAULT_APP_STATE.lefttriangleGuide,
-  lefttriangleGuideColor: DEFAULT_APP_STATE.lefttriangleGuideColor,
-  lefttriangleGuideOpacity: DEFAULT_APP_STATE.lefttriangleGuideOpacity,
+  leftTriangleGuide: DEFAULT_APP_STATE.leftTriangleGuide,
+  leftTriangleGuideColor: DEFAULT_APP_STATE.leftTriangleGuideColor,
+  leftTriangleGuideOpacity: DEFAULT_APP_STATE.leftTriangleGuideOpacity,
 
   topTriangleGuide: DEFAULT_APP_STATE.topTriangleGuide,
   topTriangleGuideColor: DEFAULT_APP_STATE.topTriangleGuideColor,

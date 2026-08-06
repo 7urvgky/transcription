@@ -52,7 +52,7 @@ function applyLoadedDataToUI() {
   document.getElementById("hide-page-numbers").checked =
     AppState.hidePageNumbers;
   document.getElementById("lefttriangle-guide").checked =
-    AppState.lefttriangleGuide;
+    AppState.leftTriangleGuide;
   document.getElementById("top-triangle-guide").checked =
     AppState.topTriangleGuide;
   document.getElementById("diamond-guide").checked = AppState.diamondGuide;
@@ -176,8 +176,8 @@ function setGridColor(val, isCustom = false, shouldSave = true) {
     renderPages();
   }
 }
-function setlefttriangleGuideColor(val, shouldSave = true) {
-  AppState.lefttriangleGuideColor = val;
+function setleftTriangleGuideColor(val, shouldSave = true) {
+  AppState.leftTriangleGuideColor = val;
 
   const checks = document.querySelectorAll(".lefttriangle-guide-color-check");
 
@@ -203,10 +203,10 @@ function setlefttriangleGuideColor(val, shouldSave = true) {
   }
 }
 
-function updatelefttriangleGuideOpacity(val) {
-  AppState.lefttriangleGuideOpacity = Number(val) / 100;
+function updateleftTriangleGuideOpacity(val) {
+  AppState.leftTriangleGuideOpacity = Number(val) / 100;
 
-  document.getElementById("lefttriangleGuideOpacityVal").innerText = val + "%";
+  document.getElementById("leftTriangleGuideOpacityVal").innerText = val + "%";
 
   markStateChanged();
   renderPages();
@@ -843,9 +843,9 @@ function createGridSvg(colsNum, optRows) {
     .getPropertyValue("--guide-color")
     .trim();
 
-  const lefttriangleGuideColor = hexToRgba(
-    AppState.lefttriangleGuideColor,
-    AppState.lefttriangleGuideOpacity,
+  const leftTriangleGuideColor = hexToRgba(
+    AppState.leftTriangleGuideColor,
+    AppState.leftTriangleGuideOpacity,
   );
   const topTriangleGuideColor = hexToRgba(
     AppState.topTriangleGuideColor,
@@ -992,7 +992,7 @@ function createGridSvg(colsNum, optRows) {
       // =====================
       // 왼쪽 삼각형 가이드
       // =====================
-      if (AppState.lefttriangleGuide) {
+      if (AppState.leftTriangleGuide) {
         const d1 = document.createElementNS(svgNS, "line");
 
         d1.setAttribute("x1", col + 1);
@@ -1001,7 +1001,7 @@ function createGridSvg(colsNum, optRows) {
         d1.setAttribute("x2", col);
         d1.setAttribute("y2", row + 0.5);
 
-        d1.setAttribute("stroke", lefttriangleGuideColor);
+        d1.setAttribute("stroke", leftTriangleGuideColor);
         d1.setAttribute("stroke-width", guideStrokeWidth);
         d1.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
 
@@ -1015,7 +1015,7 @@ function createGridSvg(colsNum, optRows) {
         d2.setAttribute("x2", col);
         d2.setAttribute("y2", row + 0.5);
 
-        d2.setAttribute("stroke", lefttriangleGuideColor);
+        d2.setAttribute("stroke", leftTriangleGuideColor);
         d2.setAttribute("stroke-width", guideStrokeWidth);
         d2.setAttribute("stroke-dasharray", `${dashLength} ${gapLength}`);
 
@@ -1873,7 +1873,7 @@ async function initApp() {
   document
     .getElementById("lefttriangle-guide")
     .addEventListener("change", (e) => {
-      AppState.lefttriangleGuide = e.target.checked;
+      AppState.leftTriangleGuide = e.target.checked;
 
       markStateChanged();
       renderPages();
@@ -1913,7 +1913,7 @@ async function initApp() {
     false,
   );
 
-  setlefttriangleGuideColor(AppState.lefttriangleGuideColor, false);
+  setleftTriangleGuideColor(AppState.leftTriangleGuideColor, false);
   setTopTriangleGuideColor(AppState.topTriangleGuideColor, false);
   setDiamondGuideColor(AppState.diamondGuideColor, false);
   setSquareGuideColor(AppState.squareGuideColor, false);

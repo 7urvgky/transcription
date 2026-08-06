@@ -686,7 +686,7 @@
                 >
                 <div class="flex flex-wrap gap-2 items-center">
                   <button
-                    onclick="setlefttriangleGuideColor('#000000')"
+                    onclick="setleftTriangleGuideColor('#000000')"
                     class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95"
                     title="검은색"
                     style="background-color: #000000"
@@ -708,7 +708,7 @@
                     ></span>
                   </button>
                   <button
-                    onclick="setlefttriangleGuideColor('#69afa0')"
+                    onclick="setleftTriangleGuideColor('#69afa0')"
                     class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95"
                     title="녹색"
                     style="background-color: #69afa0"
@@ -730,7 +730,7 @@
                     ></span>
                   </button>
                   <button
-                    onclick="setlefttriangleGuideColor('#ff0000')"
+                    onclick="setleftTriangleGuideColor('#ff0000')"
                     class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95"
                     title="빨간색"
                     style="background-color: #ff0000"
@@ -752,7 +752,7 @@
                     ></span>
                   </button>
                   <button
-                    onclick="setlefttriangleGuideColor('#2563eb')"
+                    onclick="setleftTriangleGuideColor('#2563eb')"
                     class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95"
                     title="파란색"
                     style="background-color: #2563eb"
@@ -774,7 +774,7 @@
                     ></span>
                   </button>
                   <button
-                    onclick="setlefttriangleGuideColor('#991b1b')"
+                    onclick="setleftTriangleGuideColor('#991b1b')"
                     class="w-7 h-7 rounded-full border border-slate-300 hover:scale-105 transition-all flex items-center justify-center relative active:scale-95"
                     title="진한 빨간색"
                     style="background-color: #991b1b"
@@ -816,10 +816,10 @@
                       value="#ff0000"
                       class="sr-only"
                       oninput="
-                        setlefttriangleGuideColor(this.value, true, false)
+                        setleftTriangleGuideColor(this.value, true, false)
                       "
                       onchange="
-                        setlefttriangleGuideColor(this.value, true, true)
+                        setleftTriangleGuideColor(this.value, true, true)
                       "
                     />
                   </div>
@@ -831,7 +831,7 @@
                     <span>왼쪽 삼각형 점선 투명도</span>
 
                     <span
-                      id="lefttriangleGuideOpacityVal"
+                      id="leftTriangleGuideOpacityVal"
                       class="text-emerald-600 font-bold"
                     >
                       35%
@@ -844,7 +844,7 @@
                     step="1"
                     value="35"
                     class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-                    oninput="updatelefttriangleGuideOpacity(this.value)"
+                    oninput="updateleftTriangleGuideOpacity(this.value)"
                   />
                 </div>
                 <span

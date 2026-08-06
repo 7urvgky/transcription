@@ -88,9 +88,9 @@ const SETTINGS = {
     crossGuideOpacity: 0.35,
 
     // 왼쪽 삼각형
-    lefttriangleGuide: false,
-    lefttriangleGuideColor: "#ff0000",
-    lefttriangleGuideOpacity: 0.35,
+    leftTriangleGuide: false,
+    leftTriangleGuideColor: "#ff0000",
+    leftTriangleGuideOpacity: 0.35,
 
     // 위쪽 삼각형
     topTriangleGuide: false,
@@ -108,7 +108,7 @@ const SETTINGS = {
     squareGuideOpacity: 0.35,
 
     // 네모 크기
-    // 0.1 = 상하좌우 10% 안쪽
+    // 0.1 = 상하좌우 각 10% 안쪽
     // 실제 네모 크기 = 80%
     squareGuideInset: 0.1,
   },
