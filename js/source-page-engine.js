@@ -1,5 +1,6 @@
-// 원문 보기 엔진 분리
 "use strict";
+
+// 원문 보기 엔진
 
 const SourcePageEngine = {};
 

@@ -372,14 +372,16 @@ function renderPageContents(pageSpecs, currentLayoutSignature) {
       wrapper.dataset.layoutSignature !== currentLayoutSignature ||
       wrapper.dataset.sourceFrameState !== sourceFrameState
     ) {
-      const rebuiltWrapper = buildSkeletonPage(
-        spec,
-        pageClass,
-        headerHTML,
-        optRows,
-        isLineNote,
-        cellsPerPage,
-      );
+      const rebuiltWrapper =
+        spec.type === "line"
+          ? buildLineNoteSkeletonPage(spec, pageClass, headerHTML, optRows)
+          : buildSkeletonPage(
+              spec,
+              pageClass,
+              headerHTML,
+              optRows,
+              cellsPerPage,
+            );
       wrapper.innerHTML = rebuiltWrapper.innerHTML;
       wrapper.dataset.pageType = spec.type;
       wrapper.dataset.pageMode = spec.currentMode || "none";
@@ -428,14 +430,16 @@ function adjustDOMWrappersPool(container, pageSpecs, currentLayoutSignature) {
   // 부족한 분량만 최소 가상 객체 주입
   while (existingWrappers.length < pageSpecs.length) {
     const newSpec = pageSpecs[existingWrappers.length];
-    const newWrapper = buildSkeletonPage(
-      newSpec,
-      pageClass,
-      headerHTML,
-      optRows,
-      isLineNote,
-      cellsPerPage,
-    );
+    const newWrapper =
+      newSpec.type === "line"
+        ? buildLineNoteSkeletonPage(newSpec, pageClass, headerHTML, optRows)
+        : buildSkeletonPage(
+            newSpec,
+            pageClass,
+            headerHTML,
+            optRows,
+            cellsPerPage,
+          );
     container.appendChild(newWrapper);
     existingWrappers.push(newWrapper);
   }

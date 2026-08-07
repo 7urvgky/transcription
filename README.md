@@ -30,6 +30,18 @@
 ## 💾 버전 히스토리
 
 ---
+### Ver. 0.080701
+
+#### 리팩터링: 페이지 렌더링 구조 모듈화
+
+- line-note-page.js 분리
+- grid-page-general.js 분리
+- grid-renderer.js 분리
+- source-page.js 분리
+- page-common.js 분리
+- UI 이벤트를 ui-controller.js로 분리
+- 원고지/줄노트 렌더링 책임 분리
+
 ### Ver. 0.080406
 
 #### settings.js 파일 정리 완료
