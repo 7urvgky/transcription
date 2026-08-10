@@ -4,13 +4,6 @@
 // Common Page Helpers
 // =====================================================
 
-// 하단 라벨 위치 적용
-function applyFooterPosition(el) {
-  el.style.left = `${SETTINGS.layout.footerLeftRightMm}mm`;
-  el.style.right = `${SETTINGS.layout.footerLeftRightMm}mm`;
-  el.style.bottom = `${SETTINGS.layout.footerBottomMm}mm`;
-}
-
 // Page Builder Helpers
 function createPageShell(pageClass, spec) {
   const wrapper = document.createElement("div");
@@ -23,7 +16,7 @@ function createPageShell(pageClass, spec) {
 
   const pageDiv = document.createElement("div");
 
-  pageDiv.className = pageClass;
+  pageDiv.className = `${pageClass} relative`;
 
   const innerDiv = document.createElement("div");
 
@@ -32,7 +25,7 @@ function createPageShell(pageClass, spec) {
    ${SETTINGS.layout.pageBottomPadding}mm
    ${SETTINGS.layout.pageSidePadding}mm`;
 
-  innerDiv.className = "print-page-inner";
+  innerDiv.className = "print-page-inner flex flex-col min-h-0";
 
   pageDiv.appendChild(innerDiv);
 
@@ -139,6 +132,7 @@ function getBlankPlaceholders() {
 }
 
 function buildHeaderHTML(placeholders) {
+  console.log("buildHeaderHTML:", AppState.hideStudentInfo);
   if (AppState.hideStudentInfo) {
     return "";
   }

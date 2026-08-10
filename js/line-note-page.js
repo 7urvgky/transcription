@@ -40,10 +40,21 @@ function createLineNote(optRows) {
 function createLineNoteFooter(spec) {
   const footerDiv = document.createElement("div");
 
+  /*
+   * ==========================================================
+   * 원고지와 동일하게 페이지 바닥 기준으로 footer 배치
+   * ==========================================================
+   */
   footerDiv.className =
-    "absolute pt-2 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
+    "absolute left-0 w-full flex justify-between items-center text-xs text-slate-400 font-bold";
 
-  applyFooterPosition(footerDiv);
+  footerDiv.style.bottom = `${SETTINGS.manuscript.footerBottom}mm`;
+
+  /*
+   * 원고지와 동일한 좌우 여백
+   */
+  footerDiv.style.paddingLeft = `${SETTINGS.layout.pageSidePadding}mm`;
+  footerDiv.style.paddingRight = `${SETTINGS.layout.pageSidePadding}mm`;
 
   let currentFooterLabel = "";
   let currentFooterClass = "";
@@ -64,17 +75,19 @@ function createLineNoteFooter(spec) {
     currentFooterClass = "footer-label-empty";
   }
 
-  footerDiv.innerHTML = `
-        <span class="tracking-wide text-slate-400">
-          <span class="${currentFooterClass}" contenteditable="true">
-            ${escapeHTML(currentFooterLabel)}
-          </span>
+  if (!AppState.hidePageNumbers) {
+    footerDiv.innerHTML = `
+      <span class="tracking-wide text-slate-400">
+        <span class="${currentFooterClass}" contenteditable="true">
+          ${escapeHTML(currentFooterLabel)}
         </span>
+      </span>
 
-        <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">
-          - ${spec.pageIdx + 1} / ${spec.totalGridPages} -
-        </span>
-      `;
+      <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full">
+        - ${spec.pageIdx + 1} / ${spec.totalGridPages} -
+      </span>
+    `;
+  }
 
   return footerDiv;
 }
@@ -88,14 +101,16 @@ function buildLineNotePage(innerDiv, spec, headerHTML, titleText, optRows) {
 
   const gridWrapper = document.createElement("div");
 
-  gridWrapper.className = "w-full flex items-center justify-center";
+  gridWrapper.className = "w-full flex items-center justify-center shrink-0";
 
   innerDiv.appendChild(gridWrapper);
 
   gridWrapper.appendChild(createLineNote(optRows));
 
+  // 푸터
   if (!AppState.hidePageNumbers) {
-    innerDiv.appendChild(createLineNoteFooter(spec));
+    const footer = createLineNoteFooter(spec);
+    innerDiv.appendChild(footer);
   }
 }
 

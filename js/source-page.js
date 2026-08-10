@@ -41,12 +41,37 @@ function createSourceFooter(innerDiv, spec) {
     return;
   }
 
+  /*
+   * 페이지 바닥을 기준으로 footer 위치를 조절하기 위한 spacer.
+   *
+   * innerDiv의 남은 공간을 모두 차지하고,
+   * footer를 페이지 아래쪽으로 밀어낸다.
+   */
+  const footerSpacer = document.createElement("div");
+
+  footerSpacer.className = "flex-1 min-h-0";
+
+  innerDiv.appendChild(footerSpacer);
+
   const pageOneFooter = document.createElement("div");
 
+  /*
+   * footer는 정상적인 Flex 흐름에 포함된다.
+   * spacer가 남은 공간을 모두 차지하므로
+   * footer는 페이지 하단에 배치된다.
+   */
   pageOneFooter.className =
-    "absolute pt-2.5 flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
+    "w-full flex justify-between items-center text-xs text-slate-400 font-bold shrink-0";
 
-  applyFooterPosition(pageOneFooter);
+  /*
+   * 페이지 바닥에서 footer까지의 거리.
+   *
+   * footerBottom = 0
+   * → footer 자체가 페이지 하단에 최대한 가깝게 배치
+   *
+   * 숫자를 크게 할수록 위로 올라간다.
+   */
+  pageOneFooter.style.marginBottom = `${SETTINGS.sourcePage.sourceFooterBottom}mm`;
 
   const displaySourceFooter =
     AppState.customFooterSourceText !== null

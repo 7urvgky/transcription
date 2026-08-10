@@ -43,7 +43,7 @@ function drawCellContent(cell, cellData, nextState, colsNum) {
       <svg viewBox="0 0 100 100"
            class="w-full h-full select-none absolute inset-0 pointer-events-none"
            style="z-index: 10;">
-        <g class="trace-text-node">
+      <g class="trace-text-node">
     `;
 
     // ============================================================
@@ -114,11 +114,18 @@ function drawCellContent(cell, cellData, nextState, colsNum) {
     charSpan.className =
       "font-serif-fixed text-slate-800 trace-text-node select-none absolute inset-0 flex items-center justify-center w-full h-full pointer-events-none cell-char-span";
 
-    charSpan.style.fontSize = `${cellWidthMm * AppState.charScale}mm`;
-
     charSpan.style.lineHeight = "1";
 
-    charSpan.textContent = cellData.char;
+    const charText = document.createElement("span");
+
+    charText.textContent = cellData.char;
+
+    charText.style.fontSize = `${cellWidthMm * AppState.charScale}mm`;
+
+    /* 실제 문자만 위로 이동 */
+    charText.style.transform = "translateY(-4%)";
+
+    charSpan.appendChild(charText);
 
     cell.replaceChildren(charSpan);
   }
@@ -213,7 +220,6 @@ function renderGridPageContent(wrapper, spec, cellsData, cellsPerPage) {
   const colsNum = parseInt(AppState.gridCols);
 
   for (let c = 0; c < cellsPerPage; c++) {
-    const cellIdx = pageOffset + c;
     const cellData = pageCells[c] || { char: "" };
     const cell = cells[c];
     if (!cell) continue;
@@ -333,7 +339,7 @@ function renderPageContents(pageSpecs, currentLayoutSignature) {
       : "a4-page print-page landscape-page";
   const placeholders = getBlankPlaceholders();
   const headerHTML = buildHeaderHTML(placeholders);
-  const optRows = ManuscriptEngine.calculateOptimalRows(AppState.gridCols);
+  const optRows = getActiveGridRows(AppState.gridCols);
   const isLineNote = AppState.gridCols === "line";
   const cellsPerPage = isLineNote
     ? optRows
@@ -359,7 +365,6 @@ function renderPageContents(pageSpecs, currentLayoutSignature) {
   for (let i = 0; i < pageSpecs.length; i++) {
     const spec = pageSpecs[i];
     const wrapper = wrappers[i];
-
     const sourceFrameState =
       spec.type === "source"
         ? `${spec.sIdx}_${spec.totalSourcePages}`
@@ -389,7 +394,6 @@ function renderPageContents(pageSpecs, currentLayoutSignature) {
       wrapper.dataset.sourceFrameState = sourceFrameState;
       delete wrapper.dataset.stateKey;
       delete wrapper.dataset.pageContentState;
-      delete wrapper.dataset.sourceFrameState;
     }
 
     // 각 서브 전용 렌더러에게 세부 그리기 작업 양도
@@ -421,7 +425,7 @@ function adjustDOMWrappersPool(container, pageSpecs, currentLayoutSignature) {
       : "a4-page print-page landscape-page";
   const placeholders = getBlankPlaceholders();
   const headerHTML = buildHeaderHTML(placeholders);
-  const optRows = ManuscriptEngine.calculateOptimalRows(AppState.gridCols);
+  const optRows = getActiveGridRows(AppState.gridCols);
   const isLineNote = AppState.gridCols === "line";
   const cellsPerPage = isLineNote
     ? optRows
@@ -464,7 +468,7 @@ function buildPageSpecs() {
   }
 
   // 원고지 및 줄노트 지면 계산
-  const optRows = ManuscriptEngine.calculateOptimalRows(AppState.gridCols);
+  const optRows = getActiveGridRows(AppState.gridCols);
   const isLineNote = AppState.gridCols === "line";
   const cellsPerPage = isLineNote
     ? optRows
@@ -510,24 +514,44 @@ function buildPageSpecs() {
 // 1. renderPages() 전체 조판 엔진 책임 분배 실행계획부
 function renderPages() {
   const container = document.getElementById("pages-container");
-  const currentLayoutSignature =
-    AppState.orientation +
-    "_" +
-    AppState.gridCols +
-    "_" +
-    AppState.hideManuscriptHeader +
-    "_" +
-    AppState.hideCharCount +
-    "_" +
-    AppState.hidePageNumbers +
-    "_" +
-    AppState.crossGuide +
-    "_" +
-    AppState.excludeFirstPage +
-    "_" +
-    AppState.patternGuide +
-    "_" +
-    AppState.patternEmpty;
+  const currentLayoutSignature = [
+    AppState.orientation,
+    AppState.gridCols,
+    AppState.traditionalGrid,
+
+    AppState.hideManuscriptHeader,
+    AppState.hideCharCount,
+    AppState.hidePageNumbers,
+    AppState.excludeFirstPage,
+    AppState.hideStudentInfo,
+    AppState.crossGuide,
+
+    AppState.leftTriangleGuide,
+    AppState.leftTriangleGuideColor,
+    AppState.leftTriangleGuideOpacity,
+
+    AppState.topTriangleGuide,
+    AppState.topTriangleGuideColor,
+    AppState.topTriangleGuideOpacity,
+
+    AppState.diamondGuide,
+    AppState.diamondGuideColor,
+    AppState.diamondGuideOpacity,
+
+    AppState.squareGuide,
+    AppState.squareGuideColor,
+    AppState.squareGuideOpacity,
+    AppState.squareGuideInset,
+
+    AppState.currentGridColor,
+    AppState.gridOpacity,
+
+    AppState.crossGuideColor,
+    AppState.crossGuideOpacity,
+
+    AppState.patternGuide,
+    AppState.patternEmpty,
+  ].join("_");
 
   // 단계 A: 페이지 메타 스펙 빌드 (구조 연산 전담)
   const pageSpecs = buildPageSpecs();

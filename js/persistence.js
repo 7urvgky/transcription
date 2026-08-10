@@ -24,7 +24,13 @@ function updateAutoSaveStatus() {
     `(인터넷에는 어떠한 입력 데이터도 송신 되지 않습니다.)`;
 }
 
-//기본 상태 확인
+// 부동소수점 숫자 비교
+// JavaScript 계산 과정에서 발생하는 미세한 오차를 허용한다.
+function isSameNumber(a, b) {
+  return Math.abs(Number(a) - Number(b)) < 0.000001;
+}
+
+// 기본 상태 확인
 function isDefaultState() {
   return (
     AppState.sourceText === DEFAULT_APP_STATE.sourceText &&
@@ -39,6 +45,7 @@ function isDefaultState() {
     AppState.hideManuscriptHeader === DEFAULT_APP_STATE.hideManuscriptHeader &&
     AppState.hideCharCount === DEFAULT_APP_STATE.hideCharCount &&
     AppState.hidePageNumbers === DEFAULT_APP_STATE.hidePageNumbers &&
+    AppState.traditionalGrid === DEFAULT_APP_STATE.traditionalGrid &&
     AppState.orientation === DEFAULT_APP_STATE.orientation &&
     AppState.headerLeftText === DEFAULT_APP_STATE.headerLeftText &&
     AppState.customFooterSourceText ===
@@ -48,13 +55,46 @@ function isDefaultState() {
     AppState.customFooterEmptyText ===
       DEFAULT_APP_STATE.customFooterEmptyText &&
     AppState.currentGridColor === DEFAULT_APP_STATE.currentGridColor &&
-    AppState.currentGuideColor === DEFAULT_APP_STATE.currentGuideColor &&
-    AppState.gridOpacity === DEFAULT_APP_STATE.gridOpacity &&
-    AppState.guideOpacity === DEFAULT_APP_STATE.guideOpacity &&
-    AppState.crossGuide === DEFAULT_APP_STATE.crossGuide &&
+    isSameNumber(AppState.gridOpacity, DEFAULT_APP_STATE.gridOpacity) &&
+    AppState.crossGuideColor === DEFAULT_APP_STATE.crossGuideColor &&
+    isSameNumber(
+      AppState.crossGuideOpacity,
+      DEFAULT_APP_STATE.crossGuideOpacity,
+    ) &&
+    AppState.leftTriangleGuide === DEFAULT_APP_STATE.leftTriangleGuide &&
+    AppState.leftTriangleGuideColor ===
+      DEFAULT_APP_STATE.leftTriangleGuideColor &&
+    isSameNumber(
+      AppState.leftTriangleGuideOpacity,
+      DEFAULT_APP_STATE.leftTriangleGuideOpacity,
+    ) &&
+    AppState.topTriangleGuide === DEFAULT_APP_STATE.topTriangleGuide &&
+    AppState.topTriangleGuideColor ===
+      DEFAULT_APP_STATE.topTriangleGuideColor &&
+    isSameNumber(
+      AppState.topTriangleGuideOpacity,
+      DEFAULT_APP_STATE.topTriangleGuideOpacity,
+    ) &&
+    AppState.diamondGuide === DEFAULT_APP_STATE.diamondGuide &&
+    AppState.diamondGuideColor === DEFAULT_APP_STATE.diamondGuideColor &&
+    isSameNumber(
+      AppState.diamondGuideOpacity,
+      DEFAULT_APP_STATE.diamondGuideOpacity,
+    ) &&
+    AppState.squareGuide === DEFAULT_APP_STATE.squareGuide &&
+    AppState.squareGuideColor === DEFAULT_APP_STATE.squareGuideColor &&
+    isSameNumber(
+      AppState.squareGuideOpacity,
+      DEFAULT_APP_STATE.squareGuideOpacity,
+    ) &&
+    isSameNumber(
+      AppState.squareGuideInset,
+      DEFAULT_APP_STATE.squareGuideInset,
+    ) &&
+    isSameNumber(AppState.charScale, DEFAULT_APP_STATE.charScale) &&
+    isSameNumber(AppState.charYOffset, DEFAULT_APP_STATE.charYOffset) &&
     AppState.patternGuide === DEFAULT_APP_STATE.patternGuide &&
-    AppState.patternEmpty === DEFAULT_APP_STATE.patternEmpty &&
-    AppState.charYOffset === DEFAULT_APP_STATE.charYOffset
+    AppState.patternEmpty === DEFAULT_APP_STATE.patternEmpty
   );
 }
 
@@ -178,13 +218,13 @@ function importSettings(event) {
       false,
     );
     setGuideColor(
-      AppState.currentGuideColor,
-      !presetGuideColors.includes(AppState.currentGuideColor),
+      AppState.crossGuideColor,
+      !presetGuideColors.includes(AppState.crossGuideColor),
       false,
     );
 
     updateGridOpacity(AppState.gridOpacity * 100);
-    updateGuideOpacity(AppState.guideOpacity * 100);
+    updateGuideOpacity(AppState.crossGuideOpacity * 100);
     updateCharYOffset(AppState.charYOffset);
 
     saveToLocalStorage();

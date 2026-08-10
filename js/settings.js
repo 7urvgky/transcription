@@ -12,13 +12,9 @@ const SETTINGS = {
   // =====================================================
   layout: {
     // 페이지 기본 여백
-    pageTopPadding: 18,
+    pageTopPadding: 20,
     pageSidePadding: 20,
-    pageBottomPadding: 23.5, // 이슈: 현재 본문 높이가 고정되어 있음. TODO: 하단 라벨 높이에 따라 동적 조정 필요
-
-    // 하단 꼬리말 위치
-    footerBottomMm: 18, // 하단 꼬리말 여백 mm
-    footerLeftRightMm: 20, // 하단 꼬리말 좌우 여백 mm
+    pageBottomPadding: 15,
   },
 
   // =====================================================
@@ -47,6 +43,8 @@ const SETTINGS = {
     sourceTitleBottom: 2, // 원문 보기 제목과 본문 사이 여백 mm
     sourceBodyBottom: 15, // 원문 보기 본문 아래 여백 mm
     headerLeftText: "", // 원문 보기 2페이지 이후 왼쪽 상단 머리말
+
+    sourceFooterBottom: 0, // 원문 보기 꼬리말의 페이지 하단 여백 mm
   },
 
   // =====================================================
@@ -63,6 +61,13 @@ const SETTINGS = {
     gridLineGap: 2.5, // 원고지와 위 아래 실선 간격 mm
     titleLineGap: 2, // 원고지 제목과 위 실선 간격 mm
     horizontalLineExtraWidth: 2, // 원고지 위 아래 실선 길이 조절
+
+    // 꼬리말
+    // 페이지 안쪽 바닥에서 footer까지의 거리(mm)
+    footerBottom: 13,
+
+    // 전통 원고지
+    traditionalRowGap: 2.5, // 한 행의 원고지와 다음 행의 원고지 사이의 실제 여백
   },
 
   stroke: {

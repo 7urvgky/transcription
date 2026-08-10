@@ -108,6 +108,13 @@ function bindUIEvents() {
       markStateChanged();
       renderPages();
     });
+  document
+    .getElementById("traditional-grid")
+    .addEventListener("change", (e) => {
+      AppState.traditionalGrid = e.target.checked;
+      markStateChanged();
+      renderPages();
+    });
   document.getElementById("cross-guides").addEventListener("change", (e) => {
     AppState.crossGuide = e.target.checked;
     updateGridGuides();

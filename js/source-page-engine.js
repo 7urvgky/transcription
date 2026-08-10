@@ -119,8 +119,7 @@ SourcePageEngine.splitTextForLineNote = function (text, maxNonSpace) {
   const lines = [];
   const paragraphs = text.split("\n");
   const isPunctuation = (c) =>
-    /[.,!?'"ным“('_~);:]/.test(c) ||
-    /[.,!?'""]["“”‘’()\[\]{}<>~?;:：；！？]/.test(c);
+    /[.,!?'\"“”‘’()\[\]{}<>~;:：；！？…·―—–]/.test(c);
 
   paragraphs.forEach((p) => {
     if (p.trim() === "") {

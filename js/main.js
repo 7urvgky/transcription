@@ -44,6 +44,8 @@ function applyLoadedDataToUI() {
   document.getElementById("hide-char-count").checked = AppState.hideCharCount;
   document.getElementById("hide-page-numbers").checked =
     AppState.hidePageNumbers;
+  document.getElementById("traditional-grid").checked =
+    AppState.traditionalGrid;
   document.getElementById("lefttriangle-guide").checked =
     AppState.leftTriangleGuide;
   document.getElementById("top-triangle-guide").checked =
@@ -330,7 +332,7 @@ function updateDiamondGuideOpacity(val) {
 }
 
 function setGuideColor(val, isCustom = false, shouldSave = true) {
-  AppState.currentGuideColor = val;
+  AppState.crossGuideColor = val;
 
   updateGridGuides();
 
@@ -372,12 +374,8 @@ function setGuideColor(val, isCustom = false, shouldSave = true) {
 
 function updateGridGuides() {
   document.documentElement.style.setProperty(
-    "--guide-display",
-    AppState.crossGuide ? "none" : "block",
-  );
-  document.documentElement.style.setProperty(
     "--guide-color",
-    hexToRgba(AppState.currentGuideColor, AppState.guideOpacity),
+    hexToRgba(AppState.crossGuideColor, AppState.crossGuideOpacity),
   );
   renderPages();
 }
@@ -400,7 +398,7 @@ function updateGridOpacity(val) {
 }
 
 function updateGuideOpacity(val) {
-  AppState.guideOpacity = Number(val) / 100;
+  AppState.crossGuideOpacity = Number(val) / 100;
   document.getElementById("guideOpacityVal").innerText = val + "%";
 
   const slider = document.getElementById("guideOpacitySlider");
@@ -535,12 +533,12 @@ function appendLayoutTexts(svgHtml, layout) {
           text-anchor="middle"
           dominant-baseline="central"
           font-size="${item.fontSize}"
-          class="font-serif-fixed fill-current text-slate-800">
+          class="font-serif-fixed fill-current text-slate-800"
+          transform="translate(0, -2)">
           ${escapeHTML(item.text)}
         </text>
       `;
   });
-
   return svgHtml;
 }
 
@@ -902,6 +900,7 @@ async function initApp() {
     "--trace-opacity",
     SETTINGS.manuscript.traceOpacity,
   );
+
   document
     .getElementById("lefttriangle-guide")
     .addEventListener("change", (e) => {
@@ -933,6 +932,7 @@ async function initApp() {
     markStateChanged();
     renderPages();
   });
+
   // 전역 CSS 속성 바인딩, 버튼 체크 표시 활성화 및 커스텀 원형 동적 매핑
   setGridColor(
     AppState.currentGridColor,
@@ -940,8 +940,8 @@ async function initApp() {
     false,
   );
   setGuideColor(
-    AppState.currentGuideColor,
-    !presetGuideColors.includes(AppState.currentGuideColor),
+    AppState.crossGuideColor,
+    !presetGuideColors.includes(AppState.crossGuideColor),
     false,
   );
 
@@ -954,7 +954,7 @@ async function initApp() {
   updateSquareGuideSize(Math.round((1 - AppState.squareGuideInset * 2) * 100));
   // 개별 슬라이더 수치 복원 및 DOM 슬라이더 일치 작업
   updateGridOpacity(AppState.gridOpacity * 100);
-  updateGuideOpacity(AppState.guideOpacity * 100);
+  updateGuideOpacity(AppState.crossGuideOpacity * 100);
   updateCharYOffset(AppState.charYOffset);
 
   updatePageStyleSheet();

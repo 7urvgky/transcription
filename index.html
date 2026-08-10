@@ -12,24 +12,26 @@
       rel="stylesheet"
     />
 
-    <!-- Version: 0.080701 -->
-    <link rel="stylesheet" href="style.css?v=0.080701" />
-    <script src="js/settings.js?v=0.080701"></script>
-    <script src="js/app-state.js?v=0.080701"></script>
-    <script src="js/persistence.js?v=0.080701"></script>
-    <script src="js/ui-controller.js?v=0.080701"></script>
+    <!-- Version: 0.081015 -->
+    <link rel="stylesheet" href="style.css?v=0.081015" />
+    <script src="js/settings.js?v=0.081015"></script>
+    <script src="js/app-state.js?v=0.081015"></script>
+    <script src="js/persistence.js?v=0.081015"></script>
+    <script src="js/ui-controller.js?v=0.081015"></script>
 
-    <script src="js/renderer.js?v=0.080701"></script>
-    <script src="js/grid-renderer.js?v=0.080701"></script>
+    <script src="js/renderer.js?v=0.081015"></script>
+    <script src="js/grid-renderer.js?v=0.081015"></script>
 
-    <script src="js/manuscript-engine.js?v=0.080701"></script>
-    <script src="js/source-page-engine.js?v=0.080701"></script>
+    <script src="js/manuscript-engine.js?v=0.081015"></script>
+    <script src="js/source-page-engine.js?v=0.081015"></script>
 
-    <script src="js/page-common.js?v=0.080701"></script>
-    <script src="js/source-page.js?v=0.080701"></script>
-    <script src="js/line-note-page.js?v=0.080701"></script>
-    <script src="js/grid-page-general.js?v=0.080701"></script>
-    <!-- Version: 0.080701 -->
+    <script src="js/traditional-grid.js?v=0.081015"></script>
+
+    <script src="js/page-common.js?v=0.081015"></script>
+    <script src="js/source-page.js?v=0.081015"></script>
+    <script src="js/line-note-page.js?v=0.081015"></script>
+    <script src="js/grid-page-general.js?v=0.081015"></script>
+    <!-- Version: 0.081015 -->
   </head>
   <body class="min-h-screen flex flex-col">
     <header
@@ -54,7 +56,7 @@
         <div>
           <h1 class="text-lg font-bold tracking-tight">필사 용지 만들기</h1>
           <div class="text-[10px] text-slate-400 font-medium tracking-wide">
-            Ver.0.080701
+            Ver.0.081015
           </div>
         </div>
       </div>
@@ -270,6 +272,16 @@
                   <span class="ml-2.5 text-xs text-slate-700 font-bold"
                     >꼬리말, 페이지 번호 표시 안 함</span
                   >
+                </label>
+                <label class="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="traditional-grid"
+                    class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
+                  />
+                  <span class="ml-2.5 text-xs text-slate-700 font-bold">
+                    줄 사이 간격 추가
+                  </span>
                 </label>
               </div>
 
@@ -1685,6 +1697,6 @@
       </div>
     </div>
 
-    <script src="js/main.js?v=0.080701"></script>
+    <script src="js/main.js?v=0.081015"></script>
   </body>
 </html>

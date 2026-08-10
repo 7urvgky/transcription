@@ -15,6 +15,7 @@ const DEFAULT_APP_STATE = {
   hideManuscriptHeader: false,
   hideCharCount: false,
   hidePageNumbers: false,
+  traditionalGrid: false,
   orientation: SETTINGS.defaults.orientation,
 
   headerLeftText: SETTINGS.sourcePage.headerLeftText,
@@ -24,7 +25,10 @@ const DEFAULT_APP_STATE = {
   customFooterEmptyText: null,
 
   currentGridColor: SETTINGS.stroke.gridColor,
-  currentGuideColor: SETTINGS.guide.crossGuideColor,
+
+  crossGuide: SETTINGS.guide.crossGuide,
+  crossGuideColor: SETTINGS.guide.crossGuideColor,
+  crossGuideOpacity: SETTINGS.guide.crossGuideOpacity,
 
   leftTriangleGuide: SETTINGS.guide.leftTriangleGuide,
   leftTriangleGuideColor: SETTINGS.guide.leftTriangleGuideColor,
@@ -44,11 +48,6 @@ const DEFAULT_APP_STATE = {
   squareGuideInset: SETTINGS.guide.squareGuideInset,
 
   gridOpacity: SETTINGS.stroke.gridOpacity,
-  guideOpacity: SETTINGS.guide.crossGuideOpacity,
-
-  crossGuide: SETTINGS.guide.crossGuide,
-  leftTriangleGuide: false,
-  topTriangleGuide: false,
 
   patternGuide: true,
   patternEmpty: true,
@@ -77,6 +76,7 @@ const AppState = {
   hideManuscriptHeader: DEFAULT_APP_STATE.hideManuscriptHeader,
   hideCharCount: DEFAULT_APP_STATE.hideCharCount,
   hidePageNumbers: DEFAULT_APP_STATE.hidePageNumbers,
+  traditionalGrid: DEFAULT_APP_STATE.traditionalGrid,
   orientation: DEFAULT_APP_STATE.orientation,
 
   headerLeftText: DEFAULT_APP_STATE.headerLeftText,
@@ -86,7 +86,11 @@ const AppState = {
   customFooterEmptyText: DEFAULT_APP_STATE.customFooterEmptyText,
 
   currentGridColor: DEFAULT_APP_STATE.currentGridColor,
-  currentGuideColor: DEFAULT_APP_STATE.currentGuideColor,
+  gridOpacity: DEFAULT_APP_STATE.gridOpacity,
+
+  crossGuide: DEFAULT_APP_STATE.crossGuide,
+  crossGuideColor: DEFAULT_APP_STATE.crossGuideColor,
+  crossGuideOpacity: DEFAULT_APP_STATE.crossGuideOpacity,
 
   leftTriangleGuide: DEFAULT_APP_STATE.leftTriangleGuide,
   leftTriangleGuideColor: DEFAULT_APP_STATE.leftTriangleGuideColor,
@@ -105,10 +109,6 @@ const AppState = {
   squareGuideOpacity: DEFAULT_APP_STATE.squareGuideOpacity,
   squareGuideInset: DEFAULT_APP_STATE.squareGuideInset,
 
-  gridOpacity: DEFAULT_APP_STATE.gridOpacity,
-  guideOpacity: DEFAULT_APP_STATE.guideOpacity,
-
-  crossGuide: DEFAULT_APP_STATE.crossGuide,
   patternGuide: DEFAULT_APP_STATE.patternGuide,
   patternEmpty: DEFAULT_APP_STATE.patternEmpty,
 
