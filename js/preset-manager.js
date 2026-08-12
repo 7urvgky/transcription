@@ -14,6 +14,7 @@ function applyManuscriptPreset(presetKey) {
       gridCols: AppState.gridCols,
       traditionalGrid: AppState.traditionalGrid,
       traditionalRowGap: AppState.traditionalRowGap,
+      presetRows: AppState.presetRows,
     };
   }
 
@@ -28,6 +29,7 @@ function applyManuscriptPreset(presetKey) {
       AppState.gridCols = prev.gridCols;
       AppState.traditionalGrid = prev.traditionalGrid;
       AppState.traditionalRowGap = prev.traditionalRowGap;
+      AppState.presetRows = prev.presetRows;
     }
 
     AppState.previousPresetState = null;
@@ -35,12 +37,12 @@ function applyManuscriptPreset(presetKey) {
   }
 
   // 프리셋 적용
-  AppState.orientation = preset.direction;
+  AppState.orientation = preset.direction || preset.orientation;
   AppState.gridCols = String(preset.cols);
+  AppState.presetRows = preset.rows;
 
   // 전통 원고지 + 줄 사이 간격 자동 적용
   AppState.traditionalGrid = true;
-  AppState.traditionalRowGap = true;
 }
 
 function isPresetMode() {
