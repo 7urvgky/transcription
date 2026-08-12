@@ -1,42 +1,34 @@
 "use strict";
 
-// 원고지 프리셋 정의
-// 새로운 프리셋 추가 시 이 파일만 수정
+// 원고지 프리셋 데이터
 const MANUSCRIPT_PRESETS = {
-  none: {
-    name: "프리셋 해제",
-    enabled: false,
-  },
-
-  landscape60: {
+  none: { name: "프리셋 해제" },
+  horizontal60: {
     name: "가로 60자",
     direction: "landscape",
     rows: 6,
     cols: 10,
-    totalChars: 60,
+    label: "6 x 10 = 60자",
   },
-
-  portrait130: {
+  vertical130: {
     name: "세로 130자",
     direction: "portrait",
     rows: 13,
     cols: 10,
-    totalChars: 130,
+    label: "13 x 10 = 130자",
   },
-
-  landscape200: {
+  horizontal200: {
     name: "가로 200자",
     direction: "landscape",
     rows: 10,
     cols: 20,
-    totalChars: 200,
+    label: "10 x 20 = 200자",
   },
-
-  portrait500: {
+  vertical500: {
     name: "세로 500자",
     direction: "portrait",
     rows: 25,
     cols: 20,
-    totalChars: 500,
+    label: "25 x 20 = 500자",
   },
 };
