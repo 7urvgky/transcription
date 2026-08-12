@@ -7,6 +7,7 @@ const DEFAULT_APP_STATE = {
   charScale: SETTINGS.manuscript.charScale,
 
   activePreset: "none",
+  presetRows: null,
 
   hideStudentInfo: false,
   schoolName: SETTINGS.defaults.schoolName,
@@ -69,6 +70,7 @@ const AppState = {
   charScale: DEFAULT_APP_STATE.charScale,
 
   activePreset: DEFAULT_APP_STATE.activePreset,
+  presetRows: DEFAULT_APP_STATE.presetRows,
 
   hideStudentInfo: DEFAULT_APP_STATE.hideStudentInfo,
   schoolName: DEFAULT_APP_STATE.schoolName,
