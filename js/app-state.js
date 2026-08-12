@@ -6,6 +6,8 @@ const DEFAULT_APP_STATE = {
   gridCols: SETTINGS.defaults.gridCols,
   charScale: SETTINGS.manuscript.charScale,
 
+  activePreset: "none",
+
   hideStudentInfo: false,
   schoolName: SETTINGS.defaults.schoolName,
   gradeInfo: SETTINGS.defaults.gradeInfo,
@@ -58,7 +60,6 @@ const DEFAULT_APP_STATE = {
   previewZoomValue: 100,
 };
 
-// 단일화된 전역 애플리케이션 상태 (AppState 아키텍처)
 const AppState = {
   sourceText: DEFAULT_APP_STATE.sourceText,
   hideInputTitle: DEFAULT_APP_STATE.hideInputTitle,
@@ -66,6 +67,8 @@ const AppState = {
 
   gridCols: DEFAULT_APP_STATE.gridCols,
   charScale: DEFAULT_APP_STATE.charScale,
+
+  activePreset: DEFAULT_APP_STATE.activePreset,
 
   hideStudentInfo: DEFAULT_APP_STATE.hideStudentInfo,
   schoolName: DEFAULT_APP_STATE.schoolName,
