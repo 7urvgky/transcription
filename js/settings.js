@@ -39,7 +39,8 @@ const SETTINGS = {
     landscapeColumnGap: 15, // 가로 모드 열 간격 mm
 
     // 여백
-    sourceTitleTop: 4, // 원문 보기 헤더와 제목 사이 여백 mm
+    sourceHeaderBottom: 5, // 원문 보기 헤더 아래 여백 mm
+    sourceTitleTop: 0, // 원문 보기 헤더와 제목 사이 여백 mm
     sourceTitleBottom: 2, // 원문 보기 제목과 본문 사이 여백 mm
     sourceBodyBottom: 15, // 원문 보기 본문 아래 여백 mm
     headerLeftText: "", // 원문 보기 2페이지 이후 왼쪽 상단 머리말
@@ -56,7 +57,7 @@ const SETTINGS = {
     traceOpacity: 0.2, // 따라쓰기 글자 투명도
 
     // 여백
-    gridHeaderBottom: 5, // 원고지 헤더와 원고지 제목 간격 mm
+    gridHeaderBottom: 4, // 원고지 헤더와 원고지 제목 간격 mm
 
     gridLineGap: 2.5, // 원고지와 위 아래 실선 간격 mm
     titleLineGap: 2, // 원고지 제목과 위 실선 간격 mm

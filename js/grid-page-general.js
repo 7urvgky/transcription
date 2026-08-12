@@ -69,17 +69,19 @@ function createGridTitle(titleText) {
 
   title.style.marginBottom = `${SETTINGS.manuscript.gridLineGap}mm`;
 
-  title.innerHTML = `
-    <div>
-      <h2
-        class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal"
-        contenteditable="true"
-        style="word-break: keep-all;"
-      >
-        ${escapeHTML(titleText)}
-      </h2>
-    </div>
-  `;
+  if (!AppState.hideInputTitle) {
+    title.innerHTML = `
+      <div>
+        <h2
+          class="title-placeholder font-serif-fixed text-xl font-bold tracking-wide text-slate-800 leading-tight max-w-[95%] break-keep whitespace-normal"
+          contenteditable="true"
+          style="word-break: keep-all;"
+        >
+          ${escapeHTML(titleText)}
+        </h2>
+      </div>
+    `;
+  }
 
   title.appendChild(createTitleLine());
 
@@ -91,7 +93,6 @@ function createGridPageHeader(headerHTML, titleText) {
 
   if (AppState.hideManuscriptHeader) {
     elements.push(createHorizontalLine(0, SETTINGS.manuscript.gridLineGap));
-
     return elements;
   }
 

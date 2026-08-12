@@ -9,7 +9,9 @@ function createSourceHeader(innerDiv, spec, headerHTML, titleText) {
   if (spec.sIdx === 0) {
     const pageOneHeader = document.createElement("div");
     pageOneHeader.className =
-      "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0 mb-2";
+      "pb-1 text-sm font-semibold custom-grid-text w-full shrink-0";
+
+    pageOneHeader.style.marginBottom = `${SETTINGS.sourcePage.sourceHeaderBottom}mm`;
     pageOneHeader.innerHTML = headerHTML;
     innerDiv.appendChild(pageOneHeader);
 
@@ -19,10 +21,15 @@ function createSourceHeader(innerDiv, spec, headerHTML, titleText) {
     pageOneTitle.style.marginTop = `${SETTINGS.sourcePage.sourceTitleTop}mm`;
 
     pageOneTitle.style.marginBottom = `${SETTINGS.sourcePage.sourceTitleBottom}mm`;
-    pageOneTitle.innerHTML = `
-              <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">${escapeHTML(titleText)}</h2>
-            `;
-    innerDiv.appendChild(pageOneTitle);
+    if (!AppState.hideInputTitle) {
+      pageOneTitle.innerHTML = `
+    <h2 class="title-placeholder font-serif-fixed text-2xl font-bold tracking-wide text-slate-800 pb-1 leading-tight max-w-[95%] break-keep whitespace-normal" contenteditable="true" style="word-break: keep-all;">
+      ${escapeHTML(titleText)}
+    </h2>
+  `;
+
+      innerDiv.appendChild(pageOneTitle);
+    }
   } else {
     const pageOneHeader = document.createElement("div");
     pageOneHeader.className =

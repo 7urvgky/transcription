@@ -133,7 +133,10 @@ function createLineNotePageHeader(headerHTML, titleText) {
 
   elements.push(createGridHeader(headerHTML));
 
-  elements.push(createLineNoteTitle(titleText));
+  // 글 제목 표시 안 함 → 제목 영역 자체를 만들지 않는다.
+  if (!AppState.hideInputTitle) {
+    elements.push(createLineNoteTitle(titleText));
+  }
 
   return elements;
 }

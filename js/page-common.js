@@ -175,7 +175,7 @@ function updateHeaderAndTitle() {
   });
 
   document.querySelectorAll(".title-placeholder").forEach((el) => {
-    el.textContent = AppState.hideInputTitle ? "" : AppState.articleTitle || "";
+    el.textContent = AppState.articleTitle || "";
   });
 }
 

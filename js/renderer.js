@@ -551,6 +551,7 @@ function renderPages() {
 
     AppState.patternGuide,
     AppState.patternEmpty,
+    AppState.hideInputTitle,
   ].join("_");
 
   // 단계 A: 페이지 메타 스펙 빌드 (구조 연산 전담)
