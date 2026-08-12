@@ -7,17 +7,19 @@ function applyManuscriptPreset(presetKey) {
   const preset = MANUSCRIPT_PRESETS[presetKey];
   if (!preset) return;
 
-  // 기존 상태 저장 (프리셋 해제 시 복원용)
+  // 프리셋 적용 전 현재 설정 저장
   if (!AppState.previousPresetState) {
     AppState.previousPresetState = {
       orientation: AppState.orientation,
       gridCols: AppState.gridCols,
       traditionalGrid: AppState.traditionalGrid,
+      traditionalRowGap: AppState.traditionalRowGap,
     };
   }
 
   AppState.activePreset = presetKey;
 
+  // 프리셋 해제
   if (presetKey === "none") {
     const prev = AppState.previousPresetState;
 
@@ -25,19 +27,19 @@ function applyManuscriptPreset(presetKey) {
       AppState.orientation = prev.orientation;
       AppState.gridCols = prev.gridCols;
       AppState.traditionalGrid = prev.traditionalGrid;
+      AppState.traditionalRowGap = prev.traditionalRowGap;
     }
 
     AppState.previousPresetState = null;
     return;
   }
 
+  // 프리셋 적용
   AppState.orientation = preset.direction;
   AppState.gridCols = String(preset.cols);
 
-  // 프리셋은 전통 원고지 형태를 기본 사용
+  // 전통 원고지 + 줄 사이 간격 자동 적용
   AppState.traditionalGrid = true;
-
-  // 프리셋은 줄 사이 간격을 기본 적용
   AppState.traditionalRowGap = true;
 }
 
