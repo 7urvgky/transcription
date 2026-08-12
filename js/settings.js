@@ -12,7 +12,7 @@ const SETTINGS = {
   // =====================================================
   layout: {
     // 페이지 기본 여백
-    pageTopPadding: 20,
+    pageTopPadding: 18,
     pageSidePadding: 20,
     pageBottomPadding: 15,
   },
@@ -57,7 +57,9 @@ const SETTINGS = {
     traceOpacity: 0.2, // 따라쓰기 글자 투명도
 
     // 여백
-    gridHeaderBottom: 4, // 원고지 헤더와 원고지 제목 간격 mm
+    gridHeaderBottom: 0, // 원고지 헤더와 원고지 제목 간격 mm
+
+    titleTopGap: 5, // 원고지 제목 위 간격 mm
 
     gridLineGap: 2.5, // 원고지와 위 아래 실선 간격 mm
     titleLineGap: 2, // 원고지 제목과 위 실선 간격 mm

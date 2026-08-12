@@ -1,4 +1,5 @@
 "use strict";
+
 function calculateSourcePageHash(segments) {
   let hash = 0;
   segments.forEach((seg) => {
@@ -519,6 +520,8 @@ function renderPages() {
     AppState.gridCols,
     AppState.traditionalGrid,
 
+    AppState.hideInputTitle,
+
     AppState.hideManuscriptHeader,
     AppState.hideCharCount,
     AppState.hidePageNumbers,
@@ -551,7 +554,6 @@ function renderPages() {
 
     AppState.patternGuide,
     AppState.patternEmpty,
-    AppState.hideInputTitle,
   ].join("_");
 
   // 단계 A: 페이지 메타 스펙 빌드 (구조 연산 전담)
@@ -559,6 +561,7 @@ function renderPages() {
 
   // 단계 B: DOM 페이지 래퍼 보존 및 조율 (엘리먼트 풀 재사용 기법)
   adjustDOMWrappersPool(container, pageSpecs, currentLayoutSignature);
+  console.log("SIGNATURE", currentLayoutSignature);
 
   // 단계 C: 각 지면 서브 렌더러 분기 및 가상 렌더링 (데이터 바인딩 전담)
   renderPageContents(pageSpecs, currentLayoutSignature);

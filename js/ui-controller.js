@@ -28,6 +28,7 @@ function bindUIEvents() {
     .getElementById("hide-input-title")
     .addEventListener("change", (e) => {
       AppState.hideInputTitle = e.target.checked;
+
       markStateChanged();
       renderPages();
     });

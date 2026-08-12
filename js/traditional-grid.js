@@ -609,6 +609,7 @@ function createTraditionalOuterBorder(colsNum, optRows, cellWidthMm, rowGapMm) {
  * 전통 원고지의 한 행에 해당하는 DOM
  * ============================================================
  */
+
 function createTraditionalGridRow(colsNum, cellWidthMm, rowIndex, totalRows) {
   const row = document.createElement("div");
 
@@ -733,6 +734,7 @@ function createTraditionalCharCountLabels(
  * ============================================================
  */
 function createTraditionalGrid(spec, optRows, cellsPerPage) {
+  
   const colsNum = parseInt(AppState.gridCols, 10);
 
   const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);

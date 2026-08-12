@@ -65,11 +65,13 @@ function createGridFooter(spec) {
 function createGridTitle(titleText) {
   const title = document.createElement("div");
 
-  title.className = "mb-1 w-full text-left shrink-0";
-
-  title.style.marginBottom = `${SETTINGS.manuscript.gridLineGap}mm`;
+  title.className = "w-full text-left shrink-0";
 
   if (!AppState.hideInputTitle) {
+    title.style.marginTop = `${SETTINGS.manuscript.titleTopGap}mm`;
+
+    title.style.marginBottom = `${SETTINGS.manuscript.gridLineGap}mm`;
+
     title.innerHTML = `
       <div>
         <h2
@@ -81,8 +83,13 @@ function createGridTitle(titleText) {
         </h2>
       </div>
     `;
+  } else {
+    // 제목이 없을 때는 공간 제거
+    title.style.marginTop = "0";
+    title.style.marginBottom = `${SETTINGS.manuscript.gridLineGap}mm`;
   }
 
+  // 실선은 항상 유지
   title.appendChild(createTitleLine());
 
   return title;
@@ -189,6 +196,7 @@ function buildGridPage(
    * 페이지 바닥을 기준으로 배치한다.
    * ============================================================
    */
+
   if (!AppState.hidePageNumbers) {
     innerDiv.appendChild(createGridFooter(spec));
   }

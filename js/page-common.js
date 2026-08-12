@@ -132,7 +132,6 @@ function getBlankPlaceholders() {
 }
 
 function buildHeaderHTML(placeholders) {
-  console.log("buildHeaderHTML:", AppState.hideStudentInfo);
   if (AppState.hideStudentInfo) {
     return "";
   }
