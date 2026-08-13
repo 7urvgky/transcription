@@ -16,6 +16,10 @@ const DEFAULT_APP_STATE = {
   hideCharCount: false,
   hidePageNumbers: false,
   traditionalGrid: false,
+  sourceColumnDivider: SETTINGS.sourcePage.showLandscapeColumnDivider,
+  presetId: "none",
+  presetMode: false,
+  presetRestoreState: null,
   orientation: SETTINGS.defaults.orientation,
 
   headerLeftText: SETTINGS.sourcePage.headerLeftText,
@@ -77,6 +81,10 @@ const AppState = {
   hideCharCount: DEFAULT_APP_STATE.hideCharCount,
   hidePageNumbers: DEFAULT_APP_STATE.hidePageNumbers,
   traditionalGrid: DEFAULT_APP_STATE.traditionalGrid,
+  sourceColumnDivider: DEFAULT_APP_STATE.sourceColumnDivider,
+  presetId: DEFAULT_APP_STATE.presetId,
+  presetMode: DEFAULT_APP_STATE.presetMode,
+  presetRestoreState: DEFAULT_APP_STATE.presetRestoreState,
   orientation: DEFAULT_APP_STATE.orientation,
 
   headerLeftText: DEFAULT_APP_STATE.headerLeftText,

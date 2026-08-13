@@ -77,6 +77,11 @@ function createTitleLine() {
 
   titleLine.style.left = `${-extraWidth / 2}mm`;
 
+  if (!SETTINGS.manuscript.showHorizontalLines) {
+    titleLine.style.display = "none";
+    titleLine.style.marginTop = "0";
+  }
+
   return titleLine;
 }
 
@@ -107,6 +112,12 @@ function createHorizontalLine(marginTopMm = 0, marginBottomMm = 0) {
   }
 
   styleBottomLine(line);
+
+  if (!SETTINGS.manuscript.showHorizontalLines) {
+    line.style.display = "none";
+    line.style.marginTop = "0";
+    line.style.marginBottom = "0";
+  }
 
   return line;
 }

@@ -30,6 +30,18 @@ function isSameNumber(a, b) {
   return Math.abs(Number(a) - Number(b)) < 0.000001;
 }
 
+// SVG 격자는 생성 시점의 computed color를 선 속성으로 저장한다.
+// 불러오기 직후 다음 프레임에서 뼈대를 비워 새 색으로 다시 생성한다.
+function refreshRenderedGridColors() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".page-scale-wrapper").forEach((wrapper) => {
+      delete wrapper.dataset.layoutSignature;
+      delete wrapper.dataset.pageContentState;
+    });
+    renderPages();
+  });
+}
+
 // 기본 상태 확인
 function isDefaultState() {
   return (
@@ -46,6 +58,9 @@ function isDefaultState() {
     AppState.hideCharCount === DEFAULT_APP_STATE.hideCharCount &&
     AppState.hidePageNumbers === DEFAULT_APP_STATE.hidePageNumbers &&
     AppState.traditionalGrid === DEFAULT_APP_STATE.traditionalGrid &&
+    AppState.sourceColumnDivider === DEFAULT_APP_STATE.sourceColumnDivider &&
+    AppState.presetId === DEFAULT_APP_STATE.presetId &&
+    AppState.presetMode === DEFAULT_APP_STATE.presetMode &&
     AppState.orientation === DEFAULT_APP_STATE.orientation &&
     AppState.headerLeftText === DEFAULT_APP_STATE.headerLeftText &&
     AppState.customFooterSourceText ===
@@ -229,6 +244,7 @@ function importSettings(event) {
 
     saveToLocalStorage();
     renderPages();
+    refreshRenderedGridColors();
   };
   reader.readAsText(file);
 }

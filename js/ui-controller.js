@@ -31,6 +31,9 @@ function bindUIEvents() {
 
       markStateChanged();
       renderPages();
+      // WebKit이 숨은 측정 지면의 제목 높이를 한 프레임 늦게 갱신하는
+      // 경우에도 행 수를 즉시 다시 계산하도록 한 번 더 조판한다.
+      requestAnimationFrame(renderPages);
     });
 
   document.getElementById("input-title").addEventListener("input", (e) => {
@@ -121,6 +124,13 @@ function bindUIEvents() {
     updateGridGuides();
     markStateChanged();
   });
+  document
+    .getElementById("source-column-divider")
+    .addEventListener("change", (e) => {
+      AppState.sourceColumnDivider = e.target.checked;
+      markStateChanged();
+      renderPages();
+    });
 
   document.getElementById("zoom-input-field").addEventListener("input", (e) => {
     let num = parseInt(e.target.value);
@@ -303,6 +313,7 @@ function bindWindowEvents() {
 
 function initializeControllers() {
   bindUIEvents();
+  bindPresetUI();
   bindDocumentEvents();
   bindWindowEvents();
 }

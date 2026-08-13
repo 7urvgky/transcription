@@ -37,6 +37,10 @@ const SETTINGS = {
     landscapeOtherPageHeight: 132,
 
     landscapeColumnGap: 15, // 가로 모드 열 간격 mm
+    showLandscapeColumnDivider: true, // 가로 원문 두 단 사이 점선 표시
+    landscapeColumnDividerWidthMm: 0.25, // 중앙 점선 두께
+    landscapeColumnDividerDashMm: 0.8, // 중앙 점선의 선 길이
+    landscapeColumnDividerGapMm: 0.8, // 중앙 점선의 선 간격
 
     // 여백
     sourceHeaderBottom: 5, // 원문 보기 헤더 아래 여백 mm
@@ -62,6 +66,7 @@ const SETTINGS = {
     titleTopGap: 5, // 원고지 제목 위 간격 mm
 
     gridLineGap: 2.5, // 원고지와 위 아래 실선 간격 mm
+    showHorizontalLines: true, // 원고지 위·아래 실선 표시
     titleLineGap: 2, // 원고지 제목과 위 실선 간격 mm
     horizontalLineExtraWidth: 2, // 원고지 위 아래 실선 길이 조절
 
@@ -73,6 +78,21 @@ const SETTINGS = {
     traditionalRowGap: 2.5, // 한 행의 원고지와 다음 행의 원고지 사이의 실제 여백
   },
 
+  // 프리셋 원고지 전용 표식·학생 정보 위치 설정
+  manuscriptPreset: {
+    numberFontSizePx: 14, // No. 글자 크기 (기존 12px의 약 1.3배)
+    footerFontSizePx: 14, // 줄 수 × 칸 수 글자 크기
+    numberUnderlineWidthMm: 20, // No. 옆 밑줄 길이 (1.5cm)
+    studentInfoTopMm: 8, // 학생 정보의 페이지 위쪽 위치
+    studentInfoFontSizePx: 14, // 학생 정보 글자 크기
+    studentInfoGapMm: 8, // 학생 정보 항목 사이 간격
+    studentInfoWidthMm: 125, // 페이지 왼쪽에 모아 둘 학생 정보의 최대 폭
+    numberInsetFromRightMm: 1.5, // No.를 원고지 오른쪽 선에서 왼쪽으로 들이는 정도
+    footerInsetFromLeftMm: 1.5, // 푸터를 원고지 왼쪽 선에서 오른쪽으로 들이는 정도
+    horizontalLineExtraWidthMm: 1.8, // 원고지 폭 대비 위·아래 실선의 추가 길이
+  },
+
+  // 원고지 선 설정
   stroke: {
     // 선 두께
     borderMm: 0.5, // 원고지 외곽선

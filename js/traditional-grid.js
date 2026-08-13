@@ -58,6 +58,10 @@ function calculateTraditionalGridRows(cols) {
  * traditionalGrid가 false이면 기존과 완전히 동일하다.
  */
 function getActiveGridRows(cols) {
+  if (typeof isPresetMode === "function" && isPresetMode()) {
+    return getActiveManuscriptPreset().rows;
+  }
+
   if (AppState.traditionalGrid && cols !== "line") {
     return calculateTraditionalGridRows(cols);
   }
@@ -82,7 +86,12 @@ function getActiveGridRows(cols) {
  * │ │ │ │ │ │
  * └─┴─┴─┴─┴─┘
  */
-function createTraditionalRowSvg(colsNum, rowIndex, totalRows) {
+function createTraditionalRowSvg(
+  colsNum,
+  rowIndex,
+  totalRows,
+  presetCellWidthMm = null,
+) {
   const svgNS = "http://www.w3.org/2000/svg";
 
   const svg = document.createElementNS(svgNS, "svg");
@@ -102,9 +111,8 @@ function createTraditionalRowSvg(colsNum, rowIndex, totalRows) {
   /*
    * 기존 일반 원고지와 동일한 선 두께 계산
    */
-  const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
-
-  const cellWidthMm = usableWidthMm / colsNum;
+  const cellWidthMm =
+    presetCellWidthMm || ManuscriptEngine.getUsableGridWidthMm(colsNum) / colsNum;
 
   const borderMm = SETTINGS.stroke.borderMm;
 
@@ -658,7 +666,12 @@ function createTraditionalGridRow(colsNum, cellWidthMm, rowIndex, totalRows) {
    */
   row.appendChild(gridBody);
 
-  const svgGrid = createTraditionalRowSvg(colsNum, rowIndex, totalRows);
+  const svgGrid = createTraditionalRowSvg(
+    colsNum,
+    rowIndex,
+    totalRows,
+    cellWidthMm,
+  );
 
   row.appendChild(svgGrid);
 
@@ -734,14 +747,26 @@ function createTraditionalCharCountLabels(
  * ============================================================
  */
 function createTraditionalGrid(spec, optRows, cellsPerPage) {
-  
-  const colsNum = parseInt(AppState.gridCols, 10);
+  const presetMetrics =
+    typeof isPresetMode === "function" && isPresetMode()
+      ? getPresetGridMetrics()
+      : null;
 
-  const usableWidthMm = ManuscriptEngine.getUsableGridWidthMm(colsNum);
+  const colsNum = presetMetrics
+    ? presetMetrics.cols
+    : parseInt(AppState.gridCols, 10);
 
-  const cellWidthMm = usableWidthMm / colsNum;
+  const usableWidthMm = presetMetrics
+    ? presetMetrics.widthMm
+    : ManuscriptEngine.getUsableGridWidthMm(colsNum);
 
-  const rowGapMm = SETTINGS.manuscript.traditionalRowGap;
+  const cellWidthMm = presetMetrics
+    ? presetMetrics.cellWidthMm
+    : usableWidthMm / colsNum;
+
+  const rowGapMm = presetMetrics
+    ? presetMetrics.rowGapMm
+    : SETTINGS.manuscript.traditionalRowGap;
 
   /*
    * 전체 전통 원고지 컨테이너

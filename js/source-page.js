@@ -162,14 +162,38 @@ function createSourceBody(innerDiv, spec) {
   pInnerContent.style.overflow = "hidden";
 
   if (AppState.orientation === "landscape") {
-    pInnerContent.style.columnCount = "2";
-    pInnerContent.style.columnGap = `${SETTINGS.sourcePage.landscapeColumnGap}mm`;
-    pInnerContent.style.columnFill = "auto";
+    // Safari 인쇄에서는 CSS 다단이 두 번째 열을 지면 밖으로 밀어낼 수 있어,
+    // 실제 두 개의 열 DOM을 사용한다.
+    pInnerContent.classList.add("source-columns");
+    pInnerContent.classList.toggle(
+      "source-column-divider",
+      AppState.sourceColumnDivider,
+    );
+    pInnerContent.style.display = "flex";
+    pInnerContent.style.gap = `${SETTINGS.sourcePage.landscapeColumnGap}mm`;
+    pInnerContent.style.setProperty(
+      "--source-column-divider-width",
+      `${SETTINGS.sourcePage.landscapeColumnDividerWidthMm}mm`,
+    );
+    pInnerContent.style.setProperty(
+      "--source-column-divider-dash",
+      `${SETTINGS.sourcePage.landscapeColumnDividerDashMm}mm`,
+    );
+    pInnerContent.style.setProperty(
+      "--source-column-divider-gap",
+      `${SETTINGS.sourcePage.landscapeColumnDividerGapMm}mm`,
+    );
     pInnerContent.style.height = `${maxContentHeightMm}mm`;
+    pInnerContent.style.overflow = "hidden";
+
+    for (let columnIndex = 0; columnIndex < 2; columnIndex++) {
+      const column = document.createElement("div");
+      column.className = "source-column min-w-0 flex-1";
+      column.style.flex = "1 1 0";
+      column.style.minWidth = "0";
+      pInnerContent.appendChild(column);
+    }
   } else {
-    pInnerContent.style.columnCount = "auto";
-    pInnerContent.style.columnGap = "normal";
-    pInnerContent.style.columnFill = "balance";
     pInnerContent.style.height = "auto";
   }
 

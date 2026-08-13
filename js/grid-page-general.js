@@ -118,6 +118,11 @@ function buildGridPage(
   optRows,
   cellsPerPage,
 ) {
+  if (isPresetMode()) {
+    buildPresetGridPage(innerDiv, spec, optRows, cellsPerPage);
+    return;
+  }
+
   /*
    * ============================================================
    * 헤더 / 제목

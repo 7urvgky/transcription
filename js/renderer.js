@@ -140,7 +140,12 @@ function renderSourcePageContent(wrapper, spec) {
     calculateSourcePageHash(spec.pageData.segments);
   if (wrapper.dataset.stateKey !== nextState) {
     const pInnerContent = wrapper.querySelector(".p-inner-content");
-    pInnerContent.innerHTML = "";
+    const existingColumns = pInnerContent.querySelectorAll(".source-column");
+    if (existingColumns.length > 0) {
+      existingColumns.forEach((column) => column.replaceChildren());
+    } else {
+      pInnerContent.innerHTML = "";
+    }
     const htmlParagraphs = [];
     let currentParaText = "";
     let isContinuedPara = false;
@@ -185,12 +190,47 @@ function renderSourcePageContent(wrapper, spec) {
       });
     }
 
+    const columns =
+      AppState.orientation === "landscape"
+        ? Array.from(pInnerContent.querySelectorAll(".source-column"))
+        : [pInnerContent];
+    const fontSizeNum = parseInt(spec.pageData.fontSize, 10);
+    const maxLinesPerColumn = Math.max(
+      1,
+      Math.floor(ManuscriptEngine.getMaxLines(fontSizeNum, spec.sIdx) / 2),
+    );
+    let activeColumn = 0;
+    let usedLines = 0;
+
     htmlParagraphs.forEach((p) => {
+      const estimatedLines = p.isBlank
+        ? 1
+        : ManuscriptEngine.estimateLinesForSegments(
+            [
+              {
+                text: p.text,
+                isContinued: p.isContinued,
+                pIdx: p.pIdx,
+              },
+            ],
+            fontSizeNum,
+          );
+
+      if (
+        columns.length > 1 &&
+        activeColumn === 0 &&
+        usedLines > 0 &&
+        usedLines + estimatedLines > maxLinesPerColumn
+      ) {
+        activeColumn = 1;
+        usedLines = 0;
+      }
+
       if (p.isBlank) {
         const emptySpacer = document.createElement("p");
         emptySpacer.className = "mb-0 text-justify";
         emptySpacer.innerHTML = "&nbsp;";
-        pInnerContent.appendChild(emptySpacer);
+        columns[activeColumn].appendChild(emptySpacer);
       } else {
         const paraEl = document.createElement("p");
         paraEl.className = "mb-0 text-justify";
@@ -198,8 +238,10 @@ function renderSourcePageContent(wrapper, spec) {
         paraEl.style.wordBreak = "keep-all";
         paraEl.style.textJustify = "inter-character";
         paraEl.textContent = p.text;
-        pInnerContent.appendChild(paraEl);
+        columns[activeColumn].appendChild(paraEl);
       }
+
+      usedLines += estimatedLines;
     });
     wrapper.dataset.stateKey = nextState;
   }
@@ -515,10 +557,15 @@ function buildPageSpecs() {
 // 1. renderPages() 전체 조판 엔진 책임 분배 실행계획부
 function renderPages() {
   const container = document.getElementById("pages-container");
+  const computedGridRows = getActiveGridRows(AppState.gridCols);
   const currentLayoutSignature = [
     AppState.orientation,
     AppState.gridCols,
     AppState.traditionalGrid,
+    AppState.presetMode,
+    AppState.presetId,
+    AppState.sourceColumnDivider,
+    computedGridRows,
 
     AppState.hideInputTitle,
 

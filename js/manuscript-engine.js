@@ -481,6 +481,10 @@ ManuscriptEngine.calculateGridAvailableHeightMm = function () {
   );
 
   measureInner.appendChild(measureBottomLine);
+
+  // 특히 Safari에서 display/제목 변경 직후 측정값이 이전 프레임으로
+  // 남지 않도록 실제 레이아웃을 확정한다.
+  void measureInner.offsetHeight;
   /*
    * ----------------------------------------------------------
    * 7. 헤더 + 아래 실선이 실제로 차지하는 높이를 측정한다.
