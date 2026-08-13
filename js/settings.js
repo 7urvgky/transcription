@@ -68,7 +68,7 @@ const SETTINGS = {
     gridLineGap: 2.5, // 원고지와 위 아래 실선 간격 mm
     showHorizontalLines: true, // 원고지 위·아래 실선 표시
     titleLineGap: 2, // 원고지 제목과 위 실선 간격 mm
-    horizontalLineExtraWidth: 2, // 원고지 위 아래 실선 길이 조절
+    horizontalLineExtraWidth: 1, // 원고지 위 아래 실선 추가 길이 조절
 
     // 꼬리말
     // 페이지 안쪽 바닥에서 footer까지의 거리(mm)
@@ -89,7 +89,7 @@ const SETTINGS = {
     studentInfoWidthMm: 125, // 페이지 왼쪽에 모아 둘 학생 정보의 최대 폭
     numberInsetFromRightMm: 1.5, // No.를 원고지 오른쪽 선에서 왼쪽으로 들이는 정도
     footerInsetFromLeftMm: 1.5, // 푸터를 원고지 왼쪽 선에서 오른쪽으로 들이는 정도
-    horizontalLineExtraWidthMm: 1.8, // 원고지 폭 대비 위·아래 실선의 추가 길이
+    horizontalLineExtraWidthMm: 1, // 원고지 폭 대비 위·아래 실선의 추가 길이
   },
 
   // 원고지 선 설정

@@ -205,7 +205,7 @@ function createPresetStudentInfo() {
   const info = document.createElement("div");
   info.className = "absolute flex items-center font-bold text-slate-700";
   info.style.top = `${SETTINGS.manuscriptPreset.studentInfoTopMm}mm`;
-  info.style.left = "14mm";
+  info.style.left = "18mm";
   // 고정 폭을 두면 페이지 중간에서 학생 정보가 잘리므로,
   // 좌우 여백 사이의 모든 너비를 사용한다. 설정값은 최소 폭으로만 쓴다.
   info.style.right = "14mm";
