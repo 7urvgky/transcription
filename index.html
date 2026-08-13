@@ -218,13 +218,52 @@
                 >4. 원고지 설정</label
               >
               <div class="relative">
-                <button id="preset-menu-button" type="button" class="px-2 py-1 text-[10px] font-black tracking-wider text-slate-600 bg-white border border-slate-300 rounded-md hover:bg-slate-50">PRESET</button>
-                <div id="preset-menu" class="hidden absolute right-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl">
-                  <button type="button" class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50" data-preset-id="none">프리셋 해제</button>
-                  <button type="button" class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50" data-preset-id="landscape-60">가로 방향 6줄 × 10칸 = 60자</button>
-                  <button type="button" class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50" data-preset-id="portrait-130">세로 방향 13줄 × 10칸 = 130자</button>
-                  <button type="button" class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50" data-preset-id="landscape-200">가로 방향 10줄 × 20칸 = 200자</button>
-                  <button type="button" class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50" data-preset-id="portrait-500">세로 방향 25줄 × 20칸 = 500자</button>
+                <button
+                  id="preset-menu-button"
+                  type="button"
+                  class="px-2 py-1 text-[10px] font-black tracking-wider text-slate-600 bg-white border border-slate-300 rounded-md hover:bg-slate-50"
+                >
+                  PRESET
+                </button>
+                <div
+                  id="preset-menu"
+                  class="hidden absolute right-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
+                >
+                  <button
+                    type="button"
+                    class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
+                    data-preset-id="none"
+                  >
+                    프리셋 해제
+                  </button>
+                  <button
+                    type="button"
+                    class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
+                    data-preset-id="landscape-60"
+                  >
+                    가로 방향 6줄 × 10칸 = 60자
+                  </button>
+                  <button
+                    type="button"
+                    class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
+                    data-preset-id="portrait-130"
+                  >
+                    세로 방향 13줄 × 10칸 = 130자
+                  </button>
+                  <button
+                    type="button"
+                    class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
+                    data-preset-id="landscape-200"
+                  >
+                    가로 방향 10줄 × 20칸 = 200자
+                  </button>
+                  <button
+                    type="button"
+                    class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
+                    data-preset-id="portrait-500"
+                  >
+                    세로 방향 25줄 × 20칸 = 500자
+                  </button>
                 </div>
               </div>
             </div>
@@ -506,10 +545,12 @@
                   >십자 점선 표시</span
                 >
               </label>
+              <!--
               <label class="flex items-center cursor-pointer">
                 <input type="checkbox" id="source-column-divider" checked class="form-checkbox h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
                 <span class="ml-2.5 text-xs text-slate-700 font-bold">가로 원문 두 단 사이 점선 표시</span>
               </label>
+              -->
               <label class="flex items-center cursor-pointer">
                 <input
                   type="checkbox"

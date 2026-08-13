@@ -46,8 +46,8 @@ function applyLoadedDataToUI() {
     AppState.hidePageNumbers;
   document.getElementById("traditional-grid").checked =
     AppState.traditionalGrid;
-  document.getElementById("source-column-divider").checked =
-    AppState.sourceColumnDivider;
+  //document.getElementById("source-column-divider").checked =
+  //  AppState.sourceColumnDivider;
   if (typeof syncPresetUI === "function") {
     syncPresetUI();
   }

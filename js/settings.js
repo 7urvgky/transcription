@@ -37,10 +37,10 @@ const SETTINGS = {
     landscapeOtherPageHeight: 132,
 
     landscapeColumnGap: 15, // 가로 모드 열 간격 mm
-    showLandscapeColumnDivider: true, // 가로 원문 두 단 사이 점선 표시
+    showLandscapeColumnDivider: false, // 가로 원문 두 단 사이 점선 표시
     landscapeColumnDividerWidthMm: 0.25, // 중앙 점선 두께
-    landscapeColumnDividerDashMm: 0.8, // 중앙 점선의 선 길이
-    landscapeColumnDividerGapMm: 0.8, // 중앙 점선의 선 간격
+    landscapeColumnDividerDashMm: 1, // 중앙 점선의 선 길이
+    landscapeColumnDividerGapMm: 1, // 중앙 점선의 선 간격
 
     // 여백
     sourceHeaderBottom: 5, // 원문 보기 헤더 아래 여백 mm

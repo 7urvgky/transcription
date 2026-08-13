@@ -124,6 +124,7 @@ function bindUIEvents() {
     updateGridGuides();
     markStateChanged();
   });
+  /*
   document
     .getElementById("source-column-divider")
     .addEventListener("change", (e) => {
@@ -131,7 +132,7 @@ function bindUIEvents() {
       markStateChanged();
       renderPages();
     });
-
+*/
   document.getElementById("zoom-input-field").addEventListener("input", (e) => {
     let num = parseInt(e.target.value);
     if (!isNaN(num)) {

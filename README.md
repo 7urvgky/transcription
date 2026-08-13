@@ -45,6 +45,14 @@
 - 원문 보기의 어절 단위로 줄 바꿈을 없애기
 - 헤더를 스크롤에 따라 사라지게 하기 → 왼쪽 메뉴는 고정하기
 - 구글 폰트 의존성 제거. 자체 호스팅
+- 초기 로딩 화면이 계속 되는 경우가 있다. 폰트 로딩 중...필사용 글꼴을 준비하고 있습니다. 웹사이트 완전 새로 고침을 하면 고쳐짐.
+
+setting.js의 아래가 사파리에만 적용되는 듯? 다단 구분 선의 전체적인 검토가 필요함.
+         showLandscapeColumnDivider: false, // 가로 원문 두 단 사이 점선 표시
+         landscapeColumnDividerWidthMm: 0.25, // 중앙 점선 두께
+         landscapeColumnDividerDashMm: 1, // 중앙 점선의 선 길이
+         landscapeColumnDividerGapMm: 1, // 중앙 점선의 선 간격
+   참고 : source-column-divider, 가로 원문 두 단 사이 점선 표시 로 검색한 결과의 일부를 주석 처리했음
 
 ## Ver. 0.081313
 
