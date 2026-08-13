@@ -27,6 +27,13 @@ const MANUSCRIPT_PRESETS = {
     rows: 10,
     cols: 20,
   },
+  "portrait-400": {
+    id: "portrait-400",
+    name: "세로 방향 20 × 20 = 400자",
+    orientation: "portrait",
+    rows: 20,
+    cols: 20,
+  },
   "portrait-500": {
     id: "portrait-500",
     name: "세로 방향 25 × 20 = 500자",
