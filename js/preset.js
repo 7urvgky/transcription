@@ -41,6 +41,13 @@ const MANUSCRIPT_PRESETS = {
     rows: 25,
     cols: 20,
   },
+  "portrait-700": {
+    id: "portrait-700",
+    name: "세로 방향 28 × 25 = 700자",
+    orientation: "portrait",
+    rows: 28,
+    cols: 25,
+  },
 };
 
 function getActiveManuscriptPreset() {
