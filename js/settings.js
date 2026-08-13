@@ -78,6 +78,13 @@ const SETTINGS = {
     traditionalRowGap: 2.5, // 한 행의 원고지와 다음 행의 원고지 사이의 실제 여백
   },
 
+  linenote: {
+    notetitletopmargin: 10, // 줄 노트 글 제목 위 여백
+    notetopmargin: 5, // 줄 노트 원고지 위 여백
+
+    notetopmargin_notitle: 15, // 줄 토느 글 제목 표시 안 할 때 원고지 위 여백
+  },
+
   // 프리셋 원고지 전용 표식·학생 정보 위치 설정
   manuscriptPreset: {
     numberFontSizePx: 14, // No. 글자 크기 (기존 12px의 약 1.3배)

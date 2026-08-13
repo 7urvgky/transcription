@@ -102,6 +102,13 @@ function buildLineNotePage(innerDiv, spec, headerHTML, titleText, optRows) {
   const gridWrapper = document.createElement("div");
 
   gridWrapper.className = "w-full flex items-center justify-center shrink-0";
+  
+  
+  if (AppState.hideInputTitle) {
+    gridWrapper.style.marginTop = `${SETTINGS.linenote.notetopmargin_notitle}mm`; // 줄 노트 위 여백
+  } else {
+    gridWrapper.style.marginTop = `${SETTINGS.linenote.notetopmargin}mm`; // 줄 노트 위 여백
+  }
 
   innerDiv.appendChild(gridWrapper);
 
@@ -145,6 +152,8 @@ function createLineNoteTitle(titleText) {
   const title = document.createElement("div");
 
   title.className = "mb-1 w-full text-left shrink-0";
+
+  title.style.marginTop = `${SETTINGS.linenote.notetitletopmargin}mm`;
 
   title.style.marginBottom = `${SETTINGS.manuscript.gridLineGap}mm`;
 
