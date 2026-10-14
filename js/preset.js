@@ -101,10 +101,12 @@ function syncPresetUI() {
   const landscapeButton = document.getElementById("btn-landscape");
 
   if (button) {
-    button.textContent = active ? "PRESET ✓" : "PRESET";
-    button.classList.toggle("border-red-200", active);
-    button.classList.toggle("bg-red-50", active);
-    button.classList.toggle("text-red-700", active);
+    const preset = getActiveManuscriptPreset();
+    const pageShape = preset.orientation === "landscape" ? "▱" : "▯";
+    button.textContent = active
+      ? `${pageShape} ${preset.rows * preset.cols}자 (${preset.rows}줄 × ${preset.cols}칸)`
+      : "PRESET";
+    button.classList.toggle("preset-active", active);
     button.classList.toggle("border-slate-300", !active);
     button.classList.toggle("bg-white", !active);
     button.classList.toggle("text-slate-600", !active);
@@ -114,6 +116,7 @@ function syncPresetUI() {
     option.classList.toggle("bg-slate-100", selected);
     option.classList.toggle("font-black", selected);
     option.dataset.selected = selected ? "true" : "false";
+    option.classList.toggle("preset-clear-option", option.dataset.presetId === "none");
   });
   if (gridSelect) gridSelect.disabled = active;
   if (traditionalGrid) traditionalGrid.disabled = false;

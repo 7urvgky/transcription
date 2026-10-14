@@ -12,27 +12,27 @@
       rel="stylesheet"
     />
 
-    <!-- Version: 0.081315 -->
-    <link rel="stylesheet" href="style.css?v=0.081315" />
-    <script src="js/settings.js?v=0.081315"></script>
-    <script src="js/app-state.js?v=0.081315"></script>
-    <script src="js/persistence.js?v=0.081315"></script>
-    <script src="js/ui-controller.js?v=0.081315"></script>
+    <!-- Version: 0.101401 -->
+    <link rel="stylesheet" href="style.css?v=0.101401" />
+    <script src="js/settings.js?v=0.101401"></script>
+    <script src="js/app-state.js?v=0.101401"></script>
+    <script src="js/persistence.js?v=0.101401"></script>
+    <script src="js/ui-controller.js?v=0.101401"></script>
 
-    <script src="js/renderer.js?v=0.081315"></script>
-    <script src="js/grid-renderer.js?v=0.081315"></script>
+    <script src="js/renderer.js?v=0.101401"></script>
+    <script src="js/grid-renderer.js?v=0.101401"></script>
 
-    <script src="js/manuscript-engine.js?v=0.081315"></script>
-    <script src="js/source-page-engine.js?v=0.081315"></script>
+    <script src="js/manuscript-engine.js?v=0.101401"></script>
+    <script src="js/source-page-engine.js?v=0.101401"></script>
 
-    <script src="js/traditional-grid.js?v=0.081315"></script>
+    <script src="js/traditional-grid.js?v=0.101401"></script>
 
-    <script src="js/page-common.js?v=0.081315"></script>
-    <script src="js/source-page.js?v=0.081315"></script>
-    <script src="js/line-note-page.js?v=0.081315"></script>
-    <script src="js/grid-page-general.js?v=0.081315"></script>
-    <script src="js/preset.js?v=0.081315"></script>
-    <!-- Version: 0.081315 -->
+    <script src="js/page-common.js?v=0.101401"></script>
+    <script src="js/source-page.js?v=0.101401"></script>
+    <script src="js/line-note-page.js?v=0.101401"></script>
+    <script src="js/grid-page-general.js?v=0.101401"></script>
+    <script src="js/preset.js?v=0.101401"></script>
+    <!-- Version: 0.101401 -->
   </head>
   <body class="min-h-screen flex flex-col">
     <header
@@ -57,7 +57,7 @@
         <div>
           <h1 class="text-lg font-bold tracking-tight">필사 용지 만들기</h1>
           <div class="text-[10px] text-slate-400 font-medium tracking-wide">
-            Ver.0.081315
+            Ver.0.101401
           </div>
         </div>
       </div>
@@ -241,42 +241,66 @@
                     class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
                     data-preset-id="landscape-60"
                   >
-                    가로 방향 6줄 × 10칸 = 60자
+                    <span
+                      aria-hidden="true"
+                      class="inline-block w-5 text-emerald-700"
+                      >▱</span
+                    >60자 (6줄 × 10칸)
                   </button>
                   <button
                     type="button"
                     class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
                     data-preset-id="portrait-130"
                   >
-                    세로 방향 13줄 × 10칸 = 130자
+                    <span
+                      aria-hidden="true"
+                      class="inline-block w-5 text-emerald-700"
+                      >▯</span
+                    >130자 (13줄 × 10칸)
                   </button>
                   <button
                     type="button"
                     class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
                     data-preset-id="landscape-200"
                   >
-                    가로 방향 10줄 × 20칸 = 200자
+                    <span
+                      aria-hidden="true"
+                      class="inline-block w-5 text-emerald-700"
+                      >▱</span
+                    >200자 (10줄 × 20칸)
                   </button>
                   <button
                     type="button"
                     class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
                     data-preset-id="portrait-400"
                   >
-                    세로 방향 20줄 × 20칸 = 400자
+                    <span
+                      aria-hidden="true"
+                      class="inline-block w-5 text-emerald-700"
+                      >▯</span
+                    >400자 (20줄 × 20칸)
                   </button>
                   <button
                     type="button"
                     class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
                     data-preset-id="portrait-500"
                   >
-                    세로 방향 25줄 × 20칸 = 500자
+                    <span
+                      aria-hidden="true"
+                      class="inline-block w-5 text-emerald-700"
+                      >▯</span
+                    >500자 (25줄 × 20칸)
                   </button>
                   <button
                     type="button"
                     class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
                     data-preset-id="portrait-700"
                   >
-                    세로 방향 28줄 × 25칸 = 700자
+                    <span
+                      aria-hidden="true"
+                      class="inline-block w-5 text-emerald-700"
+                      >▯</span
+                    >700자 (28줄 × 25칸)
                   </button>
                 </div>
               </div>
@@ -284,6 +308,18 @@
             <div
               class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-4"
             >
+              <div class="mb-3">
+                <span class="block text-slate-600 font-semibold text-xs mb-1.5"
+                  >글자 모양</span
+                >
+                <select
+                  id="trace-font-family"
+                  class="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white"
+                >
+                  <option value="serif">명조체 (Noto Serif)</option>
+                  <option value="sans">고딕체 (Noto Sans)</option>
+                </select>
+              </div>
               <!-- 원고지 가로 칸 수 -->
               <div>
                 <span class="block text-slate-600 font-semibold text-xs mb-1.5"
@@ -1769,6 +1805,6 @@
       </div>
     </div>
 
-    <script src="js/main.js?v=0.081315"></script>
+    <script src="js/main.js?v=0.101401"></script>
   </body>
 </html>

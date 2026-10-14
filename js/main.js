@@ -39,6 +39,8 @@ function applyLoadedDataToUI() {
   document.getElementById("input-grade").value = AppState.gradeInfo;
   document.getElementById("input-name").value = AppState.studentName;
   document.getElementById("grid-cols-select").value = AppState.gridCols;
+  document.getElementById("trace-font-family").value = AppState.traceFontFamily || "serif";
+  document.documentElement.classList.toggle("trace-font-sans", AppState.traceFontFamily === "sans");
   document.getElementById("hide-manuscript-header").checked =
     AppState.hideManuscriptHeader;
   document.getElementById("hide-char-count").checked = AppState.hideCharCount;
@@ -538,7 +540,7 @@ function appendLayoutTexts(svgHtml, layout) {
           text-anchor="middle"
           dominant-baseline="central"
           font-size="${item.fontSize}"
-          class="font-serif-fixed fill-current text-slate-800"
+          class="fill-current text-slate-800"
           transform="translate(0, -2)">
           ${escapeHTML(item.text)}
         </text>
@@ -881,6 +883,12 @@ async function initApp() {
   }
 
   applyLoadedDataToUI();
+
+  document.getElementById("trace-font-family").addEventListener("change", (event) => {
+    AppState.traceFontFamily = event.target.value === "sans" ? "sans" : "serif";
+    document.documentElement.classList.toggle("trace-font-sans", AppState.traceFontFamily === "sans");
+    markStateChanged();
+  });
 
   const presetGridColors = [
     "#000000",

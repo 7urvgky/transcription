@@ -61,6 +61,7 @@ function isDefaultState() {
     AppState.sourceColumnDivider === DEFAULT_APP_STATE.sourceColumnDivider &&
     AppState.presetId === DEFAULT_APP_STATE.presetId &&
     AppState.presetMode === DEFAULT_APP_STATE.presetMode &&
+    AppState.traceFontFamily === DEFAULT_APP_STATE.traceFontFamily &&
     AppState.orientation === DEFAULT_APP_STATE.orientation &&
     AppState.headerLeftText === DEFAULT_APP_STATE.headerLeftText &&
     AppState.customFooterSourceText ===

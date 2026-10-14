@@ -88,7 +88,7 @@ function drawCellContent(cell, cellData, nextState, colsNum) {
           dominant-baseline="central"
           text-anchor="middle"
           font-size="${100 * AppState.charScale}"
-          class="font-serif-fixed fill-current text-slate-800">
+          class="fill-current text-slate-800">
       ${char}
     </text>
   `;
@@ -113,7 +113,7 @@ function drawCellContent(cell, cellData, nextState, colsNum) {
     const charSpan = document.createElement("span");
 
     charSpan.className =
-      "font-serif-fixed text-slate-800 trace-text-node select-none absolute inset-0 flex items-center justify-center w-full h-full pointer-events-none cell-char-span";
+      "text-slate-800 trace-text-node select-none absolute inset-0 flex items-center justify-center w-full h-full pointer-events-none cell-char-span";
 
     charSpan.style.lineHeight = "1";
 
@@ -564,6 +564,7 @@ function renderPages() {
     AppState.traditionalGrid,
     AppState.presetMode,
     AppState.presetId,
+    AppState.traceFontFamily,
     AppState.sourceColumnDivider,
     computedGridRows,
 

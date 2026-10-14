@@ -20,6 +20,7 @@ const DEFAULT_APP_STATE = {
   presetId: "none",
   presetMode: false,
   presetRestoreState: null,
+  traceFontFamily: "serif",
   orientation: SETTINGS.defaults.orientation,
 
   headerLeftText: SETTINGS.sourcePage.headerLeftText,
@@ -85,6 +86,7 @@ const AppState = {
   presetId: DEFAULT_APP_STATE.presetId,
   presetMode: DEFAULT_APP_STATE.presetMode,
   presetRestoreState: DEFAULT_APP_STATE.presetRestoreState,
+  traceFontFamily: DEFAULT_APP_STATE.traceFontFamily,
   orientation: DEFAULT_APP_STATE.orientation,
 
   headerLeftText: DEFAULT_APP_STATE.headerLeftText,
