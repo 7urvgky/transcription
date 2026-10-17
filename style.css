@@ -19,27 +19,48 @@
 }
 
 html.trace-font-sans .trace-text-node {
-  font-family: "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", sans-serif !important;
+  font-family:
+    "Noto Sans JP", "Noto Sans KR", "Malgun Gothic", sans-serif !important;
 }
 
+/* 프리셋 활성 시 애니메이션 코드 */
 .preset-active {
   animation: preset-glow 1.8s ease-in-out infinite;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 0 0 12px rgba(16, 185, 129, 0.48);
+  box-shadow:
+    0 0 0 2px rgba(236, 72, 153, 0.2),
+    0 0 12px rgba(236, 72, 153, 0.48);
 }
 
 @keyframes preset-glow {
-  0%, 100% { background-color: #d1fae5; color: #065f46; border-color: #34d399; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25), 0 0 9px rgba(16, 185, 129, 0.38); }
-  50% { background-color: #6ee7b7; color: #064e3b; border-color: #059669; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.38), 0 0 17px rgba(16, 185, 129, 0.68); }
+  0%,
+  100% {
+    background-color: #fce7f3;
+    color: #9d174d;
+    border-color: #f472b6;
+    box-shadow:
+      0 0 0 2px rgba(236, 72, 153, 0.25),
+      0 0 9px rgba(236, 72, 153, 0.38);
+  }
+  50% {
+    background-color: #fbcfe8;
+    color: #831843;
+    border-color: #ec4899;
+    box-shadow:
+      0 0 0 3px rgba(236, 72, 153, 0.38),
+      0 0 17px rgba(236, 72, 153, 0.68);
+  }
 }
-
-.preset-clear-option {
-  background-color: #fff1f2;
-  color: #be123c;
-}
-.preset-clear-option:hover { background-color: #ffe4e6; }
 
 @media (prefers-reduced-motion: reduce) {
-  .preset-active { animation: none; background-color: #6ee7b7; color: #064e3b; border-color: #059669; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3), 0 0 12px rgba(16, 185, 129, 0.55); }
+  .preset-active {
+    animation: none;
+    background-color: #fbcfe8;
+    color: #831843;
+    border-color: #ec4899;
+    box-shadow:
+      0 0 0 2px rgba(236, 72, 153, 0.3),
+      0 0 12px rgba(236, 72, 153, 0.55);
+  }
 }
 
 body {
@@ -79,7 +100,8 @@ body {
 /* 따라 쓰기 연한 글씨 투명도 고정 수치 반영 */
 .trace-text-node {
   opacity: var(--trace-opacity, 0.2) !important;
-  font-family: "Noto Serif JP", "Noto Serif KR", "Batang", "AppleMyungjo", serif !important;
+  font-family:
+    "Noto Serif JP", "Noto Serif KR", "Batang", "AppleMyungjo", serif !important;
 }
 
 /* 실시간 인쇄 지면 편집 영역 인디케이터 및 영역 유지 장치 */
@@ -147,10 +169,11 @@ body {
     var(--grid-color) 0,
     var(--grid-color) var(--source-column-divider-dash, 1.5mm),
     transparent var(--source-column-divider-dash, 1.5mm),
-    transparent calc(
-      var(--source-column-divider-dash, 1.5mm) +
-        var(--source-column-divider-gap, 1.2mm)
-    )
+    transparent
+      calc(
+        var(--source-column-divider-dash, 1.5mm) +
+          var(--source-column-divider-gap, 1.2mm)
+      )
   );
   pointer-events: none;
 }
@@ -419,4 +442,12 @@ body {
     overflow-y: visible !important;
     touch-action: pan-y;
   }
+}
+
+.preset-clear-option {
+  background-color: #fff1f2 !important;
+  color: #be123c !important;
+}
+.preset-clear-option:hover {
+  background-color: #ffe4e6 !important;
 }

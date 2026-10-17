@@ -12,27 +12,27 @@
       rel="stylesheet"
     />
 
-    <!-- Version: 0.101401 -->
-    <link rel="stylesheet" href="style.css?v=0.101401" />
-    <script src="js/settings.js?v=0.101401"></script>
-    <script src="js/app-state.js?v=0.101401"></script>
-    <script src="js/persistence.js?v=0.101401"></script>
-    <script src="js/ui-controller.js?v=0.101401"></script>
+    <!-- Version: 0.101402 -->
+    <link rel="stylesheet" href="style.css?v=0.101402" />
+    <script src="js/settings.js?v=0.101402"></script>
+    <script src="js/app-state.js?v=0.101402"></script>
+    <script src="js/persistence.js?v=0.101402"></script>
+    <script src="js/ui-controller.js?v=0.101402"></script>
 
-    <script src="js/renderer.js?v=0.101401"></script>
-    <script src="js/grid-renderer.js?v=0.101401"></script>
+    <script src="js/renderer.js?v=0.101402"></script>
+    <script src="js/grid-renderer.js?v=0.101402"></script>
 
-    <script src="js/manuscript-engine.js?v=0.101401"></script>
-    <script src="js/source-page-engine.js?v=0.101401"></script>
+    <script src="js/manuscript-engine.js?v=0.101402"></script>
+    <script src="js/source-page-engine.js?v=0.101402"></script>
 
-    <script src="js/traditional-grid.js?v=0.101401"></script>
+    <script src="js/traditional-grid.js?v=0.101402"></script>
 
-    <script src="js/page-common.js?v=0.101401"></script>
-    <script src="js/source-page.js?v=0.101401"></script>
-    <script src="js/line-note-page.js?v=0.101401"></script>
-    <script src="js/grid-page-general.js?v=0.101401"></script>
-    <script src="js/preset.js?v=0.101401"></script>
-    <!-- Version: 0.101401 -->
+    <script src="js/page-common.js?v=0.101402"></script>
+    <script src="js/source-page.js?v=0.101402"></script>
+    <script src="js/line-note-page.js?v=0.101402"></script>
+    <script src="js/grid-page-general.js?v=0.101402"></script>
+    <script src="js/preset.js?v=0.101402"></script>
+    <!-- Version: 0.101402 -->
   </head>
   <body class="min-h-screen flex flex-col">
     <header
@@ -57,7 +57,7 @@
         <div>
           <h1 class="text-lg font-bold tracking-tight">필사 용지 만들기</h1>
           <div class="text-[10px] text-slate-400 font-medium tracking-wide">
-            Ver.0.101401
+            Ver.0.101402
           </div>
         </div>
       </div>
@@ -234,7 +234,11 @@
                     class="preset-option block w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-emerald-50"
                     data-preset-id="none"
                   >
-                    프리셋 해제
+                    <span
+                      aria-hidden="true"
+                      class="inline-block w-5 text-rose-600 font-bold"
+                      >↺</span
+                    >프리셋 해제
                   </button>
                   <button
                     type="button"
@@ -244,7 +248,7 @@
                     <span
                       aria-hidden="true"
                       class="inline-block w-5 text-emerald-700"
-                      >▱</span
+                      >▭</span
                     >60자 (6줄 × 10칸)
                   </button>
                   <button
@@ -266,7 +270,7 @@
                     <span
                       aria-hidden="true"
                       class="inline-block w-5 text-emerald-700"
-                      >▱</span
+                      >▭</span
                     >200자 (10줄 × 20칸)
                   </button>
                   <button
@@ -318,6 +322,8 @@
                 >
                   <option value="serif">명조체 (Noto Serif)</option>
                   <option value="sans">고딕체 (Noto Sans)</option>
+                  <option value="" disabled></option>
+                  <option value="" disabled></option>
                 </select>
               </div>
               <!-- 원고지 가로 칸 수 -->
@@ -1805,6 +1811,6 @@
       </div>
     </div>
 
-    <script src="js/main.js?v=0.101401"></script>
+    <script src="js/main.js?v=0.101402"></script>
   </body>
 </html>
